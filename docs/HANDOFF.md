@@ -33,6 +33,12 @@
 > 橘→金、全域 Header/Footer、獎項宣稱移除、出金渠道表全標「示意數據」、**假客戶見證不種→CMS 且空則隱藏**、
 > CTA 軟化）。CMS：新集合 `funding-methods`＋`testimonials`＋global `funding-page`（皆 DB→i18n fallback）；
 > 種子腳本已灌 6 列出金渠道；三語 `/funding` 200、lint／i18n:check 綠。見下方「🟢 第三十六輪」全段。
+> **第三十八輪（2026-08-31）：`/platforms` 交易平台頁上線（Figma `89:4`）＋ menu「MT5平台」改
+> 「交易平台」。** Vantage 範本→HATC 化：橘→金、全域 Header/Footer、平台清單收斂為業主確認的
+> **MT5＋HATC App＋HATC 網頁交易端**（移除星啟/子功能）、賣點/FAQ 收斂黃金/白銀（移除外匯/原油/指數/
+> 1000+/跟單）、平台視覺＝Figma 範本裝置圖佔位（業主「圖先用 Figma 的」，標「示意」）。CMS：新集合 `trading-platforms`＋faqs `platforms`
+> 分類（DB→i18n fallback）；種子腳本 `scripts/seed-platforms.ts`。header `nav.platforms` → `/platforms`。
+> `lint`（0 err）／`i18n:check`（712 鍵）／`generate:types` 綠；三語 200、桌機/手機截圖過。見「🟢 第三十八輪」。
 > **第三十七輪（2026-08-31）：整合入金頁（Figma 誤拆兩頁）**——業主指 Figma frame `75:5`（入金）與
 > `75:189`（出金）為同一頁誤拆，已**整合成單一 `/funding`**：一個 hero → 入金說明＋入金渠道表 → 出金說明＋
 > 出金渠道表 → 共用 支援主題／見證／CTA。`funding-methods` 加 **`type`（deposit/withdrawal）** 欄一表兩用；
@@ -47,6 +53,76 @@
 2. **第十八輪 `/trading` 暫緩 UI／驗收項**（多數需業主拍板）：淺色系是否推廣、帳戶分級真偽、
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
+
+## 🟢 第三十八輪（2026-08-31）：`/platforms` 交易平台頁（Figma 89:4）＋ menu 改名
+
+> 業主：「開始處理平台的內頁，menu『MT5平台』改成『交易平台』。」Figma frame `89:4`
+> `trading-platforms-page` 又是 **Vantage 範本**（橘、範本 nav/footer、4 平台〔HATC App／Web Trading／
+> MT5／星啟智能交易軟件〕＋子功能〔跟單/模擬/黃金特別版/智能量化〕、「黃金/外匯/原油/指數上千種 CFD」
+> 「1000+ 全球市場」「毫秒級」等未確認宣稱）。**先讀齊參數就方向級紅線問業主**。
+
+**owner 拍板（動工前 AskQuestion）**
+- 平台清單：**MT5＋HATC 自有 App／網頁版**（業主確認真實存在，名稱/截圖稍後提供）→ 收斂三分頁
+  HATC App／HATC 網頁交易端／MetaTrader 5，**移除**未確認的「星啟智能交易軟件」與子功能列。
+- 賣點/FAQ：**收斂黃金/白銀**，移除外匯/原油/指數/1000+/跟單等未確認宣稱（保留「資金隔離/託管」＝
+  FACTS「Client fund custody」核可事實）。
+- 路由：**`/platforms`**。
+- 其餘依既有先例（無需再問）：橘→金 `#d4af37`、全域白 Header＋深色 Footer（丟範本 nav/footer）、
+  demo CTA→`/accounts`、開戶→CMS `primaryContactHref`（fallback `/register`）、平台視覺＝漸層佔位不放假截圖。
+
+**IA / menu 改名**
+- `Header.tsx` NAV 第三項：`nav.mt5`「MT5平台」→ **重命名鍵 `nav.platforms`「交易平台」**（3 語），
+  href `/#mt5` → **`/platforms`**。`sitemap.ts` 已加 `/platforms`。
+- ⚠ Footer 另有獨立「MT5平台」欄（`home.footerV2` 平台欄，非 menu），本輪**未動**（待業主定是否一併改）。
+
+**元件**（`src/components/platforms/*`，全讀 i18n）
+- `PlatformsHero`（深，breadcrumb＋badge＋標題〔MT5 金色 accent〕＋副標＋雙 CTA〔了解更多錨點
+  `#platform-types`／申請模擬賬戶→`/accounts`〕＋右側**裝置圖**面板）／`PlatformTypes`（白，server 包
+  client `PlatformTabsClient`：分頁切換 3 平台，左**裝置圖**面板〔「示意」標註；App tab→手機圖、其餘→
+  多裝置圖〕＋右 tagline/desc＋共用 5 條 bullets〔`platforms.detail.bullets`〕＋開戶 CTA）／`PlatformFaq`
+  （淺色 native `<details>`，讀 faqs `platforms`）／`PlatformDisclaimer`（深色風險條）。
+- **平台視覺（2026-08-31 業主「圖先用 Figma 的」）**：hero＋詳情面板改用 Figma 範本裝置 mockup 作開發佔位
+  （`public/figma/platforms/{hero-devices,detail-phone}.png`，`next/image`），前台恆標「示意」。⚠ 通用圖表
+  render 非真實 HATC 截圖；`detail-phone.png` 含美股代號（AAPL/GOOGL/TSLA），與金/銀定位略衝突，**建議業主
+  優先以真實 HATC App/MT5 截圖替換**。
+- 頁面 `platforms/page.tsx` 順序＝Hero→Types→FAQ→Disclaimer（**忠於 Figma：無獨立收尾 CTA band**）；
+  `generateMetadata` 讀 `metadata.platforms`。重用 `home/SectionTitle`、`ui/button`、`siteSettings`。
+
+**CMS（DB→i18n fallback）**
+- 新集合 **`trading-platforms`**（`src/collections/TradingPlatforms.ts`：name/panelLabel/tagline/desc/
+  **`visual`(upload→media，每平台截圖)**／order/enabled）＋reader `src/lib/tradingPlatforms.ts`（`depth:1`
+  帶 `visual` URL；種子 `platforms.types.items`）。
+- **faqs 加 `category='platforms'`**（`FAQ_CATEGORIES`／`Faqs.ts` options／`faqs.ts` fallback 讀
+  `platforms.faq.items`）。
+- **平台圖 CMS 可替換（2026-08-31 業主選項 2）**：① 每平台截圖＝`trading-platforms.visual`；② hero 圖＝新
+  global **`platforms-page.heroImage`**（`src/globals/PlatformsPage.ts`＋reader `src/lib/platformsMarketing.ts`
+  `getPlatformsMarketing()`）。**有上傳＝用真實圖＋去「示意」標**（元件 `isSample` 判斷；`next/image` 用 `fill`）；
+  空＝Figma 範本圖 fallback＋「示意」標。
+- 註冊：`payload.config`（collections＋globals 加 `PlatformsPage`）／`permissions/registry`（`trading-platforms`
+  ＋publishField；global `platforms-page`）／`cacheTags`（`tradingPlatforms`／新 `platformsMarketing:'platforms-page'`）／
+  `revalidateContent`（`revalidateTradingPlatforms`→`/platforms`；新 `revalidatePlatformsMarketing`→`/platforms`；
+  `revalidateFaqs` 加 `/platforms`）。
+- **種子** `scripts/seed-platforms.ts`（讀 `platforms.*`，seed-once／冪等，灌 trading-platforms＋
+  faqs(platforms)；**不種圖**）：`npm run payload -- run scripts/seed-platforms.ts`（需 DATABASE_URI）。⚠ 新集合
+  ＝新表 `trading_platforms`＋新 global 表 `platforms_page`＋`trading_platforms.visual` 欄：本機 dev 重啟已
+  drizzle push（非互動）／正式站 migration；未推表前 reader try/catch→fallback（前台照常）。⚠ 若媒體改走外部
+  （S3）來源，`next/image` 需在 `next.config` 配 `remotePatterns`。
+
+**i18n**：`metadata.platforms`＋`platforms.*`（3 語）；`nav.mt5`→`nav.platforms`。示意/共用陣列以 `t.raw`
+或 reader 讀；示意 badge 沿用慣例。
+
+**驗證**：`generate:types` 綠；`lint` **0 error**（唯 `seed-accounts.ts` 1 pre-existing warning；**順手修掉
+`seed-funding.ts` 一個 pre-existing `any` error**）；`i18n:check` **712 鍵三語齊**；三語 `/platforms` HTTP 200；
+桌機 1440／手機 390 Chrome headless 截圖比對 Figma 通過（金色、深/白/淺交錯、分頁、FAQ、風險條、Footer）。
+
+**待業主**
+- (a) HATC App／網頁交易端**真實名稱、功能與截圖素材**（現用 Figma 範本裝置圖 fallback＋示意文案；`detail-phone.png`
+  含美股代號，建議優先替換）→ **後台已可上傳替換**：「交易平台」集合每筆 `平台截圖`＋「交易平台頁」global `Hero 裝置圖`；
+- (b) 是否新增更多平台（MT4／TradingView，站上 `/accounts` 曾列示意）；
+- (c) demo 流程（現 demo→`/accounts`）；(d) Footer「MT5平台」欄是否一併更名/改指 `/platforms`；
+- (e) ⚠ 正式站 migration：新表 `trading_platforms`＋`platforms_page`＋`trading_platforms.visual` 欄（本機 dev push；未推前走 fallback）。
+
+---
 
 ## 🟢 第三十七輪（2026-08-31）：整合入金／出金為單一 `/funding`（Figma 75:5 ＋ 75:189）
 
@@ -80,6 +156,22 @@ images{hero,deposit,withdraw,cta}}`，fallback 讀 `funding.{deposit,withdraw}.*
 **種子**：`scripts/seed-funding.ts` 改為 `seedFundingMethods(type, sampleKey)` **依 type 各自冪等**
 （deposit←`funding.deposit.methodsSample`、withdrawal←`funding.withdraw.methodsSample`），本機已灌 8 列入金、
 出金 6 列沿用（skip）。
+
+**追加（2026-08-31，業主要求）：`funding-page` global 文案也種入 CMS。** 原設計「global 留空＝i18n
+fallback」導致後台文案欄位全空、業主看不到現有文字。應業主要求，`seed-funding.ts` 新增
+`seedFundingMarketing()`：把 `funding.{hero,deposit,withdraw,topics,testimonials,cta}` 三語文案
+（僅區塊 chrome，**不含任何事實/示意數字**）灌進 `funding-page` global，讓後台一打開即見現有文案、
+可直接編輯。**冪等**：`findGlobal(fallbackLocale:false)` 若 `heroTitleLead` 已有值即跳過（不覆蓋業主
+編輯）；背景圖欄位不種（留空＝佔位圖）。本機已種入三語、重跑驗證 skip。⚠ 副作用：global 一旦有 DB
+值，前台改以 DB 覆蓋值為準，code 端 i18n 預設更新不再自動反映（與渠道表一致，業主需自行維護）。
+`testimonials` 仍依紅線**不種**。
+
+**再追加（2026-08-31，業主要求「CMS 要有現時圖片的預覽」）：4 張背景佔位圖也匯入 Media＋連到 global。**
+`seed-funding.ts` 新增 `seedFundingImages()`：用 Local API 帶 `filePath` 把 `public/figma/funding/
+{hero,deposit,withdraw,cta}.png` 匯入 `media` 集合（三語 alt），再 `updateGlobal` 連到 `funding-page` 的
+`heroImage/depositImage/withdrawImage/ctaImage`，使後台「背景圖片（可選）」顯示與前台一致的預覽。**冪等**：
+global 已有 `heroImage` 即整段跳過（避免重跑產生重複 Media）。本機已匯入 media id 1–4、global 已連、重跑
+驗證 skip。⚠ 這些仍是**開發佔位圖**（deposit/withdraw 帶青綠格線建議優先換），業主於後台上傳真圖即取代。
 
 **驗證**：`generate:types` 綠；`lint`（0 error，唯 `seed-accounts.ts` 既有 warning）；`i18n:check`（657 鍵三語齊）；
 三語 `/funding` HTTP 200，HTML 同時含入金表「支援的入金渠道與時間表」＋Apple Pay、出金表「支援的出金渠道與

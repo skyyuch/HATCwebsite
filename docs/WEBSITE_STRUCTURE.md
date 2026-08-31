@@ -6,7 +6,9 @@
 ## 交付階段
 
 - 已上線：首頁 Home（三語，Figma 深色系＋CMS 最新消息區）、關於我們 About、
-  交易概覽 `/trading`、產品 `/products`、最新消息 `/news`（CMS `home-activities`）、
+  交易概覽 `/trading`、產品 `/products`、所有交易產品 `/products/all`、交易帳戶 `/accounts`、
+  入金與出金 `/funding`、**交易平台 `/platforms`**（Figma `89:4`；CMS `trading-platforms`
+  ＋ faqs `platforms` 分類）、最新消息 `/news`（CMS `home-activities`）、
   黃金學堂 `/academy`＋`/academy/[slug]`（CMS `academy-articles`）
 - CMS：Phase 0–4 完成（infra／FAQ／新聞活動／學堂／行銷 globals＋示意表）
 - 後續階段（待規劃）：交易平台細節、Credentials 獨立頁、Contact 獨立頁（如需）
@@ -18,7 +20,10 @@
   - 公司沿革／更名歷程（依 `HATC_FACTS.md`）
   - 交易所會員資格與里程碑
 - 黃金交易概覽 ✅（`/[locale]/trading`）
-- 產品／交易條件 ✅（`/[locale]/products`）
+- 產品／交易條件 ✅（`/[locale]/products`）／所有交易產品 ✅（`/[locale]/products/all`）
+- 交易帳戶 ✅（`/[locale]/accounts`）／入金與出金 ✅（`/[locale]/funding`）
+- 交易平台 ✅（`/[locale]/platforms`，Figma `89:4`；分頁 MT5＋HATC App＋網頁交易端＝
+  業主確認之平台，Payload `trading-platforms`＋faqs `platforms`；平台截圖為漸層佔位待業主素材）
 - 最新消息 ✅（`/[locale]/news`，Payload `home-activities`；無內容時中性空狀態）
 - 黃金學堂 ✅（`/[locale]/academy` 列表＋`/[locale]/academy/[slug]` 詳情；Payload
   `academy-articles` Lexical body；無 DB／空 CMS → i18n 種子 a1–a3）

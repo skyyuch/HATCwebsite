@@ -111,6 +111,13 @@ export const PERM_RESOURCES: PermResource[] = [
     fields: [publishField]
   },
   {
+    slug: 'trading-platforms',
+    kind: 'collection',
+    label: adminLabel('Trading platforms', '交易平台', '交易平台'),
+    ops: ['create', 'update', 'delete'],
+    fields: [publishField]
+  },
+  {
     slug: 'funding-methods',
     kind: 'collection',
     label: adminLabel('Funding methods', '出金渠道表', '出金渠道表'),
@@ -171,6 +178,12 @@ export const PERM_RESOURCES: PermResource[] = [
     slug: 'funding-page',
     kind: 'global',
     label: adminLabel('Funding page copy', '入金／出金頁文案', '入金／出金页文案'),
+    ops: ['update']
+  },
+  {
+    slug: 'platforms-page',
+    kind: 'global',
+    label: adminLabel('Platforms page assets', '交易平台頁圖片', '交易平台页图片'),
     ops: ['update']
   },
   {

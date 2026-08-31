@@ -44,6 +44,7 @@ export function revalidateFaqs(): void {
   for (const locale of routing.locales) {
     safeRevalidatePath(`/${locale}/trading`);
     safeRevalidatePath(`/${locale}/accounts`);
+    safeRevalidatePath(`/${locale}/platforms`);
   }
 }
 
@@ -91,6 +92,13 @@ export function revalidateAccountPlatforms(): void {
   }
 }
 
+export function revalidateTradingPlatforms(): void {
+  safeRevalidateTag(CACHE_TAGS.tradingPlatforms);
+  for (const locale of routing.locales) {
+    safeRevalidatePath(`/${locale}/platforms`);
+  }
+}
+
 export function revalidateFundingMethods(): void {
   safeRevalidateTag(CACHE_TAGS.fundingMethods);
   for (const locale of routing.locales) {
@@ -109,6 +117,13 @@ export function revalidateFundingMarketing(): void {
   safeRevalidateTag(CACHE_TAGS.fundingMarketing);
   for (const locale of routing.locales) {
     safeRevalidatePath(`/${locale}/funding`);
+  }
+}
+
+export function revalidatePlatformsMarketing(): void {
+  safeRevalidateTag(CACHE_TAGS.platformsMarketing);
+  for (const locale of routing.locales) {
+    safeRevalidatePath(`/${locale}/platforms`);
   }
 }
 

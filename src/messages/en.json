@@ -24,6 +24,10 @@
       "title": "Deposits & withdrawals",
       "description": "HATC deposits and withdrawals: secure, convenient funding methods with processing times and fees. Channels and timelines are illustrative; actual conditions follow official announcements."
     },
+    "platforms": {
+      "title": "Trading platforms",
+      "description": "HATC trading platforms: MetaTrader 5, the HATC app and web trader for trading gold and silver on desktop, web and mobile. Platform visuals are illustrative; actual screens follow the official release."
+    },
     "trading": {
       "title": "Gold trading services overview",
       "description": "An overview of HATC's gold trading services — Loco London gold and kilobar trading, the MT5 platform, trading accounts and full client support — backed by our Hong Kong Gold Exchange AA membership (member no. 008)."
@@ -60,7 +64,7 @@
     "home": "Home",
     "aboutHatc": "About HATC",
     "goldTrading": "Trading",
-    "mt5": "MT5 Platform",
+    "platforms": "Trading platforms",
     "goldAcademy": "Gold Academy",
     "support": "Client Support",
     "login": "Log in",
@@ -464,6 +468,54 @@
       "heading": "Begin your precious-metals trading journey",
       "body": "Experience secure fund custody and professional client support, and start allocating to gold and silver whenever you're ready."
     }
+  },
+  "platforms": {
+    "hero": {
+      "breadcrumb": "Trading platforms",
+      "badge": "TRADING PLATFORMS",
+      "titleLead": "Explore ",
+      "titleAccent": "MetaTrader 5",
+      "titleTail": " and HATC's own platforms",
+      "subtitle": "Whether you are a professional chasing lightning-fast execution or a newcomer just getting started, HATC's full suite of trading tools has you covered — across multiple devices, so you can seize opportunities anytime, anywhere.",
+      "ctaLearn": "Learn more",
+      "ctaDemo": "Open a demo account",
+      "visualLabel": "HATC trading platform"
+    },
+    "types": {
+      "kicker": "PLATFORM ECOSYSTEM",
+      "heading": "Full control — choose your trading platform",
+      "subheading": "A multi-platform ecosystem tailored to traders of every experience level and strategy.",
+      "visualNote": "Platform visuals are illustrative; actual features and screens follow the official release.",
+      "items": [
+        {"name": "HATC trading app", "panelLabel": "HATC App", "tagline": "Trade anytime, anywhere", "desc": "Built for mobile trading, the HATC app offers a clean, fluid interface so you can watch the market, place orders and manage your account from your phone."},
+        {"name": "HATC web trader", "panelLabel": "Web Trading", "tagline": "No download — trade right in your browser", "desc": "With the HATC web trader there is nothing to install: sign in from your browser to view quotes and manage positions at any time."},
+        {"name": "MetaTrader 5 (MT5)", "panelLabel": "MT5", "tagline": "The world-standard MetaTrader 5 terminal", "desc": "Powered by the widely adopted MetaTrader 5, with rich technical-analysis tools, multiple timeframes and support for automated (EA) trading."}
+      ]
+    },
+    "detail": {
+      "bullets": [
+        {"title": "Focused on gold / silver CFDs", "desc": "Backed by our AA-category Hong Kong Gold Exchange membership, focused on a professional gold and silver CFD trading experience."},
+        {"title": "Seamless multi-device sync", "desc": "Account data stays in sync across desktop, web and mobile, so you can pick up trading wherever you are."},
+        {"title": "Stable quotes and execution", "desc": "Stable real-time quotes and order execution help you keep pace with the market when it matters."},
+        {"title": "Advanced charts and analysis tools", "desc": "Built-in technical indicators and charting tools meet the needs of newcomers and professionals alike."},
+        {"title": "Fund security and strict segregation", "desc": "Client funds are held in a designated custodial trust account, strictly segregated from the company's operating funds."}
+      ]
+    },
+    "faq": {
+      "kicker": "COMMON QUESTIONS",
+      "heading": "Common trading-platform questions",
+      "subheading": "Quick answers about our trading platforms, features and account management.",
+      "items": [
+        {"q": "What types of trading platforms does HATC offer?", "a": "HATC supports the widely used MetaTrader 5 (MT5), and also provides the HATC app built for mobile devices as well as the install-free HATC web trader you can use straight from your browser."},
+        {"q": "What is the difference between MT5 and HATC's own app?", "a": "MetaTrader 5 is a world-standard professional terminal with a full feature set and automated-trading support; the HATC app and web trader focus on ease of use for quick market monitoring and account management. Choose whichever suits your habits."},
+        {"q": "Can I try the platforms with a demo account first?", "a": "We plan to offer demo accounts so you can get familiar with the platforms in a risk-free environment; availability and details will be announced separately."},
+        {"q": "Do the platforms support automated (EA) trading?", "a": "MetaTrader 5 supports Expert Advisors (EAs) and automated trading scripts, suited to those with algorithmic trading needs."},
+        {"q": "What can I trade on HATC's platforms?", "a": "Backed by our AA-category Hong Kong Gold Exchange membership, HATC offers precious-metals products such as Loco London Gold and Silver; for detailed trading conditions please see the trading-conditions page or contact client support."},
+        {"q": "Are my funds safe on the platform?", "a": "Client funds are held in a designated custodial trust account, strictly segregated from the company's operating funds; all business follows the Hong Kong Gold Exchange compliance rules."},
+        {"q": "Are the market quotes on the platform real-time?", "a": "The platforms provide real-time market quotes; the actual dealt price follows the platform's live quote at the time."}
+      ]
+    },
+    "disclaimer": "Risk warning: financial-market instruments (including CFDs) involve leverage that can amplify both gains and losses and are not suitable for every investor; please fully understand the associated risks before trading. HATC does not accept payments from any third party; the depositor's name must match the name on your verified HATC trading account."
   },
   "funding": {
     "hero": {

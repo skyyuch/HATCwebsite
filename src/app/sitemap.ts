@@ -12,6 +12,7 @@ const staticPaths = [
   '/products/all',
   '/accounts',
   '/funding',
+  '/platforms',
   '/news',
   '/academy'
 ];

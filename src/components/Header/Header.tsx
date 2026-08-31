@@ -19,7 +19,7 @@ const NAV: ReadonlyArray<Omit<NavLink, 'label'>> = [
   // 「交易」top link → the gold-trading overview page (owner IA decision
   // 2026-08-10); /products remains the trading-conditions detail sub-page.
   {key: 'goldTrading', href: '/trading', mega: true},
-  {key: 'mt5', href: '/#mt5'},
+  {key: 'platforms', href: '/platforms'},
   {key: 'goldAcademy', href: '/#academy'},
   {key: 'support', href: '/#support'}
 ];

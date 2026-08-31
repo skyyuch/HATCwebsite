@@ -9,6 +9,7 @@ export const CACHE_TAGS = {
   accountBenefits: 'account-benefits',
   accountSpreads: 'account-spreads',
   accountPlatforms: 'account-platforms',
+  tradingPlatforms: 'trading-platforms',
   fundingMethods: 'funding-methods',
   testimonials: 'testimonials',
   homeMarketing: 'home-page',
@@ -16,5 +17,6 @@ export const CACHE_TAGS = {
   aboutMarketing: 'about-page',
   productsMarketing: 'products-page',
   fundingMarketing: 'funding-page',
+  platformsMarketing: 'platforms-page',
   sampleTradingConditions: 'sample-trading-conditions'
 } as const;

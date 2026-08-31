@@ -78,6 +78,7 @@ export interface Config {
     'account-benefits': AccountBenefit;
     'account-spreads': AccountSpread;
     'account-platforms': AccountPlatform;
+    'trading-platforms': TradingPlatform;
     'funding-methods': FundingMethod;
     testimonials: Testimonial;
     'payload-kv': PayloadKv;
@@ -98,6 +99,7 @@ export interface Config {
     'account-benefits': AccountBenefitsSelect<false> | AccountBenefitsSelect<true>;
     'account-spreads': AccountSpreadsSelect<false> | AccountSpreadsSelect<true>;
     'account-platforms': AccountPlatformsSelect<false> | AccountPlatformsSelect<true>;
+    'trading-platforms': TradingPlatformsSelect<false> | TradingPlatformsSelect<true>;
     'funding-methods': FundingMethodsSelect<false> | FundingMethodsSelect<true>;
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -117,6 +119,7 @@ export interface Config {
     'about-page': AboutPage;
     'products-page': ProductsPage;
     'funding-page': FundingPage;
+    'platforms-page': PlatformsPage;
     'sample-trading-conditions': SampleTradingCondition;
   };
   globalsSelect: {
@@ -126,6 +129,7 @@ export interface Config {
     'about-page': AboutPageSelect<false> | AboutPageSelect<true>;
     'products-page': ProductsPageSelect<false> | ProductsPageSelect<true>;
     'funding-page': FundingPageSelect<false> | FundingPageSelect<true>;
+    'platforms-page': PlatformsPageSelect<false> | PlatformsPageSelect<true>;
     'sample-trading-conditions': SampleTradingConditionsSelect<false> | SampleTradingConditionsSelect<true>;
   };
   locale: 'zh-Hant' | 'zh-Hans' | 'en';
@@ -260,6 +264,13 @@ export interface Role {
    * Also requires this resource’s Update permission.
    */
   fld__account_platforms__enabled__update?: boolean | null;
+  can__trading_platforms__create?: boolean | null;
+  can__trading_platforms__update?: boolean | null;
+  can__trading_platforms__delete?: boolean | null;
+  /**
+   * Also requires this resource’s Update permission.
+   */
+  fld__trading_platforms__enabled__update?: boolean | null;
   can__funding_methods__create?: boolean | null;
   can__funding_methods__update?: boolean | null;
   can__funding_methods__delete?: boolean | null;
@@ -291,6 +302,7 @@ export interface Role {
   can__about_page__update?: boolean | null;
   can__products_page__update?: boolean | null;
   can__funding_page__update?: boolean | null;
+  can__platforms_page__update?: boolean | null;
   can__sample_trading_conditions__update?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -357,7 +369,7 @@ export interface Faq {
   id: number;
   question: string;
   answer: string;
-  category: 'trading' | 'products' | 'accounts' | 'general';
+  category: 'trading' | 'products' | 'accounts' | 'platforms' | 'general';
   /**
    * Lower numbers appear first.
    */
@@ -536,6 +548,33 @@ export interface AccountPlatform {
   createdAt: string;
 }
 /**
+ * Platform tabs for /platforms. Empty / no DB = i18n seed fallback.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "trading-platforms".
+ */
+export interface TradingPlatform {
+  id: number;
+  name: string;
+  /**
+   * Short label drawn on the placeholder panel (not localised).
+   */
+  panelLabel?: string | null;
+  tagline?: string | null;
+  desc?: string | null;
+  /**
+   * Real platform/device screenshot. Empty = Figma sample mockup (labelled 示意).
+   */
+  visual?: (number | null) | Media;
+  /**
+   * Lower numbers appear first.
+   */
+  order?: number | null;
+  enabled?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * ⚠️ SAMPLE deposit/withdrawal channels for /funding. Use "Type" to route each row to the deposit or withdrawal table. Method / time / fee / currencies are illustrative (front-end keeps the sample label), NOT approved facts or guarantees. Empty / no DB = i18n seed fallback.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -646,6 +685,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'account-platforms';
         value: number | AccountPlatform;
+      } | null)
+    | ({
+        relationTo: 'trading-platforms';
+        value: number | TradingPlatform;
       } | null)
     | ({
         relationTo: 'funding-methods';
@@ -760,6 +803,10 @@ export interface RolesSelect<T extends boolean = true> {
   can__account_platforms__update?: T;
   can__account_platforms__delete?: T;
   fld__account_platforms__enabled__update?: T;
+  can__trading_platforms__create?: T;
+  can__trading_platforms__update?: T;
+  can__trading_platforms__delete?: T;
+  fld__trading_platforms__enabled__update?: T;
   can__funding_methods__create?: T;
   can__funding_methods__update?: T;
   can__funding_methods__delete?: T;
@@ -782,6 +829,7 @@ export interface RolesSelect<T extends boolean = true> {
   can__about_page__update?: T;
   can__products_page__update?: T;
   can__funding_page__update?: T;
+  can__platforms_page__update?: T;
   can__sample_trading_conditions__update?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -923,6 +971,21 @@ export interface AccountPlatformsSelect<T extends boolean = true> {
   name?: T;
   desc?: T;
   panelLabel?: T;
+  order?: T;
+  enabled?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "trading-platforms_select".
+ */
+export interface TradingPlatformsSelect<T extends boolean = true> {
+  name?: T;
+  panelLabel?: T;
+  tagline?: T;
+  desc?: T;
+  visual?: T;
   order?: T;
   enabled?: T;
   updatedAt?: T;
@@ -1500,6 +1563,21 @@ export interface FundingPage {
   createdAt?: string | null;
 }
 /**
+ * Trading-platforms page hero image. Per-platform screenshots are edited in "Trading platforms". Empty = Figma sample mockup.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "platforms-page".
+ */
+export interface PlatformsPage {
+  id: number;
+  /**
+   * Multi-device showcase shown in the hero. Empty = Figma sample mockup (labelled 示意).
+   */
+  heroImage?: (number | null) | Media;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * ⚠️ SAMPLE data only (not approved facts). Front-end keeps the sample label. Approved spreads/leverage live on /products (tradingConditions.ts). Empty arrays = sampleTradingData seeds.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1714,6 +1792,16 @@ export interface FundingPageSelect<T extends boolean = true> {
   depositImage?: T;
   withdrawImage?: T;
   ctaImage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "platforms-page_select".
+ */
+export interface PlatformsPageSelect<T extends boolean = true> {
+  heroImage?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

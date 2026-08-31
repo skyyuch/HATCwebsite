@@ -205,6 +205,55 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  冪等），執行 `npm run payload -- run scripts/seed-accounts.ts`。**steps 仍以 i18n `t.raw` 讀**（純說明、
  未 CMS 化）。⚠ 新增集合後本機 **dev server 需重啟**後台側欄才顯示新集合。
 
+- **2026-08-31 (第三十八輪): `/platforms` 交易平台頁上線（Figma `89:4`，忠實還原版型）＋
+ header menu「MT5平台」改名「交易平台」。** 業主給的 frame 又是一份 **Vantage 範本**（橘、範本
+ nav/footer、4 平台〔HATC App／Web Trading／MT5／星啟智能交易軟件〕＋子功能〔跟單/模擬/黃金特別版/
+ 智能量化〕、「支援黃金/外匯/原油/指數等上千種 CFD」「1000+ 全球市場」「毫秒級」等未確認宣稱）。
+ 依既有治理紅線＋`/accounts`（第三十一輪）／`/funding`（第三十六輪）先例，**先讀齊參數就方向級紅線
+ 問業主**，業主拍板：① **主色橘→ HATC 金 `#d4af37`**（沿用首頁 dark/gold `--fig-*` 共用系統，不用橘）；
+ ② **用全域白 Header＋深色 Footer**，丟掉 Figma 範本 nav/footer；③ **平台清單收斂為業主確認的三個
+ ＝MetaTrader 5＋HATC App＋HATC 網頁交易端**（移除未確認的「星啟智能交易軟件」與子功能列 跟單/模擬/
+ 黃金特別版/智能量化）；④ **賣點/FAQ 收斂為黃金/白銀**（移除外匯/原油/指數/1000+/跟單等未確認宣稱；
+ 保留的「資金隔離/託管」＝FACTS「Client fund custody」核可事實）；⑤ **路由 `/platforms`**。
+ - **IA / menu**：header 第三個頂層 `nav.mt5`「MT5平台」→ 重命名鍵 **`nav.platforms`**「交易平台」，
+ href `/#mt5`→ **`/platforms`**（`Header.tsx` NAV）。⚠ Footer 仍有獨立「MT5平台」欄（`footer/home.footerV2`
+ 的平台欄，非 menu），本輪未動——業主如要一併更名/改指 `/platforms` 再議。
+ - **元件**：`src/components/platforms/*`（`PlatformsHero` 深＋右側裝置圖／`PlatformTypes`
+ 白＋client `PlatformTabsClient`〔分頁切換：裝置圖面板＋per-platform tagline/desc＋共用 5 賣點 bullets
+ ＋開戶 CTA〕／`PlatformFaq` 淺色 native `<details>`／`PlatformDisclaimer` 深色風險條）＋頁面
+ `platforms/page.tsx`（三語 SSG＋`generateMetadata` 讀 `metadata.platforms`）。順序＝Hero→Types→FAQ→
+ Disclaimer（忠於 Figma：無獨立收尾 CTA band）。重用 `home/SectionTitle`、`ui/button`（gold/onDark/fig）、
+ `getSiteSettings/primaryContactHref`（開戶操作連結走 CMS，fallback `/register`；demo→`/accounts`）。
+ - **CMS（DB→i18n fallback）**：新集合 **`trading-platforms`**（`src/collections/TradingPlatforms.ts`：
+ name/panelLabel/tagline/desc/order/enabled，localized）＋ **faqs 新增 `category='platforms'`**。Readers＝
+ `src/lib/tradingPlatforms.ts`（種子 `platforms.types.items`）／`faqs.ts`（`platforms` 分支讀
+ `platforms.faq.items`）。已註冊 `payload.config`／`permissions/registry`（＋publishField）／`cacheTags`
+ （`tradingPlatforms`）／`revalidateContent`（`revalidateTradingPlatforms→/platforms`；`revalidateFaqs`
+ 加 `/platforms`）。**種子腳本** `scripts/seed-platforms.ts`（讀 `platforms.*`，seed-once／冪等，灌
+ trading-platforms＋faqs(platforms)）；`npm run payload -- run scripts/seed-platforms.ts`（需 DATABASE_URI）。
+ - **i18n**：`metadata.platforms`＋`platforms.*`（3 語，712 鍵齊）；示意/共用陣列以 `t.raw` 或 reader 讀。
+ - **平台視覺（2026-08-31 業主：「圖先用 Figma 的」→ 再加 CMS 上傳可替換）**：hero 右側＋詳情面板用
+ **Figma 範本裝置 mockup** 作 fallback（`public/figma/platforms/{hero-devices,detail-phone}.png`；client
+ 依 tab 是否 App 選手機圖／多裝置圖），**未上傳時前台恆標「示意」**（`platforms.types.visualNote`）。
+ **CMS 可後台替換（比照 funding-page 圖片）**：① 每個平台一張截圖＝`trading-platforms.visual`（upload→
+ media，reader `getTradingPlatforms` `depth:1` 帶 URL）；② hero 圖＝新 global **`platforms-page.heroImage`**
+ （reader `src/lib/platformsMarketing.ts`，`getPlatformsMarketing()` locale-agnostic）。**有上傳＝用真實圖且
+ 拿掉「示意」標**（`isSample` 判斷；`next/image` 改 `fill` 以容任意尺寸）。⚠ Figma 範本圖是**通用圖表 render，
+ 非真實 HATC 截圖**，`detail-phone.png` 含美股代號（AAPL/GOOGL/TSLA）與金/銀定位衝突——**業主應優先上傳真實
+ HATC App/MT5 截圖替換**。**治理紅線**：平台名稱/描述＝業主確認存在但**真實名稱/截圖待業主提供**；不得列外匯/
+ 原油/指數/加密/股票為 HATC 產品；不得寫 1000+/毫秒級/客戶數等未確認宣稱。
+ - **⚠ DB**：`trading-platforms` 加 `visual` 欄、新 global 表 `platforms_page`——本機 dev 重啟已 drizzle push
+ （非互動）；正式站需 migration。未推表前 reader try/catch→fallback（trading-platforms 讀失敗會退回 i18n 種子、
+ hero 退回 Figma 圖），前台照常。`next/image` 若改用外部（S3）媒體來源，需在 `next.config` 配 `remotePatterns`。
+ - **驗證**：`generate:types`／`lint`（0 error，唯 `seed-accounts.ts` 1 pre-existing warning；順手修掉
+ `seed-funding.ts` 一個 pre-existing `any` error）／`i18n:check`（712 鍵三語齊）綠；三語 `/platforms` 200，
+ 桌機/手機截圖比對 Figma 通過。⚠ 新集合＝新表 `trading_platforms`：本機 dev 需重啟 push／正式站 migration；
+ 未推表前 reader 走 i18n fallback（前台照常）。
+ - **待業主**：(a) HATC App／網頁交易端的**真實名稱、功能與截圖素材**（現用 Figma 範本裝置圖佔位＋示意文案；
+ 尤其 `detail-phone.png` 含美股代號，建議優先替換）；(b) 是否新增更多平台（如 MT4／TradingView，站上
+ `/accounts` 曾列為示意）；(c) demo 流程（現 demo CTA→`/accounts`）；(d) Footer「MT5平台」欄是否一併更名/
+ 改指 `/platforms`。
+
 ## Visual system
 
 - **Logo (2026-08-10 第十六輪; header updated 第十七輪)**: use the real wordmark `public/brand/hatc-logo.png`

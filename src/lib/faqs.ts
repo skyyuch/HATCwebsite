@@ -6,7 +6,7 @@ import type {Locale} from '@/i18n/routing';
 import {CACHE_TAGS} from '@/lib/cacheTags';
 import {getPayloadClient, hasDb} from '@/lib/payload';
 
-export const FAQ_CATEGORIES = ['trading', 'products', 'accounts', 'general'] as const;
+export const FAQ_CATEGORIES = ['trading', 'products', 'accounts', 'platforms', 'general'] as const;
 export type FaqCategory = (typeof FAQ_CATEGORIES)[number];
 
 export type FaqItem = {
@@ -34,6 +34,7 @@ async function getFaqsFallback(
       };
     };
     accounts?: {faq?: {items?: QaPair[]}};
+    platforms?: {faq?: {items?: QaPair[]}};
   };
 
   if (category === 'trading') {
@@ -48,9 +49,12 @@ async function getFaqsFallback(
     })).filter((item) => item.question && item.answer);
   }
 
-  // `/accounts` seeds ship as an array of {q, a} pairs.
-  if (category === 'accounts') {
-    const items = messages.accounts?.faq?.items ?? [];
+  // `/accounts` and `/platforms` seeds ship as an array of {q, a} pairs.
+  if (category === 'accounts' || category === 'platforms') {
+    const items =
+      (category === 'accounts'
+        ? messages.accounts?.faq?.items
+        : messages.platforms?.faq?.items) ?? [];
     return items
       .map((item, index) => ({
         id: `seed-${index}`,

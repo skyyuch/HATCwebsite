@@ -66,6 +66,10 @@ export const Faqs: CollectionConfig = {
           value: 'accounts'
         },
         {
+          label: adminLabel('Trading platforms (/platforms)', '交易平台 (/platforms)', '交易平台 (/platforms)'),
+          value: 'platforms'
+        },
+        {
           label: adminLabel('General', '一般', '一般'),
           value: 'general'
         }

@@ -20,6 +20,7 @@ import {AccountTiers} from './collections/AccountTiers';
 import {AccountBenefits} from './collections/AccountBenefits';
 import {AccountSpreads} from './collections/AccountSpreads';
 import {AccountPlatforms} from './collections/AccountPlatforms';
+import {TradingPlatforms} from './collections/TradingPlatforms';
 import {FundingMethods} from './collections/FundingMethods';
 import {Testimonials} from './collections/Testimonials';
 import {SiteSettings} from './globals/SiteSettings';
@@ -28,6 +29,7 @@ import {TradingPage} from './globals/TradingPage';
 import {AboutPage} from './globals/AboutPage';
 import {ProductsPage} from './globals/ProductsPage';
 import {FundingPage} from './globals/FundingPage';
+import {PlatformsPage} from './globals/PlatformsPage';
 import {SampleTradingConditions} from './globals/SampleTradingConditions';
 import {translateEndpoint} from './endpoints/translate';
 import {configHasLocalizedText} from './lib/mt/localizedFields';
@@ -138,6 +140,7 @@ export default buildConfig({
     AccountBenefits,
     AccountSpreads,
     AccountPlatforms,
+    TradingPlatforms,
     FundingMethods,
     Testimonials
   ].map(withTranslateControlCollection),
@@ -148,6 +151,7 @@ export default buildConfig({
     AboutPage,
     ProductsPage,
     FundingPage,
+    PlatformsPage,
     SampleTradingConditions
   ].map(withTranslateControlGlobal),
   endpoints: [translateEndpoint],
