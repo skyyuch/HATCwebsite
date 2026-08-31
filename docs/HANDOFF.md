@@ -1,6 +1,6 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-08-31
+> 最後更新：2026-08-31（第三十九輪追加：黃金學院 23 篇長文已灌入 CMS，commit `427fc17` 已 push）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
@@ -51,9 +51,15 @@
 > 固定 6 類 `academy.categories`。**未動 CMS schema 欄位**（僅改 `category` 欄說明），免 migration。三語 200、
 > `lint`／`i18n:check`（741 鍵）綠。見下方「🟢 第三十九輪」與「📋 kickoff（下一棒）」。
 >
-> **⏭️ 下一步：業主補**（本輪只做 UI/UX，內容後補）：(a) 真實學院文章（標題/Lexical 內文/封面/`publishedAt`/
-> `category` 用固定 6 類）；(b) 電子報要接的 email 服務（現誠實佔位）；(c) `category` 是否改受控 `select`
-> （需 schema migration）；(d) `/academy/[slug]` 詳情頁未在此 Figma 範圍，如需配合改版另議。
+> **第三十九輪追加（2026-08-31）：黃金學院文章已灌入 CMS（共 23 篇長文）＋ commit/push。**
+> `scripts/seed-academy.ts` 遷移 i18n 種子 a1–a3；`scripts/seed-academy-batch.ts`（10 篇）＋
+> `scripts/seed-academy-batch2.ts`（10 篇）新增**原創、中性黃金/白銀長文**（h2/h3＋清單＋舉例＋重點整理＋
+> 免責；upsert 可重跑）。業主問「可否抄競品改寫」→ **已拒絕逐字抄/洗稿（仍屬侵權），改走合規＝競品只當選題地圖、
+> 內容 100% 原創**。標題/摘要三語齊，**內文先繁中**（其餘語系走 Payload `localization.fallback` 顯示繁中，
+> 待一鍵機翻補齊）。已 commit `427fc17`、push origin/main。
+> **⏭️ 下一步：業主補**：(a) 逐步以正式文章／真實封面替換佔位（現為原創教育＋`raw_*.png` 佔位圖）；
+> (b) 用一鍵機翻補齊簡中/英文**內文**再校對（現 body 走 fallback 顯示繁中）；(c) 電子報要接的 email 服務
+> （現誠實佔位）；(d) `category` 是否改受控 `select`（需 schema migration）。
 > **第三十七輪（2026-08-31）：整合入金頁（Figma 誤拆兩頁）**——業主指 Figma frame `75:5`（入金）與
 > `75:189`（出金）為同一頁誤拆，已**整合成單一 `/funding`**：一個 hero → 入金說明＋入金渠道表 → 出金說明＋
 > 出金渠道表 → 共用 支援主題／見證／CTA。`funding-methods` 加 **`type`（deposit/withdrawal）** 欄一表兩用；
