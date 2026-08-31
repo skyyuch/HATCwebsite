@@ -39,6 +39,14 @@
 > 1000+/跟單）、平台視覺＝Figma 範本裝置圖佔位（業主「圖先用 Figma 的」，標「示意」）。CMS：新集合 `trading-platforms`＋faqs `platforms`
 > 分類（DB→i18n fallback）；種子腳本 `scripts/seed-platforms.ts`。header `nav.platforms` → `/platforms`。
 > `lint`（0 err）／`i18n:check`（712 鍵）／`generate:types` 綠；三語 200、桌機/手機截圖過。見「🟢 第三十八輪」。
+> **第三十八輪追加（同輪，2026-08-31）：平台圖 CMS 可替換（業主選項 2）。** `trading-platforms` 加
+> `visual`（每平台截圖 upload）＋新 global `platforms-page.heroImage`（reader `platformsMarketing.ts`）；有上傳＝
+> 用真實圖＋去「示意」標，空＝Figma 範本圖 fallback。已 commit `a2f91c9` 並 push origin/main。
+>
+> **⏭️ 下一步（業主指定）：做「黃金學院 / Gold Academy」。** 目前狀態：homepage 深色 3 卡（`home/Academy`）
+> ＋淺色 `/academy` 列表＋`/academy/[slug]` Lexical 詳情已存在（CMS `academy-articles` 全 DB→i18n a1–a3 fallback）；
+> **唯一 Figma 只有首頁 3 卡（node `4:213`），列表/詳情無專屬 Figma**。**須先問業主**：學院要做什麼（純重設計現有
+> 列表/詳情？新增分類篩選/專題？獨立 Figma？）。詳見下方 kickoff 與探勘報告。
 > **第三十七輪（2026-08-31）：整合入金頁（Figma 誤拆兩頁）**——業主指 Figma frame `75:5`（入金）與
 > `75:189`（出金）為同一頁誤拆，已**整合成單一 `/funding`**：一個 hero → 入金說明＋入金渠道表 → 出金說明＋
 > 出金渠道表 → 共用 支援主題／見證／CTA。`funding-methods` 加 **`type`（deposit/withdrawal）** 欄一表兩用；
