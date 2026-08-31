@@ -1,0 +1,41 @@
+.wrap {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Styled for the white Figma header (owner 2026-08-10, node 38:5): borderless
+   field with dim grey-blue text (like the Figma "繁中 / EN" label); the open
+   option list keeps the OS default. */
+.select {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #8e99b0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.select option {
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+
+.select:hover {
+  border-color: #e6e6e6;
+  color: #0c111d;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

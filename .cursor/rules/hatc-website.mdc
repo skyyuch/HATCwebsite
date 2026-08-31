@@ -1,0 +1,509 @@
+---
+description: HATC official website brand and development rules
+alwaysApply: true
+---
+
+# HATC Website
+
+Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
+`docs/HATC_FACTS.md`, `docs/WEBSITE_STRUCTURE.md` and `docs/DESIGN_DIRECTION.md`.
+
+## Facts
+
+- `docs/HATC_FACTS.md` is the only approved source of company facts.
+- Never invent company facts, licences, membership info, statistics, products,
+  testimonials or trading conditions. Mark any unconfirmed fact for review and ask.
+- Do not rewrite approved Chinese copy unless requested.
+- 2026-08-07 (owner): HATC's business includes **gold CFD (差價合約)** in addition
+  to the physical-metal products. CFD is an approved business line; do NOT invent
+  its trading conditions (leverage, spreads, lots, fees, platform) — those remain
+  owner-supplied only. See `docs/HATC_FACTS.md` → "CFD business".
+
+## Brand tone
+
+- Professional, stable, credible, human; confident and product-forward.
+- 2026-08-07: **Vantage-informed redesign** — borrow Vantage's layout / motion /
+ IA, keep HATC navy (no orange). The old "must not resemble fintech" ban is
+ relaxed for higher energy; the red lines below still hold. See DESIGN_DIRECTION.
+- **2026-08-10 (owner): Figma-led homepage rebuild — SUPERSEDES the visual system
+ below FOR THE HOMEPAGE.** Rebuild the homepage to **100% match** Figma
+ `GGCUJwo9drmEUibcs9mLtq` frame `4:4`. Implementation spec = `docs/FIGMA_HOMEPAGE_SPEC.md`.
+ This reverses several rules for the homepage / shared design system: **gold
+ `#d4af37` is the primary accent again** (brass-gold "retired" is reversed), the
+ homepage is a **dark trading-desk theme** (`#070a14`/`#111625`, light `#f4f6f9`
+ sections interleaved), fonts = **Sora** (+ **Inter** for ticker numbers), buttons
+ = **6px radius** (not pill). Market ticker / live-price card / K-line / stat
+ numbers allowed as **clearly-labelled sample**. Governance red lines (sample≠fact,
+ CMS operational links, i18n, facts from FACTS) STILL hold. About + non-homepage
+ surfaces keep the warm-white/navy/green system until they get their own Figma.
+- **2026-08-10 (第九輪): homepage rebuild IMPLEMENTED.** Fonts via `src/lib/fonts.ts`
+ (Sora + Inter); dark/gold `--fig-*` tokens are **additive** in `tokens.css` (warm-white
+ system untouched → About unaffected); `globals.css` `@theme` bridges `--color-gold`
+ (`bg-/text-/border-gold`), `--font-sans`, `--font-ticker`. shadcn `button` base radius
+ = **6px** with a `gold` variant + `fig` size. Homepage = `src/components/home/*`
+ (Hero+MarketTicker / TrustStrip / Services / MT5Showcase / WhyHATC / Academy /
+ LatestNews〔CMS Phase 2，非 Figma 4:4〕 / CompanyStory / ClientSupport / FinalCta)
+ + shared `SectionTitle`; sample market
+ numbers centralised in `src/components/home/sampleMarketData.ts` (labelled 示意數據,
+ NOT in FACTS). Global **Header/Footer are now the dark Figma versions** and frame the
+ warm-white About body (owner shared-system update). Homepage headings must set
+ `font-sans` + explicit colour to override the global `h1-h4{serif;navy}` base rule.
+- **2026-08-10 (第十輪): cleanup + owner sign-off.** Removed the now-unused homepage
+ components (`home/Process`, `home/Activities`+`ActivitiesCarousel`, `home/Insights`),
+ `content/products.ts`, and dead message keys `home.{markets,services,stats,process,
+ activities,academy,insights}` + `nav.{markets,platform,academy,about,activities}`
+ across all three locales (kept `home.{contact,about,milestones,certificates,office,
+ facts}` for About/ContactBand). The `HomeActivities` Payload collection + `lib/
+ homeActivities.ts` are kept as CMS infra (no front-end consumer now). Owner decisions:
+ dark Header/Footer stay global over About; Footer/menu links stay `#` placeholders
+ until a full link map is supplied; homepage market numbers stay sample-only (approved
+ gold 27 / silver 30 spreads + 1:100 leverage belong on a future product/CFD page, not
+ the homepage); Figma placeholder images + demo-account flow wait for owner assets.
+- **2026-08-10 (第十三輪): About page rebuilt to Figma dark/gold (frame `12:4`).**
+ The warm-white About body is RETIRED — About now shares the homepage dark system.
+ Sections = `src/components/about/*` (AboutHero / CompanyIdentity / Credentials /
+ Principles / Timeline / HongKongConnection / CredentialsGallery / AboutCta); copy in
+ `about.*` (3 locales). Owner decisions this round: (1) development-history timeline
+ uses the REAL FACTS milestones (2025–2026), NOT Figma's placeholder 2018–2023, and
+ does NOT show a founding year; (2) the client-fund custody/segregation statement is
+ owner-confirmed true & publishable → now an approved fact in `HATC_FACTS.md`
+ ("Client fund custody"); (3) gold stays `#d4af37` site-wide. Award full name stays
+ unlabelled (neutral "brand honor") until owner confirms. Retired: `about/{AboutIntro,
+ Milestones,Certificates,Office}`, `home/ContactBand`, and dead keys `home.{about,
+ contact,certificates,office}` (kept `home.milestones` = Timeline, `home.facts`).
+- **2026-08-10 (第十四輪): Products / CFD page live (`/products`).** New surface on the
+ shared dark/gold system (no dedicated Figma). It presents the **approved** trading
+ conditions as REAL facts (gold 27 / silver 30 avg spread, leverage 1:100 — from
+ `HATC_FACTS.md`), so these carry **no "示意數據" label** (unlike homepage sample
+ numbers). **Gold & silver only — platinum is NOT a product** (owner 2026-08-10).
+ Remaining conditions (min lot / fees / execution) render "將另行公佈", never fabricated.
+ Sections = `src/components/products/*` (ProductsHero / ProductList / TradingConditions /
+ ProductsCredibility / ProductsCta); approved figures centralised in
+ `src/components/products/tradingConditions.ts` (`CFD_PRODUCTS`, marked approved-fact
+ NOT sample). Copy in `products.*` (3 locales) + `nav.products`; reuses
+ `home.heroV2.badge` / `home.trust.*` / `about.credentials.security` / `common.*` /
+ `nav.*`. Footer 交易服務 column now points at `/products#{gold,silver,conditions}`
+ (retired the `/trading-rules` & `/margin` stubs); homepage `Services` CTA now links
+ `/products`; `/products` added to `sitemap.ts` (indexable). Platform shown as
+ MetaTrader 5 (consistent with existing site copy; other platform details still
+ owner-pending). Homepage platinum copy cleaned (第二十五輪): `metadata.home.description`
+ & `home.hero.subtitle` (3 locales) now gold/silver only — aligned with FACTS.
+
+- **2026-08-10 (第十七輪): Header rebuilt to Figma node `38:5` — WHITE sticky
+ header.** SUPERSEDES the dark global-header decision FOR THE TOP BAR (the
+ **Footer stays dark**). `Header.tsx` = white shell (`bg-white`, border `#e6e6e6`,
+ h-80, `lg:px-20`); logo is the real wordmark rendered **bare** (`BrandLogo chip={false}`,
+ h-35) since it's legible on white. Desktop nav = client `HeaderNav.tsx`: links are
+ `#8e99b0`, current-route/open = gold `#d4af37`; **黃金交易 opens a two-column
+ mega-menu** (products / support + a cream `#fffbf2` "立即開戶" banner) on hover/focus
+ (Escape + click closes; 120ms close delay). Mobile = `HeaderMobileMenu.tsx` white
+ drawer with a 黃金交易 accordion. `LocaleSwitcher.module.css` restyled for light bg.
+ New i18n: `nav.mega.*` + `nav.primary` (3 locales). Mega link map (content links,
+ not operational): overview→`/products`, londonGold→`/products#gold`, conditions→
+ `/products#conditions`; **kilobar / account / funding = `#` placeholders** (no page
+ yet); banner→CMS open-account (`primaryContactHref`, external) else `/register`.
+ KNOWN follow-ups: (1) product lines **倫敦金 / 人民幣公斤條** are now **approved facts**
+ (owner-confirmed 2026-08-10 → `HATC_FACTS.md` "Featured product lines on site"; they map
+ to the participant-cert products Loco London Gold / RMB Kilo Gold). Names are fact;
+ specific trading conditions remain owner-only. (2) kilobar icon uses lucide `Boxes` (Figma
+ glyph was a placeholder). (3) fill real routes for kilobar/account/funding when supplied.
+- **2026-08-10 (第十八輪): 「概覽」內頁上線 (`/trading`)，採 NEW 淺色 navy/gold 系統.**
+ header「交易」mega‑menu 的概覽頁，照 Figma frame **`44:4`** (`hatc-gold-trading-overview`)
+ **忠實還原** (owner 2026-08-10 拍板「照此 Figma 做」)。**這是一套與現有深色頁不同的較淺
+ 設計語言**：白底、**navy `#1a3366`** 主色、**Instrument Serif** 顯示標題＋**Geist** 內文、
+ **奶油膠囊徽章** (`#fdfbf7`/gold `#c9a84c`/rounded-full)、按鈕 6px；只有 Final‑CTA band
+ (`#0f1e40`＋金色上框) 與全域 Footer 為深色。與白底 Header (node 38:5) 方向一致。tokens 為
+ **additive** `--trd-*` (見 `tokens.css`)＋字體 `--font-serif-display`(Instrument Serif)/
+ `--font-geist`(Geist) 掛 `<html>` (fonts.ts + layout)；深色首頁/About/products 完全不受影響。
+ - **IA 決策 (owner)**：header「交易」頂層＋mega「概覽」都指 **`/trading`**；**`/products`
+ 保留為「交易條件」細節子頁** (mega「交易條件」與概覽頁「查看完整交易條件」CTA 指 `/products#conditions`)。
+ `Header.tsx` `MEGA_HREF.overview`＝`/trading`、`NAV.goldTrading.href`＝`/trading`；`sitemap.ts` 已加 `/trading`。
+ - **元件**：`src/components/trading/*` (TradingHero / TradingServices / AccountComparison /
+ TradingTrust / PricingConditions / TradingFaq(native `<details>`) / TradingCta) ＋共用
+ `SectionHeader`；示意數字集中在 `src/components/trading/sampleTradingData.ts`。
+ - **治理決策 (owner 第十八輪)**：① **帳戶比較表 (標準/專業雙帳戶)** 與 **即時點差報價表**＝
+ **示意佔位**，UI 標「示意數據/示意格式」，**不寫入 FACTS**，上線前業主替換 (已核可的
+ gold27/silver30 點差仍只在 `/products`)。② **FAQ 軟化**：Figma 原稿含未確認的營運承諾
+ (「1個工作天完成開戶審核」「當日出金」「清算行託管」「多種出入金渠道」) — **已移除具體時限/渠道**，
+ 改通用不承諾措辭；**資金隔離/託管**句保留 (＝FACTS「Client fund custody」已核可事實)。
+ - **待業主 (第十八輪 follow-ups)**：(a) 淺色系是否推廣到其他頁 (目前僅 `/trading`；首頁/About/
+ products 仍深色)；(b) 帳戶分級 (標準/專業) 是否為真實產品、其真實條件；(c) hero 平板圖
+ `public/figma/trading/hero-tablet.png` 為 Figma 佔位，待真實素材；(d) 合作夥伴標誌區為佔位；
+ (e) 帳戶表「了解更多」與 CTA 走 CMS `primaryContactHref` (無則 fallback)；(f) gold 用了
+ 頁面自有的 `#c9a84c` (`--trd-gold`)，與深色系 `#d4af37` 不同 — 若要統一由業主定。
+
+- **2026-08-10 (第十七輪 owner tweaks)**: (a) header **interaction accent = navy
+ `#1C4A70`, NOT gold** — the open/active top-link, mega-item hover (icon + title +
+ icon-container tint `rgba(28,74,112,0.12)`), the "立即開戶" banner and 登入 hover all
+ use `#1C4A70`. (b) `nav.goldTrading` label shortened **黃金交易 → 交易** (header-only
+ key; also `nav.mega.openLabel`). (c) mega kilobar item renamed **公斤條買賣 → 人民幣
+ 公斤條** (RMB-denominated kilobar); products column = 概覽 / 倫敦金交易 / 人民幣公斤條.
+ (d) 倫敦金 / 人民幣公斤條 written into `HATC_FACTS.md` as approved product lines
+ (owner-confirmed 2026-08-10; map to Loco London Gold / RMB Kilo Gold on the participant cert).
+
+- **2026-08-20 (第三十輪): `/products/all` 所有交易產品表格頁 + `instruments` CMS 集合上線。**
+ 業主指示 header「交易」mega **不再逐一列個別產品**，改成**仿 Vantage 的「所有交易產品」**單一入口
+ → 表格內頁、內容由 CMS 配置。owner 拍板：① 新建獨立頁 **`/products/all`**（`/products` 維持
+ 「交易條件」細節頁，此輪 IA：mega「交易條件」仍指 `/products#conditions`）；② mega「黃金產品交易」
+ 欄＝**概覽 ＋ 所有交易產品**（`MEGA_HREF.allProducts='/products/all'`；`HeaderNav` icon
+ union 改 `allProducts`=lucide `LayoutGrid`；移除 mega `londonGold`/`kilobar` 及其 3 語系
+ `nav.mega.items` 鍵）；③ 表格欄位仿 Vantage＝**產品／代號、合約規模、點差、槓桿、交易時段**。
+ - **元件**：`src/components/products/AllInstruments/*`（`AllInstrumentsHero` 深色＋
+ `AllInstrumentsTable` 淺色 `overflow-x-auto` 表格＋捲動提示）＋頁面 `products/all/page.tsx`
+ （沿用 `/products` **dark/gold** 系統，結束帶**重用 `ProductsCta`**）；`sitemap.ts` 已加、
+ `metadata.productsAll`（3 語）；內容 i18n = `productsAll.*`。
+ - **CMS**：集合 `Instruments`（`src/collections/Instruments.ts`，slug `instruments`）＝每筆一列，
+ 欄位 `name`(localized)／`symbol`／`category`(metals/forex/indices/energy/other)／`contractSize`／
+ `spread`／`leverage`／`tradingHours`(localized)／`order`／`enabled`。已註冊 `payload.config`／
+ `permissions/registry`（create/update/delete＋publish）／`cacheTags`／`revalidateContent`。
+ Reader `src/lib/instruments.ts`＝標準 **DB→i18n fallback**（種子 `productsAll.sample.rows`）。
+ - **治理紅線**：表格的**合約規模／點差／槓桿／時段＝示意數據**（前台恆標「示意數據」），非事實、
+ 不入 FACTS；核可的**金 27／銀 30／1:100** 仍只在 `products/tradingConditions.ts`（`/products`）。
+ - **種子腳本**：`scripts/seed-instruments.ts`（Payload Local API，冪等，依 `symbol` 去重）；
+ 執行 `npm run payload -- run scripts/seed-instruments.ts`（需 `DATABASE_URI`）。本機已種入金/銀兩筆。
+ - **順修既有隱患**：`revalidateContent.ts` 全改 `safeRevalidateTag`/`safeRevalidatePath`
+ （try/catch 包裝）——`afterChange` 在 **CLI 腳本／`onInit`／非 Next 請求情境**呼叫
+ `revalidateTag` 會丟 `Invariant: static generation store missing` 並**中止 collection 寫入**
+ （即種子第一次失敗主因）。請求內編輯仍照常 revalidate。**新增 CMS reader/revalidate 沿用此安全模式。**
+
+- **2026-08-20 (第三十一輪): `/accounts` 交易帳戶頁上線（Figma `62:4`，忠實還原版型）。**
+ 業主給的 frame 是一份 **Vantage 範本**（logo `HATCFX`、`© VANTAGEFX Group`、主色藍 `#1a56db`、含
+ 外匯/原油/指數、1:500/1:1000、佣金、四帳戶分級、虛構客戶數/商品數/即時到賬免手續費/30天模擬等）。
+ owner「要求一樣」，但**先讀齊參數後就方向級紅線問過業主**，拍板：① **主色改 HATC 金 `#d4af37`**
+ （沿用首頁 **dark/gold `--fig-*`** 共用系統，藍→`text-/bg-/border-gold`；**不用非品牌藍**）；
+ ② **產品收斂成黃金/白銀**（貼合 FACTS，頁面不列外匯/原油/指數為 HATC 產品）；③ **四帳戶
+ （標準STP/RAW ECN/VIP/美分）照 Figma 做，但全標「示意數據」、集中易改、不入 FACTS**；④ 路由
+ **`/accounts`**，header「交易」mega「交易帳戶」→`/accounts`（`MEGA_HREF.account='#'→'/accounts'`）。
+ - **元件**：`src/components/accounts/*`（`AccountsHero`／`AccountTiers`／`AccountBenefits`／
+ `AccountSpreads`〔**只金/銀**〕／`AccountPlatforms`〔CSS 漸層佔位，不放假截圖〕／`AccountSteps`／
+ `AccountFaq`〔native `<details>`〕／`AccountsCta`）＋頁面 `accounts/page.tsx`（三語 SSG＋
+ `generateMetadata` 讀 `metadata.accounts`）；`sitemap.ts` 已加 `/accounts`。重用 `home/SectionTitle`、
+ `ui/button`（`gold`/`onDark`/`fig`）、`getSiteSettings/primaryContactHref`。**用全域 Header/Footer，
+ 不做 Figma 自帶 nav/footer**。
+ - **i18n**：`metadata.accounts` ＋ `accounts.*`（3 語）。**示意資料沿用 `productsAll.sample.rows`
+ 慣例**＝陣列放 messages（`accounts.tiersSample` 含 `popular` bool／`accounts.spreadsSample` 金銀兩列／
+ 各區塊 `items`），前台以 **`t.raw(...)`** 讀（localized、集中易改）；示意 badge 重用
+ `productsAll.table.sampleLabel`、開戶鍵重用 `nav.openAccount`。
+ - **治理紅線**：四帳戶/入金/點差/佣金/**1:500·1:1000**/執行/示意點差表＝**示意數據**（前台恆標、
+ 不入 FACTS）；核可 **金27/銀30/1:100** 仍只在 `products/tradingConditions.ts`。不得列外匯/原油/指數為
+ HATC 產品、不得寫虛構客戶數/商品數、不得承諾具體到賬時限/渠道/模擬天數；demo CTA 暫指 `/register`。
+ - **待業主**：(a) 四帳戶分級真偽與真實條件；(b) 平台區 MT4/MT5/TradingView（站上其他頁一致用 **MT5**，
+ MT4/TV 待確認）；(c) 平台卡真實截圖素材；(d) demo 帳戶流程。
+ - **帳戶類型 CMS 化（同輪追加）**：帳戶卡改由集合 **`account-tiers`**（`src/collections/AccountTiers.ts`）
+ 配置，Reader `src/lib/accountTiers.ts`＝**DB→i18n fallback**（種子 `accounts.tiersSample`）；已註冊
+ `payload.config`／`permissions/registry`（＋publishField）／`cacheTags`／`revalidateContent`
+ （`revalidateAccountTiers`→`/accounts`）。`AccountTiers.tsx` 改讀 `getAccountTiers(locale)`。**CMS 內
+ 數字仍＝示意（前台恆標、不入 FACTS）**。⚠ 新集合＝新表，需 dev 重啟 push／正式站 migration；未推表前
+ 走 fallback。
+- **第三十一輪追加：`/accounts` 其餘區塊也 CMS 化（同一套 DB→i18n fallback）**：新集合 **`account-benefits`**
+ （icon select: percent/zap/creditCard/monitor）／**`account-spreads`**（bid/ask/spread 皆示意）／
+ **`account-platforms`**（含非 localized `panelLabel`）；**FAQ 不新建集合**，改複用 `faqs` 集合並新增
+ `category='accounts'`（`AccountFaq` 讀 `getFaqs(locale,'accounts')`）。Readers＝`src/lib/{accountBenefits,
+ accountSpreads,accountPlatforms}.ts`；已註冊 `payload.config`／`registry`／`cacheTags`／`revalidateContent`
+ （各 `revalidate*→/accounts`；`revalidateFaqs` 加 `/accounts`）。**種子腳本** `scripts/seed-accounts.ts`
+ 讀 `messages/*` 的 `accounts.*` 一次灌入 tiers/benefits/spreads/platforms/faqs(accounts)（三語、seed-once、
+ 冪等），執行 `npm run payload -- run scripts/seed-accounts.ts`。**steps 仍以 i18n `t.raw` 讀**（純說明、
+ 未 CMS 化）。⚠ 新增集合後本機 **dev server 需重啟**後台側欄才顯示新集合。
+
+## Visual system
+
+- **Logo (2026-08-10 第十六輪; header updated 第十七輪)**: use the real wordmark `public/brand/hatc-logo.png`
+ (navy + green triangle, transparent PNG) via the shared `src/components/BrandLogo.tsx`,
+ NOT a text "HATC 華安泰昌". The glyph is navy: on the **white Header** render it bare
+ (`chip={false}`); on the **dark Footer** it sits on a **white rounded chip** (`chip`
+ default true, LP treatment). Header wordmark link keeps `aria-label=common.brandFull`
+ (img `alt=""`); standalone marks (Footer) pass a real `alt`.
+- Warm white, charcoal, brand navy (`#09395f`); green (`#009944`) sparing accent
+ only. (Brass-gold retired 2026-08-07.) Card-based, product-forward grid.
+- **Dark hero** (owner 2026-08-07, for the CFD-led homepage): deep-navy gradient
+ hero with subtle grid + green glow, backed by a real reception photo. (The
+ earlier "light hero / dark rejected" decision is superseded.) Deep navy also for
+ the closing CTA band and footer; body sections stay warm-white.
+- Radius 0–12px for surfaces, `--radius-pill` for buttons/badges/tabs. Purposeful
+ motion allowed: counters, scroll-reveal, hover lift. Subtle navy gradients +
+ soft brand-tinted shadows OK (no neon/glow).
+- Never use: Vantage orange / non-brand system colour, glassmorphism, glowing
+ gold, floating 3D coins, full-screen candlestick backgrounds, AI/fake photos,
+ generic fintech slogans, fabricated award/user-count/testimonial claims, or
+ unverified spreads/leverage/performance figures. (Gold CFD as a business line is
+ allowed per 2026-08-07 owner decision; specific numbers still need owner sign-off.)
+- Homepage leads with product/education/process; company facts are supporting,
+ not dominant. Real certificates, office and Hong Kong imagery preferred.
+
+## Development placeholders (owner decision 2026-08-07)
+
+- 業主指示：**開發階段可先放示範內容以推進 UI**——可用**示範/佔位的交易數字**
+  （槓桿／點差／手數／手續費／平台）、做**競品式版型**（點差比較表、統計數字帶等），
+  以及**佔位圖／設計圖形**。目的：先把版面做出來，業主之後再逐步調整數字。
+- **落地方式**：這類值一律當**可編輯的示範佔位**（程式碼與 UI 標為 sample/示範，集中易改），
+  不是最終定案。**上線前**所有對外數字與素材須由業主確認替換（業主原話「之後我會慢慢調整數字」）。
+- **仍不建議**：把明顯像真、未經業主確認的數字或**假冒真實 HATC 辦公室／證書的圖**當成
+  已定案正式內容直接上線，以免誤導真實客戶；競品的**具體數據/獎項/見證**勿逐字照抄為 HATC 事實。
+  （以上為安全提醒；最終由業主決定。）
+- `HATC_FACTS.md` 仍是**已核可事實**的唯一來源；示範/佔位值不得寫入該檔冒充事實。
+
+## UI system (owner decision 2026-08-07；rollout 完成 2026-08-07 第七輪)
+
+- Component system = **shadcn/ui + Tailwind CSS v4**（方向 A，業主核准）。元件原始碼在
+  `src/components/ui/*`（button／card／badge／tabs），用 **HATC 深藍**主題（**不用橘**）。
+  `cn` 在 `src/lib/utils.ts`；根目錄 `postcss.config.mjs`。所有既有視覺紅線不變。
+- **Tailwind 併入方式（零走樣關鍵）**：`src/styles/globals.css` 只 `@import`
+  Tailwind 的 **theme + utilities（跳過 preflight）** 並宣告 `@layer theme, base,
+  components, utilities;`。既有 reset/元素預設收進 **`@layer base`**；**CSS Modules 未分層＝
+  優先級最高**，故與 Tailwind 共存不衝突。新增 Tailwind class 時勿依賴 preflight。
+- **色彩單一來源＝`src/styles/tokens.css`**（收斂完成）。`globals.css` 的 `@theme` **不再放
+  任何 hex**，只用 `var(--token)` 把 HATC 色橋接進 shadcn 語意色（`--primary`＝
+  `--color-brand` navy `#09395f`、`--accent`＝green `#009944`、暖白底、`--radius` 12px、
+  控制項 pill）。命名衝突已解：shadcn muted **面**＝`--color-muted-surface`；muted **文字**灰
+  改名 `--color-ink-muted`（勿再用 `--color-muted` 當文字色）。
+- **rollout 已全部完成**：首頁 Hero／Markets(Services)／WhyHATC／Process／Activities／
+  Academy／ContactBand ＋ About 的 AboutIntro／Milestones／Certificates／Office 皆已換成
+  Tailwind＋shadcn，對應 `*.module.css` 已刪。**隔離 pilot 已移除**（`src/app/(pilot)`、
+  `src/styles/pilot.css`、proxy 的 `ui-pilot` 例外皆已刪）。仍在用 CSS Modules 者：Header／
+  Footer／LocaleSwitcher／ComingSoon（全域/工具元件）與**未被引用的** `home/Insights`。
+- 正式元件**一律讀 `src/messages/*`**，不得寫死文案。開發期示範值（如 Markets 的示範點差表）
+  以 sample/示範 標示、集中於元件常數易改，且**不得寫入 `HATC_FACTS.md`**。
+- 需要 shadcn CLI 產新元件時再補 `components.json`（目前手動維護 `ui/*` 未建此檔）。
+
+## Layout
+
+- Header and Footer are global. Render them once in the root/locale `layout.tsx`,
+  never per page. Pages render only their own content between them.
+
+## Content governance
+
+- Never hard-code customer-service / contact links (or other operational links).
+  They must be configurable in the CMS.
+- Cite company facts only from `docs/HATC_FACTS.md`.
+
+### CMS-first content architecture (owner decision 2026-08-10)
+
+Owner pivoted to **CMS-first, broad scope**: pause building NEW pages; build the
+editorial CMS content model first, then resume pages wiring each editorial block to
+CMS. Full plan + phases in `docs/HANDOFF.md` (第十九輪, planning). Key rules:
+
+- **Content layering (do NOT collapse these):**
+  1. **Facts** → `HATC_FACTS.md` only. NOT owner-freely-editable in the CMS
+     (governance). Approved trading conditions (gold 27 / silver 30 / 1:100) stay in
+     code (`products/tradingConditions.ts`) as source of truth.
+  2. **Operational links** → Payload `SiteSettings` global (already done).
+  3. **Editorial / marketing content** (owner-editable) → CMS collections/globals:
+     FAQ, news/activities, academy articles, page hero/section marketing copy,
+     sample trading-condition display tables.
+  4. **UI structural strings** (nav, button labels, section kickers, form labels,
+     metadata templates) → stay in `src/messages/*` i18n. Do NOT CMS-ify every
+     micro-string (over-engineering; needs dev/QA anyway).
+- **Reader pattern = DB→fallback (mandatory).** Every CMS reader mirrors
+  `lib/siteSettings.ts` / `lib/faqs.ts` / `lib/homeActivities.ts`: read Payload when
+  `DATABASE_URI` is set, else fall back. This keeps local/preview builds working AND
+  keeps pages **SSG**. i18n messages are the **default/seed + fallback** for each CMS
+  type that has approved seeds — do NOT delete them when adding CMS. **Exception
+  (news/activities):** no fabricated activity seeds; empty → neutral empty UI via
+  `news.*` chrome only.
+- **Refresh = SSG + on-demand revalidation.** Tag reads and revalidate via Payload
+  `afterChange`/`afterDelete` hooks (`revalidateTag(tag, 'max')`/`revalidatePath`). No full SSR.
+- **DRY infra (Phase 0 done, 2026-08-10):** `src/lib/payload.ts` (`getPayloadClient()` +
+  `hasDb()`), `src/lib/cacheTags.ts`, `src/lib/revalidateContent.ts`; readers use
+  `unstable_cache` + tags. Refactored `siteSettings` / `homeActivities`.
+- **Phase 1 FAQ (done, 2026-08-10):** `Faqs` collection + `lib/faqs.ts` (`getFaqs`);
+  `/trading` `TradingFaq` reads CMS, fallback `trading.faq.items`; FAQ answers = textarea.
+- **Phase 2 news/activities (done, 2026-08-10):** Reuses `HomeActivities` + `getHomeActivities`;
+  homepage `LatestNews` + `/news` list; empty → neutral i18n UI (`news.*`), **no fabricated
+  activity seeds**; revalidate tag + `/${locale}` + `/${locale}/news`.
+- **Phase 3 AcademyArticles (done, 2026-08-10):** Collection `academy-articles` +
+ `lib/academyArticles.ts`（DB→i18n fallback `home.goldAcademy.articles` a1–a3，**seeds kept**）；
+ homepage `Academy` + `/academy` list; revalidate tag + home + `/academy`.
+ **Detail `/academy/[slug]` (done, 第二十六輪):** `getAcademyArticleBySlug` + Lexical
+ `RichText`; sitemap includes article paths; seed/no-body → excerpt-only Lexical
+ (no invented full articles).
+- **Phase 4 marketing globals + sample tables (done, 2026-08-10):** Globals
+  `home-page` / `trading-page` / `about-page` / `products-page`（只開 hero／區塊 intro／CTA；
+  每欄 i18n fallback；結構留 code）＋ `sample-trading-conditions`（示意點差／帳戶表可編輯，
+  UI 仍標示意；核可 gold27/silver30/1:100 **只**讀 `products/tradingConditions.ts`）。
+  Readers：`lib/{home,trading,about,products}Marketing.ts`、`lib/sampleTradingConditions.ts`；
+  `sampleTradingData.ts` 種子保留。CMS-first 計畫 Phase 0–4 **全部完成**。
+- **Admin UI i18n（2026-08-10 第二十四輪）：** Payload `i18n.supportedLanguages` =
+ `zh-TW`（fallback）／`zh`／`en`。Collection／Global **admin labels 必須用 `zh-TW`／`zh`／`en`
+ 鍵**（`src/payload/adminLabels.ts`）；**不要**用內容 locale 鍵 `zh-Hant`／`zh-Hans`，
+ 也**不要**用 `zhTw`（Accept-Language／cookie 認的是 `zh-TW`）。右上 **語言地區（Locale）**＝
+ 內容語系；後台**介面語言**＝右上 **帳號 → 語言**（`proxy.ts` 預設注入 `zh-TW`）。
+ **第二十七輪：移除自訂 header 語言切換器 `AdminLanguageSwitcher`**（與內建 Localizer 並存造成
+ 「兩個語言」混淆；業主反饋）——介面語言改走帳號選單，內容語系走 Localizer。品牌化元件：
+ `src/components/payload/{AdminLogo,AdminIcon,DashboardHub,DashboardIntro}`＋側欄分組。
+- **Admin UI/UX 重做（2026-08-10 第二十七輪；A 主題化＋B 客製視圖）：** 業主選 A＋B、
+ **不脫離 Payload、不改資料模型**（自建 C 成本過高、放棄升級紅利，不採）。
+ `adminBrand.css` 由 `app/(payload)/layout.tsx` **全域載入**（勿再只靠元件 import CSS）：
+ 品牌字體 **Sora**（`@import` 覆寫 `--font-body`，含 CJK fallback）、cream 底＋navy elevation
+ 全套、6px radius、側欄金線 active、表格圓角卡面、輸入 navy focus、doc-controls／field label；
+ 「建立新項目」pill 用 `--bg-color` 變數提升為 navy（非 `!important`）。
+ `DashboardHub`（`beforeDashboard`）＝深色品牌 hero＋6 張快速入口卡，**三語讀 `i18n.language`**
+ （zh-TW／zh／en）。新增 `beforeDashboard` 元件後要 `generate:importmap`。仍保留 Payload 殼
+ （表單／權限／Lexical／上傳），未自訂重寫整個 admin。
+- **可選 follow-up：** 託管 Postgres 後手動驗 admin 編輯 → revalidate。
+  （`/academy/[slug]` Lexical 詳情頁＝第二十六輪已完成。）
+- Regen `payload-types.ts` (`npm run generate:types`) after every collection/field change.
+- **Deployment prerequisite:** owner-editable content needs hosted Postgres
+  (Neon/Supabase) + `DATABASE_URI` + `PAYLOAD_SECRET` on the host for `/admin`.
+  Without it the site still runs on i18n fallback (SSG).
+- **Governance still holds in CMS:** sample/display tables keep their「示意數據」
+ label; owner is responsible for editorial content typed in; do not seed fabricated
+ stats/testimonials/awards **or invented news/promotions** in code.
+
+### CMS one-click machine translation pre-fill（2026-08-20 第三十二輪；路線 B／可規模化）
+
+> 業主拍板路線 B：Save 旁「一鍵機器翻譯」把繁中（`zh-Hant`＝defaultLocale）內容機翻成其他語系
+> **草稿**供業主校對。**通用、無寫死語系清單**（跟 `payload.config.localization.locales` 走）。已實作，
+> lint/build/types 綠。**引擎預設 LLM（OpenAI 相容，Node `fetch`）**、介面抽象化可換 **DeepL**。
+
+- **檔案**：provider `src/lib/mt/provider.ts`（`getTranslationProvider()`／`isMtConfigured()`；LLM＋DeepL）、
+  glossary `src/lib/mt/glossary.ts`（只釘核可術語譯法，不造事實）、走訪器 `src/lib/mt/localizedFields.ts`
+  （`collectLeaves`／`configHasLocalizedText`／get/setByPath）、orchestrator `src/lib/mt/translateDocument.ts`、
+  endpoint `src/endpoints/translate.ts`（`POST /api/translate`）、按鈕 `src/components/payload/
+  TranslateDocButton{,Client}.tsx`、批次 `scripts/translate-content.ts`。
+- **範圍**：譯 **localized `text`/`textarea` 葉節點**（字串粒度，含巢狀 group/row/collapsible/tabs/
+ array/blocks）**＋ localized `richText`（Lexical）欄位**。richText 兩種粒度：**① target body 空（或
+ `overwrite`）→ 整欄**（譯 source 全部 `type:'text'` 節點、以 source 結構重建、格式保留，第三十三輪 Phase 2）；
+ **② target body 非空 → 逐段補譯（第三十四輪 Phase 3）**：先比對 **`richTextStructure` 結構簽名**，簽名相同
+ （＝同結構、text 節點 DFS 序一致）才**只填仍為空的 text 節點**、業主已校對段落原封不動；簽名不同（業主
+ 增刪／重排 block）**整欄跳過**以免破壞手改稿。**不譯**：非 localized、select/checkbox/number/date/
+ relationship/upload、標 `admin.custom.mtSkip:true` 者。**只填空、不覆蓋已填**（`overwrite` 才整欄重建）。
+ 讀 target 用 `fallbackLocale:false` 以區分真空 vs fallback（`localization.fallback:true`）。richText
+ helpers＝`src/lib/mt/richText.ts`（`extract/apply/isEmpty/richTextStructure/applyRichTextTextsAtIndices`，
+ 純邏輯無 server-only）。
+- **自動掛按鈕**：`payload.config` 用 `configHasLocalizedText` 自動偵測，注入 `beforeDocumentControls`
+  （collection→`admin.components.edit`、global→`admin.components.elements`）→ **新 localized 集合自動長出
+  按鈕**，免逐檔接線。改 admin 元件字串後跑 `generate:importmap`。
+- **access 閘門（第三十三輪收緊）**：endpoint 用 `hasFullAccess(req)`——**僅 full-access 角色可翻譯**
+ （業主拍板）。按鈕亦收緊：`TranslateDocButton` 為 async server 元件，用 `beforeDocumentControls` 的
+ `payload`+`user` 判斷 `fullAccess`，非全權→回 `null` 不渲染（避免按了才 403）。未登入 401／無金鑰 501／無權 403。
+- **紅線**：**facts 不進翻譯管線**（只改編輯型文案，不碰 FACTS／`tradingConditions.ts`）；示意數字/符號/
+  代號經 prompt **原樣保留**；示意表恆標「示意數據」；MT 產出＝**校對草稿**（非事實）；**金鑰 server-only**
+  （`MT_API_KEY`，**不得** `NEXT_PUBLIC_`；按鈕靠 server 元件讀 config，client 只拿 boolean）。
+- **⚠ CLI 相容**：provider.ts／translateDocument.ts **不可加 `import 'server-only'`**（在 config graph 內，
+  Payload CLI/tsx 無法解析 server-only 會整個掛掉）；它們僅由 server 端（endpoint/script/server 元件）引入。
+- **env**（`.env.example`）：`MT_PROVIDER`(`llm`|`deepl`)／`MT_API_KEY`／`MT_BASE_URL`／`MT_MODEL`／
+  `MT_DEEPL_URL`。無 `MT_API_KEY`＝按鈕 disabled＋endpoint 501＋站台照常（SSG/fallback 不受影響）。
+- **第三十三輪已補**：翻譯權限**已收緊為僅 full-access**；**Phase 2 richText 已做**（見上「範圍」）；
+ **`translate-messages.ts` 已上線**（`src/messages/*` 批次機翻，`zh-Hant`→其他語系，預設只填缺漏/空、
+ `--overwrite` 全譯、`--to`/`--only` 旗標；需 `MT_API_KEY`、不需 DB）；glossary 已擴充核可術語＋補齊
+ zh-Hans。
+- **第三十四輪已補（Phase 3 richText 逐段補譯）**：richText target 非空時改為**逐段補譯**（見上「範圍」②），
+ 只填缺漏 text 節點、結構不一致安全跳過；純邏輯以合成 Lexical doc 12 項斷言驗證（結構相同→補缺漏、
+ 業主段落不動、空譯不覆蓋；結構分歧→跳過）。`lint`(0 errors)／`build`(三語 SSG fallback)／`generate:types`
+ （無 schema 變更）全綠；**未動 admin 元件**故免 `generate:importmap`。**仍待業主**：提供 LLM/DeepL 金鑰後
+ 端到端實測（含 academy body richText 的整欄與逐段兩路徑）。
+- **第三十五輪已補（開放項 2＋3；業主指示「做 A、B」）**：① **CI／pre-commit i18n 守門**——
+ `scripts/translate-messages.ts` 新增 **`--check` 模式**（不需金鑰、不寫檔）：比對 `zh-Hant` 每個非空鍵在
+ 各 target 是否齊全（缺漏→列出並 **`process.exit(1)`**；⚠ Payload runner 會重置 `process.exitCode`，故用
+ `process.exit`）；另**警告** target 有而 source 沒有的殘留鍵（不擋）。`--only <ns>` 可縮範圍。npm scripts：
+ **`i18n:check`**（`payload run … -- --check`，CI／hook 用）與 **`i18n:translate`**（`payload run … --`，接
+ `-- --to en` 等）。**`.github/workflows/ci.yml`**＝lint→i18n:check→build（空 `DATABASE_URI`／dummy
+ `PAYLOAD_SECRET`／`MT_API_KEY` 空，走 SSG fallback）。**`.githooks/pre-commit`**（僅在 `src/messages/*.json`
+ 有 staged 異動時跑 `i18n:check`，快）＋ `package.json` `prepare`＝`git config core.hooksPath .githooks || true`
+ （`npm install` 自動掛勾；本倉尚未 `git init`，故目前為 no-op，git 初始化後即生效）。② **glossary 擴充**：
+ 補 FACTS 已核可但缺漏術語（en／zh-Hans 對稱、長詞在前）——參與者／行員證書、香港海關 **A 類註冊人／A 類註冊**
+ ＋《打擊洗錢及恐怖分子資金籌集條例》(AMLO)、現貨黃金／現貨白銀、董事會 主席／副主席（人名不譯，無核可羅馬拼音）、
+ 客戶資金／資金隔離／信託賬戶／託管（＝「Client fund custody」核可聲明用詞），並補齊 zh-Hans `99 金／999.9 金`。
+ **只釘用詞、不造事實**。`lint`(0 errors，唯 seed-accounts.ts 1 pre-existing warning)／`i18n:check`（三語 540 鍵齊、
+ exit 0／缺鍵 exit 1 皆實測）綠；**未動 schema／admin 元件**故免 `generate:types`／`generate:importmap`。
+ **仍待業主**：項目 1（活的金鑰端到端實測）。
+
+- **2026-08-31 (第三十六輪): `/funding` 入金與出金頁上線（Figma `75:189`，忠實還原版型）。**
+ 業主給的 frame 是一份 **Vantage 範本**（橘 `#e65f2b`、VANTAGE logo／nav／footer、虛構客戶見證＋人名、
+ "多項全球交易大獎"、具體出金渠道/時限/手續費、"$100,000 虛擬資金"）。業主「檢查清楚所有參數」後，依既有
+ 治理紅線＋`/accounts`（第三十一輪）先例拍板落地：① **主色改 HATC 金 `#d4af37`**（沿用首頁 **dark/gold
+ `--fig-*`** 共用系統，橘→`text-/bg-/border-gold`；**不用非品牌橘**）；② **用全域白 Header＋深色 Footer，
+ 丟掉 Figma 自帶 nav/footer**；③ hero「多項全球交易大獎」獎項宣稱**移除**，徽章只留**核可事實**（資金隔離＝
+ FACTS「Client fund custody」）；④ **出金渠道表＝示意數據**（前台恆標「示意數據」、集中易改、**不入 FACTS**）；
+ ⑤ **客戶見證＝紅線**：**不種任何假見證**，改 CMS 集合，**無資料時整區隱藏**（比照 news/activities「不造假、
+ 空則中性隱藏」）；⑥ CTA 軟化，移除 "$100,000 虛擬資金" 等不實承諾，demo→`/accounts`、開戶→CMS `primaryContactHref`。
+ - **路由 IA**：`/funding`（對應 header「交易」mega `nav.mega.items.funding`＝入金與出金，lucide `Wallet` icon
+   已備）。`Header.tsx` `MEGA_HREF.funding` 由 `'#'` 改 **`'/funding'`**；`sitemap.ts` 已加 `/funding`。
+ - **元件**：`src/components/funding/*`（`FundingHero` 深／`WithdrawalIntro` 白＋漸層佔位卡〔不放假截圖〕／
+   `FundingMethods` 淺色示意表／`SupportTopics` 6 卡 lucide icon／`Testimonials`〔空則 `return null`〕／
+   `FundingCta` 深）＋頁面 `funding/page.tsx`（三語 SSG＋`generateMetadata` 讀 `metadata.funding`）。
+ - **CMS（DB→i18n fallback）**：新集合 **`funding-methods`**（method/time/fee/`free`(bool)/currencies，皆示意）
+   ＋ **`testimonials`**（quote/authorName/authorTitle；**無 i18n 種子**，空＝隱藏）＋ global **`funding-page`**
+   （hero/intro/methods/topics/testimonials/cta 區塊 chrome，`optionalText/Textarea`，留空＝i18n）。Readers＝
+   `src/lib/{fundingMethods,testimonials,fundingMarketing}.ts`。已註冊 `payload.config`／`cacheTags`
+   （`fundingMethods`/`testimonials`/`fundingMarketing`）／`revalidateContent`（各 `revalidate*→/funding`）／
+   `permissions/registry`（`funding-methods`/`testimonials`＋publishField、`funding-page` global）。
+ - **i18n**：`metadata.funding`＋`funding.*`（3 語）；示意表種子＝`funding.methodsSample`（陣列，reader/seed 共用）；
+   intro steps／topics items 以 `t.raw` 讀（結構字串）；示意 badge 重用 `productsAll.table.sampleLabel`。
+ - **種子腳本** `scripts/seed-funding.ts`（讀 `messages/*.funding.methodsSample`，seed-once／冪等，**只灌
+   funding-methods**；testimonials 依紅線不灌；global 免種）。執行 `npm run payload -- run scripts/seed-funding.ts`。
+   ⚠ 新集合＝新表，dev server 需重啟 push／正式站 migration；本機已重啟＋種入 6 列，三語 `/funding` 200、
+   `funding-methods` totalDocs=6、`testimonials` totalDocs=0（區塊隱藏）、`lint` 0 errors／`i18n:check` 616 鍵齊。
+ - **待業主**：(a) 出金渠道/時限/手續費真實值（現全示意，業主替換後仍標示意或轉正式須另議）；(b) 提供真實客戶
+   見證後於後台發佈才會顯示該區；(c) 見證頭像目前用金色首字佔位，真實頭像素材待提供（可日後加 media upload 欄位）；
+   (d) **hero/intro/CTA 背景圖＝Figma 範本 AI 抽象視覺開發佔位**（存 `public/figma/funding/{hero,intro,cta}.png`），
+   **業主可於 CMS `funding-page`→「背景圖片」上傳替換**（`heroImage/introImage/ctaImage` upload→media，空則用佔位圖；
+   reader `fundingMarketing.images.*`，元件用 `?.` 存取以免快取結構變更報錯）；⚠ `intro.png` 為金庫金幣＋青綠格線，
+   與金色主題略衝突且「浮動金幣」在最終避免清單上，建議業主優先替換；(e) demo/開戶流程與 `primaryContactHref` 同全站慣例。
+
+- **2026-08-31 (第三十七輪): 整合入金／出金為單一 `/funding`（Figma `75:5` 入金 ＋ `75:189` 出金誤拆兩頁）。**
+ 業主指 Figma 把出入金誤拆兩頁，讀 `75:5` 確認與出金頁鏡像後**整合成單頁**。版面＝`FundingHero`（統一）→
+ `FundingIntro variant="deposit"`＋`FundingMethods variant="deposit"` → `FundingIntro variant="withdraw"`＋
+ `FundingMethods variant="withdraw"` → 共用 `SupportTopics`／`Testimonials`（空則隱藏）／`FundingCta`。
+ `WithdrawalIntro.tsx` 汰換為通用 `FundingIntro.tsx`（`variant` prop）；`FundingMethods.tsx` 加 `variant` prop。
+ bg 交錯：intro 改 `--fig-light`、methods 改 white（dark→light→white→…→dark）。
+ - **一表兩用**：`funding-methods` 加 **`type`（deposit/withdrawal，required，index，default `withdrawal`）**；
+   reader `getFundingMethods(locale, type)` 依 type 過濾；既有 6 列出金列由 column default 自動歸 `withdrawal`。
+ - **i18n 重構**：hero 改出入金通用；新增 `funding.deposit`／`funding.withdraw` 兩組（各 `kicker/heading/note`＋
+   `intro{heading,body,cta}`＋`steps[]`＋`methodsSample[]`，入金 8 列／出金 6 列皆示意）；共用欄位標籤收斂到
+   `funding.methods.{colMethod,colTime,colFee,colCurrencies,scrollHint}`。（移除舊 `funding.intro`／
+   `funding.methods.{kicker,heading,note}`／`funding.methodsSample`。）
+ - **global／reader**：`funding-page` 擴為入金 intro／入金 methods／出金 intro／出金 methods 四段 chrome＋背景圖
+   `heroImage/depositImage/withdrawImage/ctaImage`（原 `introImage` 汰換）；`fundingMarketing` 型別改
+   `{hero, deposit, withdraw, topics, testimonials, cta, images{hero,deposit,withdraw,cta}}`。
+ - **佔位圖**：`public/figma/funding/` 留 `hero.png`／`cta.png`；`intro.png`→`withdraw.png`；新增入金視覺 `deposit.png`。
+ - **種子**：`scripts/seed-funding.ts` 改依 type 各自冪等（deposit/withdrawal 分別 seed-once）；本機已補 8 列入金。
+ - **驗證**：`generate:types`／`lint`（0 error）／`i18n:check`（657 鍵三語齊）綠；三語 `/funding` 200，HTML 同含兩表。
+ - **⚠ DB 遷移雷（記錄）**：`funding_page` 因欄位改名觸發 drizzle push **互動式 rename/create 提問會卡住**；該
+   global 尚無業主資料，本機直接 DROP 由 push 重建（正式站若有資料改走 migration）。改 schema／刪元件後 dev 需
+   **整包清 `.next` 重啟**，否則 `unstable_cache`／舊編譯回舊資料形狀（本輪 `marketing.deposit` undefined 即此）。
+
+### Roles & permissions v2（2026-08-10 第二十九輪；路線 B／欄位級；Payload 原生，不自建）
+
+> 取代第二十八輪的 admin/editor 兩層硬編。業主拍板：**路線 B**（後台可自建角色、可視化勾權限）
+> ＋**欄位級**顆粒度＋**初始角色＝admin 全權**。已實作，lint/build/types 綠。
+
+- **可設定式權限（permissions matrix）**：新 `Roles` 集合（`name`＋`fullAccess`＋由登錄表生成的
+ 每資源 CRUD／敏感欄位勾選）。`Users.role` = relationship→`roles`。admin 在 `/admin` 自建角色、
+ 勾權限、指派給帳號；**新增角色不需改 code**（新增可權限化資源/欄位才需改登錄表）。
+- **唯一資源清單＝[`src/payload/permissions/registry.ts`](src/payload/permissions/registry.ts)**
+ （`PERM_RESOURCES`＋`permKey`／`fieldPermKey`）。**改集合/欄位務必同步更新它**，再 `generate:types`。
+ 生成的勾選欄位＝標準 checkbox（[`roleFields.ts`](src/payload/permissions/roleFields.ts)），
+ **無自訂 admin React 元件 → 免 `generate:importmap`**。
+- **access 集中於 [`src/payload/access.ts`](src/payload/access.ts)**：`loadRole`（per-request memoize、
+ `overrideAccess` 防遞迴）＋`allow`＋`opAccess`／`contentCollectionAccess`／`globalAccess`／
+ `usersReadOrSelf`／`usersUpdateOrSelf`／`fieldUpdateAccess`／`isFullAccess`／`canAccessAdmin`。
+- **紅線**：① 前台 `read` 恆公開（登錄表刻意不含公開 read；SSG／無 DB fallback 不受影響）。
+ ② 管理 `Roles` ＝**僅 `isFullAccess`**（委派角色無法自我擴權；登錄表刻意不含 `roles`）。
+ ③ `Users.role` 欄位 `fieldUpdateAccess`＝僅全權或被明確授權者可改（防自升權）。
+ ④ **欄位級 deny-by-default**：非全權者編輯敏感欄位需「資源 update＋該欄位勾選」皆備。
+ ⑤ 防鎖死：不可移除/刪除最後一個全權角色、不可刪除仍被使用的角色；首位帳號 bootstrap 指派全權角色。
+- **⚠ DB 遷移**：`role` 由 select→relationship（新 `roles` 表＋`users.role_id`）。push 後既有帳號
+ role 變 null；`onInit` 會種 `Administrator`(fullAccess) 並在「單一帳號且無角色」時自動指派（自癒）。
+ 多帳號需手動 `UPDATE users SET role_id = (SELECT id FROM roles WHERE full_access=true LIMIT 1) ...`。
+ 詳見 `docs/HANDOFF.md`「🟢 第二十九輪 → DB 遷移」。本輪未執行任何 DB 指令。
+- Media 上傳／SiteSettings 編輯（第二十八輪業主確認保留）現改由**角色矩陣**決定（admin 全權涵蓋；
+ 其他角色由 admin 於 Media library／Site settings 勾選）。
+
+## Solution quality
+
+- Be thorough: don't take shortcuts that meet the immediate goal but create
+  downstream problems (tech debt, i18n gaps, a11y/SEO, performance, maintainability).
+- Fix root causes, surface trade-offs and follow-ups explicitly; no hidden hacks.
+
+## Workflow
+
+- Plan and complete one page at a time; explain major visual changes first.
+- Check desktop, tablet and mobile layouts.
+- Traditional Chinese is primary; architecture must support Simplified Chinese and English later.
+- Keep rules and docs self-updating: when a decision/convention/fact changes,
+  update `.cursor/rules/*.mdc` and `docs/*` in the same change and note it.
+- Hand off before context gets too long; split large tasks and pass a concise summary.
+- **每次交棒必做**：除了更新 `docs/HANDOFF.md`，還要**在對話中直接輸出一段可複製、
+  貼給下一個 agent 的 kickoff prompt**（自足：必讀文件、業主已定案決策、紅線、現況、
+  下一步、待確認項）。不可只寫進文件而不給使用者。

@@ -1,0 +1,672 @@
+{
+  "metadata": {
+    "home": {
+      "title": "华安泰昌有限公司 HATC Group Limited",
+      "description": "华安泰昌有限公司（HATC Group Limited）以香港黄金交易所 AA 类行员（行员编号 008）为后盾，提供黄金、白银贵金属 CFD 交易。"
+    },
+    "about": {
+      "title": "关于我们",
+      "description": "认识华安泰昌有限公司（HATC Group Limited）：香港黄金交易所 AA 类行员（会员编号 008），持行员及参与者证书，实体办公室位于香港九龙观塘。"
+    },
+    "products": {
+      "title": "贵金属 CFD 交易产品",
+      "description": "华安泰昌贵金属差价合约（CFD）交易产品：黄金、白银，以香港黄金交易所 AA 类行员（会员编号 008）资格为后盾，透过 MT5 平台交易。"
+    },
+    "productsAll": {
+      "title": "所有交易产品",
+      "description": "华安泰昌可交易产品一览：贵金属差价合约与交易规格说明。表列规格为示意数据，实际条件以官方公告与 MT5 平台即时报价为准。"
+    },
+    "accounts": {
+      "title": "交易账户",
+      "description": "华安泰昌交易账户类型与开户流程说明。账户规格为示意数据，实际条件以官方公告与 MT5 平台为准。"
+    },
+    "funding": {
+      "title": "入金与出金",
+      "description": "华安泰昌入金与出金说明：安全便捷的资金存取方式、处理时间与手续费一览。出金渠道与时间为示意数据，实际条件以官方公告为准。"
+    },
+    "trading": {
+      "title": "黄金交易服务概览",
+      "description": "华安泰昌黄金交易服务概览：以香港黄金交易所 AA 类行员（会员编号 008）为后盾，提供伦敦金与公斤条交易、MT5 平台、交易账户与全面客户支持。"
+    },
+    "news": {
+      "title": "最新消息",
+      "description": "华安泰昌最新消息与活动公告。内容由官方发布，请以此页为准。"
+    },
+    "academy": {
+      "title": "黄金交易学堂",
+      "description": "华安泰昌黄金交易学堂：中性教育内容，介绍贵金属市场与平台基础知识。本站内容不构成投资建议。"
+    }
+  },
+  "common": {
+    "brand": "华安泰昌",
+    "brandFull": "华安泰昌有限公司",
+    "register": "注册",
+    "userCenter": "用户中心",
+    "contactUs": "联系我们",
+    "learnMore": "了解我们",
+    "startTrading": "开始交易",
+    "viewProducts": "了解产品",
+    "viewMore": "查看更多",
+    "comingSoon": "即将推出",
+    "comingSoonNote": "此功能正在建置中，敬请期待。",
+    "readMore": "了解更多",
+    "skipToContent": "跳至主要内容",
+    "language": "语言",
+    "openMenu": "打开菜单",
+    "closeMenu": "关闭菜单",
+    "close": "关闭"
+  },
+  "nav": {
+    "home": "首页",
+    "aboutHatc": "关于HATC",
+    "goldTrading": "交易",
+    "mt5": "MT5平台",
+    "goldAcademy": "黄金学堂",
+    "support": "客户支持",
+    "login": "登录",
+    "openAccount": "开立账户",
+    "products": "产品",
+    "primary": "主导览",
+    "mega": {
+      "openLabel": "展开交易菜单",
+      "products": {"title": "黄金产品交易"},
+      "support": {"title": "交易支援 & 流程"},
+      "items": {
+        "overview": {"title": "概览", "desc": "了解 HATC 黄金交易服务的完整介绍"},
+        "allProducts": {"title": "所有交易产品", "desc": "浏览完整可交易产品列表与交易规格"},
+        "account": {"title": "交易账户", "desc": "了解机构及个人多样化的开户流程"},
+        "conditions": {"title": "交易条件", "desc": "极具竞争力的点差、杠杆与时段说明"},
+        "funding": {"title": "入金与出金", "desc": "高效便捷的安全资金存取方式与指引"}
+      },
+      "banner": {"title": "立即开户", "desc": "— 开始您的专业级黄金/白银投资配置之旅"}
+    }
+  },
+  "locale": {
+    "zh-Hant": "繁體中文",
+    "zh-Hans": "简体中文",
+    "en": "English"
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "香港黄金交易所 AA 类行员",
+      "titleLead": "贵金属",
+      "titleAccent": "CFD",
+      "titleTail": "交易",
+      "subtitle": "以香港黄金交易所 AA 类行员的实金资格为后盾，交易黄金、白银贵金属差价合约。",
+      "imageAlt": "华安泰昌香港办公室接待处"
+    },
+    "heroV2": {
+      "badge": "香港黄金交易所 AA类行员 008号",
+      "titleLine1": "连接全球黄金市场",
+      "titleBrand": "华安泰昌",
+      "titleTail": "专业护航",
+      "subtitle": "华安泰昌以香港黄金交易所 AA 类行员（会员编号 008）为根基，提供合规、专业的伦敦金银交易通道，助您连接全球黄金市场。",
+      "ctaPrimary": "开始了解",
+      "bgAlt": "金条与黄金市场走势示意图",
+      "priceTitle": "实时金价",
+      "sampleData": "示意数据",
+      "high": "今日最高",
+      "low": "今日最低"
+    },
+    "trust": {
+      "field": {"title": "金银业贸易场", "sub": "香港金银业贸易场 • 正规合规认证交易所成员"},
+      "grade": {"title": "AA 类行员", "sub": "最高级别认可行员 • 可经营伦敦金银及实物黄金"},
+      "member": {"title": "会员编号 008", "sub": "官方认证席位编号 • 资金安全受贸易场严格监管"}
+    },
+    "goldServices": {
+      "kicker": "PREMIUM TRADING SERVICES",
+      "heading": "优质黄金交易服务",
+      "subheading": "专注、合规、高效的伦敦金/银投资通道",
+      "body": "华安泰昌凭借香港黄金交易所 AA 类行员资格，提供伦敦金、伦敦银的双向交易服务，让您以清晰透明的方式参与全球贵金属市场。",
+      "features": {
+        "f1": {"title": "灵活杠杆与低交易门槛", "sub": "以较低的资金门槛参与贵金属市场。"},
+        "f2": {"title": "24小时双向不间断交易", "sub": "配合全球市场时段，灵活把握行情。"},
+        "f3": {"title": "极速订单执行通道", "sub": "稳定的下单与订单执行体验。"}
+      },
+      "cta": "了解黄金交易服务",
+      "chartSymbol": "XAU/USD (伦敦金)",
+      "live": "实时交易中",
+      "chartSample": "示意数据 (设计占位)",
+      "loco": {"gold": "伦敦金", "silver": "伦敦银"}
+    },
+    "mt5": {
+      "kicker": "METATRADER 5 PLATFORM",
+      "heading": "国际顶尖 MT5 交易平台",
+      "subheading": "功能强大，多端无缝连通",
+      "body": "透过国际通用的 MetaTrader 5 平台交易贵金属，桌面、网页与移动设备无缝同步，随时掌握行情与持仓。",
+      "features": {
+        "f1": {"title": "全天候多端自适应", "sub": "桌面、网页、移动设备皆可使用。"},
+        "f2": {"title": "精细化订单与持仓管理", "sub": "完整的订单类型与风险控管工具。"},
+        "f3": {"title": "极致的智能图表系统", "sub": "多周期图表与丰富的技术分析工具。"}
+      },
+      "ctaPrimary": "了解MT5",
+      "ctaSecondary": "操作指南",
+      "screenshotAlt": "MT5 交易平台多端示意画面"
+    },
+    "whyV2": {
+      "kicker": "WHY CHOOSE HATC",
+      "heading": "为什么选择华安泰昌",
+      "cards": {
+        "c1": {"title": "合规安全保障", "body": "香港黄金交易所 AA 类行员资格，资金安全受贸易场严格监管。"},
+        "c2": {"title": "一流执行速度", "body": "稳定的交易系统与订单执行通道。"},
+        "c3": {"title": "个性化尊贵服务", "body": "专属团队提供贴身的客户支持。"},
+        "c4": {"title": "投资教育资源", "body": "完整的黄金学堂与市场分析内容。"}
+      }
+    },
+    "goldAcademy": {
+      "kicker": "HATC GOLD ACADEMY",
+      "heading": "黄金交易学堂",
+      "readMore": "阅读全文",
+      "browseAll": "浏览所有学堂内容",
+      "imageAlt": "学堂文章封面",
+      "articles": {
+        "a1": {"tag": "基础教学", "title": "伦敦金(XAU)与美金的关联", "excerpt": "了解黄金与美元之间常见的价格关系与影响因素。", "imageAlt": "金条与市场走势"},
+        "a2": {"tag": "MT5实战", "title": "在MT5上利用MA均线交叉策略", "excerpt": "以移动平均线交叉作为进出场参考的实战示范。", "imageAlt": "MT5 图表与均线"},
+        "a3": {"tag": "宏观视野", "title": "2024年全球地缘冲突对黄金避险属性的影响", "excerpt": "从宏观角度看地缘事件如何影响黄金的避险需求。", "imageAlt": "全球金融网络"}
+      }
+    },
+    "story": {
+      "kicker": "ABOUT HATC GROUP",
+      "heading": "立足香港金融枢纽，诚信开拓全球格局",
+      "body": "华安泰昌有限公司立足香港，作为香港黄金交易所 AA 类行员（会员编号 008），以诚信与专业服务客户，致力于连接客户与全球贵金属市场。",
+      "cta": "深入了解企业故事",
+      "seatLabel": "TRADE FIELD MEMBER SEAT",
+      "bgAlt": "香港城市天际线"
+    },
+    "support": {
+      "kicker": "HATC CLIENT SUPPORT",
+      "heading": "全方位的专业客户支持",
+      "cta": "联系我们的在线专属团队",
+      "cards": {
+        "s1": {"title": "开立账户问题", "body": "协助您完成开户与资料审核流程。"},
+        "s2": {"title": "MT5平台操作", "body": "平台安装、登录与操作相关协助。"},
+        "s3": {"title": "资金及出入金支持", "body": "出入金流程与相关疑问的协助。"},
+        "s4": {"title": "市场与交易基础", "body": "贵金属市场与交易基础的一般说明。"}
+      }
+    },
+    "finalCta": {
+      "heading": "立即开始您的黄金投资旅程",
+      "body": "由香港黄金交易所 AA 类行员（会员编号 008）为您提供专业服务。",
+      "ctaPrimary": "立即线上开户",
+      "ctaSecondary": "免费模拟账户",
+      "bgAlt": "香港金融市场示意图"
+    },
+    "footerV2": {
+      "brandDesc": "华安泰昌有限公司为香港黄金交易所 AA 类行员（会员编号 008），提供合规、专业的伦敦金银交易服务。",
+      "cols": {
+        "about": {"title": "关于我们", "l1": "公司简介", "l2": "金银业席位", "l3": "安全与监管", "l4": "最新新闻"},
+        "trading": {"title": "交易服务", "l1": "伦敦黄金交易", "l2": "伦敦白银交易", "l3": "市场交易细则", "l4": "合约保证金"},
+        "mt5": {"title": "MT5平台", "l1": "MT5客户端下载", "l2": "移动平台操作", "l3": "EA程序化支持", "l4": "操作常见指南"},
+        "academy": {"title": "黄金学堂", "l1": "基础课程", "l2": "进阶分析", "l3": "宏观基本面", "l4": "技术指标解读"}
+      },
+      "risk": "风险声明：贵金属交易涉及风险，价格可能大幅波动，投资者可能损失部分或全部本金。本网站所示行情、图表与数字均为示意数据，仅供设计展示，不构成任何投资建议或要约。请于交易前充分了解相关风险。",
+      "privacy": "隐私权政策",
+      "disclaimer": "免责声明"
+    },
+    "facts": {
+      "exchangeLabel": "交易所",
+      "exchangeValue": "香港黄金交易所",
+      "membershipLabel": "会员类别",
+      "membershipValue": "AA 类行员",
+      "memberNoLabel": "会员编号",
+      "memberNoValue": "008"
+    },
+    "milestones": {
+      "heading": "里程碑与资质",
+      "items": {
+        "m1": "取得金银业贸易场行员 008 号证书",
+        "m2": "取得香港黄金交易所行员 008 号证书及股份证书",
+        "m3": "取得香港黄金交易所参与者证书",
+        "m4": "升为香港黄金交易所 AA 类行员"
+      }
+    },
+    "assetPending": "【待确认】素材"
+  },
+  "about": {
+    "hero": {
+      "titleLead": "关于",
+      "subtitle": "立足香港，连接全球黄金市场，为机构与个人投资者提供最流畅的交易通道。",
+      "bgAlt": "香港城市夜景"
+    },
+    "identity": {
+      "kicker": "COMPANY OVERVIEW",
+      "heading": "公司简介",
+      "p1": "华安泰昌有限公司（HATC Group Limited）立足香港，专注于合规、专业的贵金属电子交易服务。",
+      "p2": "作为香港黄金交易所 AA 类行员（会员编号 008），我们持有交易所核发之行员及参与者证书，经营伦敦金、伦敦银等贵金属交易业务。",
+      "p3": "我们始终将客户资产安全置于首位，并透过国际通用的 MT5 交易平台，为机构与个人投资者提供稳定、透明的交易体验。",
+      "imageAlt": "华安泰昌香港办公室"
+    },
+    "credentials": {
+      "kicker": "AUTHORITATIVE CREDENTIALS",
+      "heading": "会员资格与权威身份",
+      "cards": {
+        "c1": {"title": "香港黄金交易所", "sub": "正规交易商席位", "body": "香港黄金交易所（前身香港金银业贸易场）严格监管其认证行员，建立合规、安全的交易框架。"},
+        "c2": {"title": "AA 类行员", "sub": "最高经营资质", "body": "AA 类为交易所中的最高级别行员资质，获授权经营伦敦金、伦敦银等业务。"},
+        "c3": {"title": "会员编号 008", "sub": "尊贵早期席位号", "body": "尊享香港黄金交易所第 008 号认证行员席位，资金安全受交易所规章监管。"}
+      },
+      "security": {
+        "title": "监管与资产安全声明",
+        "body": "华安泰昌一切业务均遵守香港黄金交易所合规章程。客户资金存放于指定托管信托账户中，与公司运营资金严格分离。"
+      }
+    },
+    "principles": {
+      "kicker": "OUR PRINCIPLES",
+      "heading": "我们的服务理念",
+      "items": {
+        "p1": {"title": "专业合规服务", "body": "遵循香港黄金交易所的合规审查与运营标准，为客户提供专业、可信赖的交易服务。"},
+        "p2": {"title": "资讯清晰透明", "body": "提供清晰透明的行情与报价资讯，让每一笔交易都清楚明白。"},
+        "p3": {"title": "学堂知识沉淀", "body": "透过黄金学堂持续提供国际宏观与技术分析的实战知识。"},
+        "p4": {"title": "全心客户关怀", "body": "专属一对一中英文客户服务，协助您顺利完成开户与交易流程。"}
+      }
+    },
+    "timeline": {
+      "kicker": "DEVELOPMENT HISTORY",
+      "heading": "华安泰昌发展历程",
+      "items": {
+        "m1": {"title": "金银业贸易场行员"},
+        "m2": {"title": "黄金交易所行员"},
+        "m3": {"title": "参与者资格"},
+        "m4": {"title": "升为 AA 类行员"}
+      }
+    },
+    "hongkong": {
+      "kicker": "HONG KONG LEGACY, GLOBAL REACH",
+      "headingLead": "根植香港金融枢纽",
+      "headingAccent": "服务全球华语市场",
+      "body": "香港黄金交易所作为具悠久历史的贵金属交易重镇，是全球黄金市场的重要枢纽。华安泰昌以最流畅的数字化渠道，将香港的实体黄金网络与国际投资脉搏同步相连。",
+      "bgAlt": "香港维多利亚港"
+    },
+    "gallery": {
+      "kicker": "LICENSES · OFFICE · HONORS",
+      "heading": "牌照、办公室与荣誉",
+      "licenseLabel": "交易所行员证书",
+      "officeLabel": "办公室环境",
+      "honorLabel": "品牌荣誉奖座",
+      "documentLabel": "交易所参与者证书",
+      "customsLabel": "香港海关 A 类注册证书",
+      "zoomHint": "点击放大查看",
+      "note": "以上为华安泰昌相关牌照、办公室及荣誉之真实展示。",
+      "alt": {
+        "license": "香港黄金交易所行员证书",
+        "office": "华安泰昌香港办公室",
+        "honor": "华安泰昌品牌荣誉奖座",
+        "document": "香港黄金交易所参与者证书",
+        "customs": "香港海关贵金属及宝石交易商 A 类注册证明书"
+      }
+    },
+    "cta": {
+      "heading": "了解 HATC 的黄金交易服务",
+      "body": "如需了解在线开户流程、一对一客户支援或进一步的市场资讯，欢迎立即与我们的专业团队建立联系。",
+      "ctaSecondary": "了解黄金交易"
+    }
+  },
+  "products": {
+    "hero": {
+      "titleLead": "贵金属 ",
+      "titleAccent": "CFD",
+      "titleTail": " 交易产品",
+      "subtitle": "以香港黄金交易所 AA 类行员（会员编号 008）资格为后盾，透过 MT5 平台交易黄金、白银差价合约。",
+      "bgAlt": "黄金市场走势示意图"
+    },
+    "list": {
+      "kicker": "OUR PRODUCTS",
+      "heading": "可交易产品",
+      "subheading": "目前提供黄金与白银差价合约（CFD）。",
+      "spreadLabel": "平均点差",
+      "leverageLabel": "最高杠杆"
+    },
+    "items": {
+      "gold": {"name": "黄金 CFD", "desc": "以伦敦金（XAU/USD）为标的的差价合约，支持双向交易与灵活杠杆。"},
+      "silver": {"name": "白银 CFD", "desc": "以伦敦银（XAG/USD）为标的的差价合约，支持双向交易与灵活杠杆。"}
+    },
+    "conditions": {
+      "kicker": "TRADING CONDITIONS",
+      "heading": "交易条件",
+      "colProduct": "产品",
+      "colSymbol": "商品代码",
+      "colSpread": "平均点差",
+      "colLeverage": "最高杠杆",
+      "colPlatform": "交易平台",
+      "pointsUnit": "点",
+      "platformValue": "MetaTrader 5",
+      "pendingLabel": "其余交易条件（最低手数、手续费、执行方式等）",
+      "pending": "将另行公布",
+      "note": "点差为平均参考值，实际成交点差以交易平台实时报价为准；杠杆交易可能同时放大盈利与亏损，请于交易前充分了解相关风险。"
+    },
+    "credibility": {
+      "kicker": "WHY TRADE WITH HATC",
+      "heading": "为何在华安泰昌交易"
+    },
+    "cta": {
+      "heading": "准备好开始交易了吗？",
+      "body": "由香港黄金交易所 AA 类行员（会员编号 008）为您提供专业服务，立即开立账户或联系我们的专属团队。"
+    }
+  },
+  "productsAll": {
+    "hero": {
+      "breadcrumb": "所有交易产品",
+      "titleLead": "所有",
+      "titleAccent": "交易",
+      "titleTail": "产品",
+      "subtitle": "探索华安泰昌可供交易的完整产品列表与交易规格。以香港黄金交易所 AA 类行员（会员编号 008）资格为后盾，透过 MT5 平台交易。"
+    },
+    "table": {
+      "kicker": "ALL PRODUCTS",
+      "heading": "可交易产品一览",
+      "sampleLabel": "示意数据",
+      "sampleNote": "下表之合约规模、点差、杠杆与交易时段为示意数据，实际交易条件以官方公告与 MT5 平台即时报价为准。",
+      "colProduct": "产品",
+      "colContractSize": "合约规模",
+      "colSpread": "点差",
+      "colLeverage": "杠杆",
+      "colHours": "交易时段",
+      "scrollHint": "左右滑动查看完整表格",
+      "empty": "交易产品列表即将公布，敬请期待。"
+    },
+    "categories": {
+      "metals": "贵金属",
+      "forex": "外汇",
+      "indices": "指数",
+      "energy": "能源",
+      "other": "其他"
+    },
+    "sample": {
+      "rows": [
+        {"symbol": "XAU/USD", "name": "伦敦金", "category": "metals", "contractSize": "100 盎司", "spread": "27", "leverage": "1:100", "tradingHours": "周一至周五 24 小时"},
+        {"symbol": "XAG/USD", "name": "伦敦银", "category": "metals", "contractSize": "5000 盎司", "spread": "30", "leverage": "1:100", "tradingHours": "周一至周五 24 小时"}
+      ]
+    }
+  },
+  "accounts": {
+    "hero": {
+      "breadcrumb": "交易账户",
+      "badge": "MULTIPLE ACCOUNT TYPES FOR YOU",
+      "titleLead": "选择最适合您的",
+      "titleAccent": "贵金属 CFD",
+      "titleTail": "交易账户",
+      "subtitle": "我们提供多种账户类型，从零佣金的标准账户到超低点差的专业账户，贴合您的黄金、白银交易策略与资金规模。",
+      "ctaOpen": "立即开立账户",
+      "ctaDemo": "免费模拟体验"
+    },
+    "tiers": {
+      "kicker": "CHOOSE YOUR TIER",
+      "heading": "多种账户类型，全面对比",
+      "subtitle": "根据您的风险承受能力、资金与交易频率，选择最适合的账户模式。",
+      "specLabels": {
+        "minDeposit": "最低入金金额",
+        "spread": "最小点差",
+        "commission": "每手佣金",
+        "leverage": "杠杆比例",
+        "execution": "执行方式",
+        "platform": "支持平台"
+      },
+      "note": "以上账户规格为示意数据，实际条件以华安泰昌正式公布与 MT5 平台为准；杠杆交易可能同时放大盈利与亏损，请充分了解相关风险。"
+    },
+    "tiersSample": [
+      {"key": "standard", "code": "Standard STP", "badge": "最受欢迎", "popular": true, "name": "标准 STP 账户", "desc": "最受欢迎的入门首选，无佣金负担，交易成本简单透明。", "minDeposit": "USD 100", "spread": "1.0 点起", "commission": "零佣金", "leverage": "最高 1:500", "execution": "STP 直通式处理", "platform": "MT4, MT5, TradingView"},
+      {"key": "raw", "code": "Raw ECN", "badge": "极致低点差", "popular": false, "name": "RAW ECN 账户", "desc": "专为高频与专业交易者打造，享受机构级的原始极致点差。", "minDeposit": "USD 500", "spread": "0.0 点起", "commission": "每手 USD 3.00（单边）", "leverage": "最高 1:500", "execution": "ECN 电子通讯网络", "platform": "MT4, MT5, TradingView"},
+      {"key": "vip", "code": "Premium VIP", "badge": "大宗交易专属", "popular": false, "name": "尊尚 VIP 账户", "desc": "专属大资金客户，提供最优惠的点差折扣与全天候专属客服。", "minDeposit": "USD 10,000", "spread": "0.0 点起", "commission": "每手 USD 1.50（单边）", "leverage": "最高 1:500", "execution": "ECN 电子通讯网络", "platform": "MT4, MT5"},
+      {"key": "cent", "code": "Cent Account", "badge": "微小风险", "popular": false, "name": "微型美分账户", "desc": "以美分结算，于极低风险环境中验证您的自动化程序与交易策略。", "minDeposit": "USD 10", "spread": "1.2 点起", "commission": "零佣金", "leverage": "最高 1:1000", "execution": "STP 直通式处理", "platform": "MT4"}
+    ],
+    "benefits": {
+      "kicker": "CORE BENEFITS",
+      "heading": "为您量身定制的交易优势",
+      "items": [
+        {"title": "零佣金负担（标准账户）", "desc": "标准账户完全免佣金，交易成本已包含在具竞争力的点差中，适合中长线与波段交易者。"},
+        {"title": "RAW 原始极致点差", "desc": "RAW ECN 提供直达流动性提供商的原始点差，低至 0.0 点起，适应高频与程序化交易策略。"},
+        {"title": "超低起点，灵活入金", "desc": "以美分账户低门槛参与实盘，提供灵活的入金方式，减轻您的资金压力。"},
+        {"title": "顶尖交易平台全面支持", "desc": "账户适配 MT4、MT5 及 TradingView，体验快速执行、深度图表与智能交易（EA）。"}
+      ]
+    },
+    "spreads": {
+      "kicker": "LIVE SPREADS PREVIEW",
+      "heading": "热门产品点差预览",
+      "note": "下表报价与点差为示意数据，非即时行情；实际成交以 MT5 平台即时报价为准。",
+      "colPair": "交易对",
+      "colBid": "买入价 (Bid)",
+      "colAsk": "卖出价 (Ask)",
+      "colSpread": "平均点差"
+    },
+    "spreadsSample": [
+      {"pair": "XAU/USD（黄金）", "bid": "2,342.30", "ask": "2,342.80", "spread": "0.5 点"},
+      {"pair": "XAG/USD（白银）", "bid": "27.83", "ask": "27.85", "spread": "0.8 点"}
+    ],
+    "platforms": {
+      "kicker": "WORLD-CLASS PLATFORMS",
+      "heading": "支持国际顶尖交易平台",
+      "items": [
+        {"name": "MetaTrader 4 (MT4)", "desc": "全球广泛使用的交易平台，支持大量自定义指标与 EA 自动化策略。"},
+        {"name": "MetaTrader 5 (MT5)", "desc": "新一代多资产交易终端，具备更快执行速度、更多时间周期与内置技术分析工具。"},
+        {"name": "TradingView 直连", "desc": "在 TradingView 上分析并直连账户执行订单，体验流畅的图表交易。"}
+      ]
+    },
+    "steps": {
+      "kicker": "EASY 3-STEP START",
+      "heading": "只需三步，即可开启交易旅程",
+      "items": [
+        {"title": "注册您的账户", "desc": "填写基本个人资料，并在线提交身份与地址证明以完成账户认证。"},
+        {"title": "安全存入资金", "desc": "支持多种主流入金方式；实际可用渠道与到账时间以官方公告为准。"},
+        {"title": "开启交易", "desc": "登入 MT4/MT5 或 TradingView，连接您选择的账户类型，开始交易黄金、白银等产品。"}
+      ]
+    },
+    "faq": {
+      "kicker": "COMMON QUESTIONS",
+      "heading": "常见问题解答",
+      "items": [
+        {"q": "开设真实交易账户的最低入金要求是多少？", "a": "不同账户类型的最低入金不同（示意：美分账户约 10 USD、标准账户约 100 USD、RAW ECN 约 500 USD 起）。实际门槛以华安泰昌正式公布为准。"},
+        {"q": "标准账户与 RAW ECN 账户有什么主要区别？", "a": "标准账户采全包式零佣金报价、点差略高；RAW ECN 提供更低的原始点差，但每手交易收取固定佣金。上述为示意说明，实际条件以官方公布为准。"},
+        {"q": "我可以先开设免费模拟账户体验吗？", "a": "我们规划提供模拟账户，让您在零风险环境中熟悉平台操作。开放时间与细节将另行公布。"},
+        {"q": "我可以使用平台的自动交易 (EA) 策略吗？", "a": "MT4 与 MT5 平台支持各类专家顾问（EA）与自动交易脚本，适合程序化交易需求。"},
+        {"q": "最高杠杆比例是多少，是否可以调整？", "a": "账户杠杆为示意数据（如最高 1:500、美分账户最高 1:1000）；实际杠杆与调整方式以华安泰昌正式公布为准。杠杆会同时放大盈亏，请谨慎评估。"}
+      ]
+    },
+    "cta": {
+      "heading": "开启您的贵金属交易之旅",
+      "body": "体验安全的资金托管与专业的客户支持，随时开始您的黄金、白银交易配置。"
+    }
+  },
+  "funding": {
+    "hero": {
+      "breadcrumb": "入金与出金",
+      "badge1": "✓ 资金隔离存放",
+      "badge2": "✓ 安全便捷存取",
+      "titleLead": "安全便捷的",
+      "titleAccent": "入金与出金",
+      "titleTail": "资金存取",
+      "subtitle": "我们提供多元、透明的入金与出金渠道，让您安全顺畅地为账户注资与提取资金，把握每一次市场机会。",
+      "ctaOpen": "立即开立账户"
+    },
+    "methods": {
+      "colMethod": "方式",
+      "colTime": "处理时间",
+      "colFee": "手续费",
+      "colCurrencies": "可选择的货币",
+      "scrollHint": "左右滑动查看完整表格"
+    },
+    "deposit": {
+      "kicker": "DEPOSIT CHANNELS",
+      "heading": "支援的入金渠道与时间表",
+      "note": "下表之入金渠道、处理时间、手续费与可选货币为示意数据，实际可用渠道与条件以华安泰昌正式公告为准。",
+      "intro": {
+        "heading": "如何将资金存入您的交易账户？",
+        "body": "开立账户后，您可登入客户后台进行入金；我们支援多种便捷的入金方案，为您构筑安全的资金桥梁。",
+        "cta": "立即登入注资 →"
+      },
+      "steps": [
+        {"text": "登入您的真实客户后台"},
+        {"text": "进入「资金管理」➜「入金」"},
+        {"text": "选择入金渠道，输入金额并完成交易"}
+      ],
+      "methodsSample": [
+        {"method": "Visa / Mastercard 信用卡", "time": "即时至 30 分钟", "fee": "免费", "free": true, "currencies": "USD, EUR, GBP, AUD, SGD"},
+        {"method": "Apple Pay / Google Pay", "time": "即时", "fee": "免费", "free": true, "currencies": "USD, EUR, GBP"},
+        {"method": "银联 UnionPay 支付", "time": "15 - 30 分钟", "fee": "免费", "free": true, "currencies": "CNH, USD"},
+        {"method": "电汇（SWIFT Wire Transfer）", "time": "2 - 5 个工作天", "fee": "本公司免收（银行或收中转费）", "free": false, "currencies": "所有主流货币"},
+        {"method": "Neteller 电子钱包", "time": "即时", "fee": "免费", "free": true, "currencies": "USD, EUR, GBP"},
+        {"method": "Perfect Money", "time": "即时", "fee": "免费", "free": true, "currencies": "USD, EUR"},
+        {"method": "Fasapay", "time": "即时", "fee": "免费", "free": true, "currencies": "USD, IDR"},
+        {"method": "JCB 信用卡", "time": "即时", "fee": "免费", "free": true, "currencies": "JPY, USD"}
+      ]
+    },
+    "withdraw": {
+      "kicker": "WITHDRAWAL CHANNELS",
+      "heading": "支援的出金渠道与时间表",
+      "note": "下表之出金渠道、处理时间、手续费与可选货币为示意数据，实际可用渠道与条件以华安泰昌正式公告为准。",
+      "intro": {
+        "heading": "如何从您的交易账户提取资金？",
+        "body": "为遵守国际反洗钱相关规范，出金一般以「原路返回」方式退回至您的原入金渠道。",
+        "cta": "立即申请出金 →"
+      },
+      "steps": [
+        {"text": "登入您的客户后台，进入「资金管理」➜「出金」"},
+        {"text": "选择提款渠道并填写欲提取的金额"},
+        {"text": "点选送出，我们的后台专员将于工作日进行审理"}
+      ],
+      "methodsSample": [
+        {"method": "Visa / Mastercard 信用卡", "time": "1 - 3 个工作天", "fee": "免费", "free": true, "currencies": "USD, EUR, GBP, AUD, SGD"},
+        {"method": "银联卡 UnionPay（原路返回）", "time": "1 - 2 个工作天", "fee": "免费", "free": true, "currencies": "CNH, USD"},
+        {"method": "网上银行转账（本地银行）", "time": "1 个工作天内", "fee": "免费", "free": true, "currencies": "本地法定货币"},
+        {"method": "国际电汇（International Wire）", "time": "3 - 5 个工作天", "fee": "本公司免收（中转行或另收）", "free": false, "currencies": "所有主流货币"},
+        {"method": "Neteller 电子钱包", "time": "审核通过后即时", "fee": "免费", "free": true, "currencies": "USD, EUR, GBP"},
+        {"method": "Skrill 电子钱包", "time": "审核通过后即时", "fee": "免费", "free": true, "currencies": "USD, EUR, GBP"}
+      ]
+    },
+    "topics": {
+      "kicker": "SUPPORT TOPICS",
+      "heading": "经常查询的交易支援主题",
+      "subtitle": "有问题吗？在这里快速找到您常见疑问的解答方向。",
+      "items": [
+        {"title": "与我们交易", "desc": "了解交易细则与流程", "icon": "trendingUp"},
+        {"title": "出纳与出入金", "desc": "了解入金与出金方式", "icon": "wallet"},
+        {"title": "您的交易账户", "desc": "账户管理与认证指南", "icon": "user"},
+        {"title": "管理您的资金", "desc": "资金隔离存放与监管", "icon": "shield"},
+        {"title": "合作伙伴计划", "desc": "介绍经纪商与代理方案", "icon": "users"},
+        {"title": "我们的交易平台", "desc": "MT5 与移动设备操作教学", "icon": "smartphone"}
+      ]
+    },
+    "testimonials": {
+      "kicker": "CLIENT VOICES",
+      "heading": "客户见证",
+      "subtitle": "客户见证由业主于后台审核后发布。"
+    },
+    "cta": {
+      "heading": "准备好开始了吗？",
+      "body": "在安全、透明的环境中开启您的黄金、白银交易配置。开立账户后即可体验完整的资金存取服务。",
+      "ctaOpen": "立即开立真实账户",
+      "ctaDemo": "了解交易账户"
+    }
+  },
+  "trading": {
+    "hero": {
+      "titleLine1": "透过 HATC",
+      "titleLine2": "安全高效交易黄金",
+      "subtitle": "作为香港黄金交易所 AA 类行员（会员编号 008），华安泰昌为您提供专业的伦敦金及公斤条交易服务、MT5 平台与全面客户支持，助您在稳健的监管与清晰的条件下掌握黄金市场。",
+      "imageAlt": "MT5 交易平台界面示意图"
+    },
+    "services": {
+      "badge": "精准 · 诚信",
+      "heading": "黄金交易服务与工具",
+      "subtitle": "凭借顶尖的技术平台与灵活的实物、衍生品交易模式，满足您不同的黄金资产配置需求。",
+      "items": {
+        "londonGold": {"title": "伦敦金 (XAU/USD)", "desc": "接轨国际现货黄金市场，提供高流动性与 24 小时不间断的黄金报价交易服务。"},
+        "kilobar": {"title": "公斤条买卖", "desc": "提供实物黄金公斤条之交易、结算与提存，保证高品质纯度与合规交割。"},
+        "mt5": {"title": "MT5 交易平台", "desc": "搭载业界广受采用的 MT5 终端，支持快速下单、丰富技术指标与自动化交易策略。"},
+        "support": {"title": "客户支持", "desc": "专属团队提供一对一开户指引、平台安装教学与出入金业务协助。"}
+      }
+    },
+    "accounts": {
+      "badge": "灵活配置",
+      "heading": "交易账户比较",
+      "subtitle": "为不同交易体量与策略设计的账户体系，助您灵活配置交易优势。",
+      "recommend": "推荐",
+      "colSpec": "账户规格 / 特点",
+      "standard": "标准账户 (Standard)",
+      "professional": "专业账户 (Professional)",
+      "rows": {
+        "minDeposit": "最低入金",
+        "instruments": "交易品种",
+        "spread": "点差",
+        "leverage": "杠杆",
+        "platform": "交易平台",
+        "support": "客户支持",
+        "education": "教育资源",
+        "manager": "专属客户经理"
+      },
+      "pending": "待确认",
+      "instrumentsStandard": "伦敦金",
+      "instrumentsPro": "伦敦金、公斤条",
+      "platformValue": "MT5",
+      "priority": "✓ 优先",
+      "disclaimer": "以上账户资料为示意格式，实际条件以 HATC 正式公布为准。市场交易可能伴随杠杆风险，请确保了解相关条款。"
+    },
+    "trust": {
+      "cards": {
+        "compliance": {"badge": "监管合规", "label": "香港金银业贸易场", "title": "AA 类认可行员", "desc": "香港极具历史与权威之贵金属交易所监管认证。"},
+        "member": {"badge": "行员编号 008", "label": "会员编号 008", "title": "华安泰昌有限公司", "desc": "以 008 号行员身份深耕香港，诚信经营。"},
+        "custody": {"badge": "资金保障", "label": "卓越安全体系", "title": "实物黄金托管与存付", "desc": "标准公斤条高规金库托管，透明化的交割与盘点流程。"}
+      },
+      "partner": {"title": "合作伙伴及认证标志位置", "desc": "（香港金银业贸易场标志、MT5 平台认证、行业安全托管合作机构）"}
+    },
+    "pricing": {
+      "badge": "即时点差",
+      "heading": "即时查看具竞争力的交易条件",
+      "subtitle": "透明的即时点差与流动性报价，无隐藏费用，提供良好的交易执行环境。",
+      "cols": {
+        "instrument": "交易品种",
+        "bid": "买入价 (Bid)",
+        "ask": "卖出价 (Ask)",
+        "spread": "点差 (Spread)",
+        "change": "涨跌幅",
+        "session": "交易时段"
+      },
+      "session": "周一至五 24 小时",
+      "names": {"londonGold": "伦敦金", "kilobarHkd": "公斤条港币"},
+      "disclaimer": "* 示意数据，仅供参考。实际报价与流动性请以 MT5 平台实际交易画面为准。",
+      "cta": "查看完整交易条件"
+    },
+    "faq": {
+      "badge": "支援中心",
+      "heading": "常见问题",
+      "subtitle": "解答您关于黄金交易、平台技术与安全合规的常见疑问。若有其他问题，欢迎随时联系我们的客服团队。",
+      "items": {
+        "q1": {"q": "如何在 HATC 开立交易账户？", "a": "开户流程简便。点击右上角「开立账户」，填写基本资料并依指示上传身份与地址证明，通过审核后即可取得 MT5 交易账户。如需协助，欢迎联系我们的客户支持团队。"},
+        "q2": {"q": "HATC 提供哪些黄金交易产品？", "a": "我们主要提供与国际接轨的现货「伦敦金 (XAU/USD)」交易，以及符合香港实物标准的「公斤条」交易服务，让您灵活配置实物与价格类黄金资产。"},
+        "q3": {"q": "什么是伦敦金 (XAU/USD)？", "a": "伦敦金是国际现货黄金交易的通称，以美元计价，具备近 24 小时双向交易与高流动性，是投资人常用的黄金配置工具。"},
+        "q4": {"q": "MT5 平台如何使用？", "a": "HATC 采用国际通用的 MetaTrader 5 平台，支持电脑、网页及移动设备。我们提供平台使用教学与操作指引，协助您顺利完成安装、登录与下单。"},
+        "q5": {"q": "如何入金和出金？", "a": "客户资金存放于指定托管信托账户中，与公司运营资金严格分离。出入金的具体方式与流程，请于开户后依平台指引办理，或联系客户支持团队了解详情。"},
+        "q6": {"q": "HATC 的交易时间是？", "a": "伦敦金一般于周一至周五提供近 24 小时交易（依夏令／冬令时间调整），方便投资人配合全球主要金融市场时段参与。实际交易时段以交易平台公告为准。"}
+      }
+    },
+    "cta": {
+      "heading": "准备好开始交易黄金？",
+      "body": "立即联系 HATC 专业团队，了解开户流程、账户条件及交易服务详情，与您共同开拓稳健的贵金属配置渠道。"
+    }
+  },
+  "news": {
+    "kicker": "LATEST NEWS & ACTIVITIES",
+    "heading": "最新消息与活动",
+    "empty": "目前暂无最新消息。内容将于官方发布后在此显示。",
+    "viewAll": "查看全部消息",
+    "imageAlt": "消息封面"
+  },
+  "academy": {
+    "kicker": "HATC GOLD ACADEMY",
+    "heading": "黄金交易学堂",
+    "empty": "目前暂无学堂文章。内容将于官方发布后在此显示。",
+    "imageAlt": "学堂文章封面",
+    "disclaimer": "学堂内容为中性教育资讯，不构成任何投资建议或要约。",
+    "backToList": "返回学堂列表",
+    "breadcrumb": "学堂导航",
+    "bodyEmpty": "此文章尚无完整正文。请稍后再查看，或返回列表浏览其他内容。"
+  },
+  "footer": {
+    "memberInfo": "香港黄金交易所 AA 类行员（会员编号 008）",
+    "address": "香港九龙观塘伟业街 223 号宏利金融中心 B 座 8 楼 8A 室",
+    "rights": "版权所有"
+  },
+  "notFound": {
+    "title": "找不到页面",
+    "description": "您所寻找的页面不存在或已移除。",
+    "back": "返回首页"
+  }
+}

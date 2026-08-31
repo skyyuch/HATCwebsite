@@ -1,0 +1,1373 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>华安泰昌 HATC｜贵金属交易 · 香港黄金交易所 AA 类行员（008）</title>
+<meta name="description" content="华安泰昌有限公司（HATC）——香港黄金交易所 AA 类行员，会员编号 008。提供黄金、白银等贵金属交易服务，合规运营、持牌背书。" />
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="256x256" href="assets/favicon-256.png" />
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+<link rel="apple-touch-icon" href="assets/favicon-180.png" />
+<!--
+  HATC 投放落地页（LP） · 独立单文件 · 简体中文
+  - 事实来源仅限 docs/HATC_FACTS.md；营销数据（客户数/交易量/奖项/赠金）一律不得虚构。
+  - 交易条件：黄金/白银「平均点差、1:100 杠杆」为业主提供之确认值，直接写在 #markets 区块；
+    其余未确认条件（手数/手续费/平台细节）暂不展示，如需补充须由业主提供正式数据。
+  - 客服 / 查证 / 注册等运营链接为占位，集中在 CONFIG.LINKS，须由业主/CMS 配置后替换，勿硬编码正式值。
+  - 真实照片/证书请放入同目录 assets/（reception.jpg、member-cert.jpg…），未提供时用品牌图形占位。
+-->
+<style>
+  :root{
+    /* HATC 品牌色（来源：docs/DESIGN_DIRECTION.md / tokens.css） */
+    --navy:#09395f;
+    --navy-deep:#062842;
+    --navy-darker:#041d30;
+    --green:#009944;
+    --green-deep:#007a36;
+    --ink:#1f1c19;
+    --ink-muted:#5b6570;
+    --warm:#f7f5f1;
+    --surface:#ffffff;
+    --line:#e6e2db;
+    --radius:12px;
+    --radius-lg:20px;
+    --pill:999px;
+    --shadow-card:0 10px 30px -12px rgba(9,57,95,.22);
+    --shadow-hero:0 30px 80px -30px rgba(4,29,48,.7);
+    --section-pad:clamp(56px,8vw,104px);
+    --wrap:1160px;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",system-ui,-apple-system,sans-serif;
+    color:var(--ink);
+    background:var(--warm);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  img{max-width:100%;display:block}
+  a{color:inherit;text-decoration:none}
+  .wrap{width:min(var(--wrap),92vw);margin-inline:auto}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    --bg:var(--green);--fg:#fff;
+    display:inline-flex;align-items:center;justify-content:center;gap:.5em;
+    padding:.85em 1.6em;border-radius:var(--pill);border:1px solid transparent;
+    background:var(--bg);color:var(--fg);font-weight:700;font-size:1rem;
+    cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+    box-shadow:0 8px 22px -10px rgba(0,153,68,.7);white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 14px 30px -12px rgba(0,153,68,.75)}
+  .btn:active{transform:translateY(0)}
+  .btn--navy{--bg:var(--navy);box-shadow:0 8px 22px -10px rgba(9,57,95,.6)}
+  .btn--navy:hover{box-shadow:0 14px 30px -12px rgba(9,57,95,.7)}
+  .btn--ghost{--bg:transparent;--fg:#fff;border-color:rgba(255,255,255,.55);box-shadow:none}
+  .btn--ghost:hover{background:rgba(255,255,255,.1)}
+  .btn--outline{--bg:transparent;--fg:var(--navy);border-color:rgba(9,57,95,.3);box-shadow:none}
+  .btn--outline:hover{background:rgba(9,57,95,.05);box-shadow:none}
+  .btn--lg{padding:1.05em 2.2em;font-size:1.05rem}
+  .btn--block{width:100%}
+
+  /* ---------- Chips / badges ---------- */
+  .chip{
+    display:inline-flex;align-items:center;gap:.45em;
+    padding:.4em .9em;border-radius:var(--pill);
+    font-size:.82rem;font-weight:600;letter-spacing:.02em;
+    background:rgba(255,255,255,.08);color:#dbe6f0;border:1px solid rgba(255,255,255,.18);
+  }
+  .chip .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(0,153,68,.25)}
+  .chip--light{background:#eaf3ec;color:var(--green-deep);border-color:#cfe7d6}
+  .kicker{
+    display:inline-flex;align-items:center;gap:.5em;
+    font-size:.8rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--green-deep);
+  }
+  .kicker::before{content:"";width:24px;height:2px;background:var(--green);border-radius:2px}
+
+  /* ---------- Header ---------- */
+  header.top{
+    position:sticky;top:0;z-index:60;
+    background:rgba(4,29,48,.82);backdrop-filter:saturate(160%) blur(10px);
+    border-bottom:1px solid rgba(255,255,255,.08);color:#fff;
+  }
+  .top__bar{display:flex;align-items:center;gap:16px;padding:12px 0;min-height:64px}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.02em}
+  .brand__logo{
+    flex:0 0 auto;display:flex;align-items:center;
+    background:#fff;border-radius:10px;padding:7px 12px;
+    box-shadow:0 4px 12px -6px rgba(0,0,0,.5), inset 0 0 0 1px rgba(9,57,95,.08);
+  }
+  .brand__logo img{height:22px;width:auto;display:block}
+  .brand__name{font-size:1.05rem;line-height:1.1}
+  .brand__sub{display:block;font-size:.66rem;font-weight:600;letter-spacing:.16em;color:#9db4c8}
+  .top__spacer{flex:1}
+  .top__meta{display:flex;align-items:center;gap:14px}
+  .top__phone{display:flex;flex-direction:column;line-height:1.15;text-align:right}
+  .top__phone b{font-size:1.02rem;color:#fff}
+  .top__phone span{font-size:.7rem;color:#9db4c8;letter-spacing:.08em}
+  @media (max-width:720px){
+    .brand__sub{display:none}.top__phone{display:none}
+    .top__meta .chip{display:none}
+    .top__bar{gap:10px}
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative;overflow:hidden;color:#fff;
+    background:
+      radial-gradient(900px 500px at 85% -5%,rgba(0,153,68,.28),transparent 60%),
+      radial-gradient(700px 500px at 8% 110%,rgba(0,153,68,.12),transparent 55%),
+      linear-gradient(160deg,var(--navy) 0%,var(--navy-deep) 55%,var(--navy-darker) 100%);
+  }
+  .hero::before{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:.15;
+    background:url("assets/hero-grid-overlay.png") center/cover no-repeat;
+  }
+  /* Hero background energy rings + soft green glow (on-brand, no gold) */
+  .hero__fx{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+  .hero__glow{
+    position:absolute;top:calc(50% - 40px);left:50%;transform:translate(-50%,-50%);
+    width:min(680px,92vw);height:min(680px,92vw);border-radius:50%;filter:blur(6px);
+    background:radial-gradient(circle,rgba(0,153,68,.22),rgba(0,153,68,.08) 42%,transparent 68%);
+  }
+  .hero__grid{
+    position:relative;z-index:2;display:grid;grid-template-columns:1.15fr .85fr;gap:48px;
+    align-items:center;padding:clamp(48px,7vw,88px) 0 clamp(56px,8vw,96px);
+  }
+  .hero__grid--solo{
+    grid-template-columns:1fr;max-width:860px;margin-inline:auto;
+    text-align:center;justify-items:center;
+    padding:clamp(64px,9vw,120px) 0 clamp(64px,9vw,120px);
+  }
+  .hero__grid--solo .hero__lead{margin-left:auto;margin-right:auto}
+  .hero__grid--solo .hero__trust{justify-content:center}
+  .hero__grid--solo .hero__cta{justify-content:center}
+  .hero__grid--solo .hero__note{margin-left:auto;margin-right:auto}
+  .hero__kicker{
+    display:inline-block;background:rgba(126,224,162,.12);color:#7ee0a2;
+    font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    padding:.5em 1.15em;border-radius:var(--pill);
+  }
+  .hero h1{
+    font-size:clamp(2.1rem,5vw,3.5rem);line-height:1.18;margin:.55em 0 .4em;
+    font-weight:800;letter-spacing:-.01em;
+  }
+  .hero h1 em{font-style:normal;color:#7ee0a2}
+  .hero__lead{font-size:clamp(1rem,1.4vw,1.15rem);line-height:1.6;color:#e7e2d9;max-width:44ch;margin:0 0 1.6em}
+  .hero__trust{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:1.9em}
+  .tchip{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.04);border:1px solid rgba(231,226,217,.15);
+    border-radius:8px;padding:10px 20px;color:#fff;font-size:.9rem;font-weight:600;
+  }
+  .tchip svg{width:18px;height:18px;flex:0 0 auto}
+  .hero__cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  .hero__note{margin-top:1.5em;font-size:.78rem;line-height:1.5;color:#6b7b88;max-width:52ch}
+
+  /* Lead form card */
+  .lead{
+    background:#fff;color:var(--ink);border-radius:var(--radius-lg);
+    padding:26px 24px;box-shadow:var(--shadow-hero);position:relative;
+    border:1px solid rgba(255,255,255,.4);
+  }
+  .lead__tag{
+    position:absolute;top:-13px;left:24px;background:var(--green);color:#fff;
+    font-size:.72rem;font-weight:700;letter-spacing:.06em;padding:.35em .9em;border-radius:var(--pill);
+    box-shadow:0 8px 18px -8px rgba(0,153,68,.7);
+  }
+  .lead h2{margin:.4em 0 .1em;font-size:1.3rem}
+  .lead p.lead__sub{margin:0 0 1.1em;color:var(--ink-muted);font-size:.9rem}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:.8rem;font-weight:600;margin-bottom:6px;color:#3a4650}
+  .field input,.field select{
+    width:100%;padding:.8em .95em;border:1px solid var(--line);border-radius:10px;
+    font-size:1rem;background:#fbfaf8;color:var(--ink);transition:border .15s,box-shadow .15s;
+  }
+  .field input:focus,.field select:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(9,57,95,.14)}
+  .lead__fine{margin:.9em 0 0;font-size:.72rem;color:var(--ink-muted);line-height:1.5}
+  .lead__ok{
+    display:none;text-align:center;padding:14px 6px;
+  }
+  .lead__ok svg{width:52px;height:52px;margin:0 auto 8px}
+  .lead.is-done .lead__form{display:none}
+  .lead.is-done .lead__ok{display:block}
+
+  @media (max-width:880px){
+    .hero__grid{grid-template-columns:1fr;gap:34px;padding-top:36px}
+    .hero__lead{max-width:none}
+    .lead{order:-1}
+  }
+
+  /* ---------- Section shells ---------- */
+  section.band{padding:var(--section-pad) 0}
+  .band--warm{background:var(--warm)}
+  .band--white{background:var(--surface)}
+  .band--soft{background:linear-gradient(180deg,#fff 0%,var(--warm) 100%)}
+  .head{max-width:56ch;margin:0 auto clamp(34px,5vw,54px);text-align:center}
+  .head h2{font-size:clamp(1.6rem,3vw,2.35rem);line-height:1.2;margin:.35em 0 .3em;font-weight:800;color:var(--navy)}
+  .head p{margin:0;color:var(--ink-muted);font-size:1.02rem}
+
+  /* ---------- Credibility cards ---------- */
+  .grid{display:grid;gap:20px}
+  .grid-4{grid-template-columns:repeat(4,1fr)}
+  .grid-3{grid-template-columns:repeat(3,1fr)}
+  .grid-2{grid-template-columns:repeat(2,1fr)}
+  @media (max-width:960px){.grid-4{grid-template-columns:repeat(2,1fr)}.grid-3{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:600px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr}}
+
+  .card{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);
+    padding:26px 24px;box-shadow:var(--shadow-card);
+    transition:transform .2s ease,box-shadow .2s ease;
+  }
+  .card:hover{transform:translateY(-4px);box-shadow:0 20px 44px -16px rgba(9,57,95,.28)}
+  .card__ic{
+    position:relative;width:60px;height:60px;border-radius:16px;display:grid;place-items:center;margin-bottom:20px;
+    background:linear-gradient(150deg,#ffffff 0%,#eef4f1 55%,#e7eef4 100%);
+    border:1px solid #dde7e2;
+    box-shadow:0 8px 20px -12px rgba(9,57,95,.45), inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .card__ic::after{
+    content:"";position:absolute;right:9px;top:9px;width:6px;height:6px;border-radius:50%;
+    background:var(--green);box-shadow:0 0 0 3px rgba(0,153,68,.16);
+  }
+  .card__ic svg{width:30px;height:30px}
+  .card__ic .duo{fill:var(--green);opacity:.14}
+  .card__ic .st{fill:none;stroke:var(--navy);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .card__ic .ac{fill:none;stroke:var(--green-deep);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .card:hover .card__ic{box-shadow:0 12px 26px -12px rgba(9,57,95,.55), inset 0 1px 0 rgba(255,255,255,.9)}
+  .card h3{margin:.1em 0 .45em;font-size:1.12rem;color:var(--navy)}
+  .card p{margin:0;color:var(--ink-muted);font-size:.92rem}
+  .card__verify{display:inline-flex;align-items:center;gap:.4em;margin-top:14px;font-size:.82rem;font-weight:700;color:var(--green-deep)}
+  .card__verify svg{width:14px;height:14px}
+  .card .big{font-size:1.9rem;font-weight:800;color:var(--navy);letter-spacing:-.01em}
+
+  /* ---------- Certificate / license cards (uniform, image-on-top) ---------- */
+  .kicker--pill{
+    display:inline-flex;align-items:center;background:rgba(0,153,68,.1);color:var(--navy);
+    font-size:.8rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    padding:.5em 1.15em;border-radius:var(--pill);
+  }
+  .certgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;align-items:stretch}
+  @media (max-width:1100px){.certgrid{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width:740px){.certgrid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:520px){.certgrid{grid-template-columns:1fr}}
+  .certcard{
+    display:flex;flex-direction:column;overflow:hidden;
+    background:#fff;border:1px solid #e7e2d9;border-radius:10px;
+    box-shadow:0 6px 16px 0 rgba(9,57,95,.03);transition:transform .2s ease,box-shadow .2s ease;
+  }
+  .certcard:hover{transform:translateY(-4px);box-shadow:0 20px 44px -16px rgba(9,57,95,.2)}
+  .certframe{
+    position:relative;display:block;width:100%;height:180px;overflow:hidden;
+    background:#eef1f4;border:0;padding:0;cursor:zoom-in;
+  }
+  .certframe img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;transition:transform .3s ease}
+  .certframe:hover img{transform:scale(1.04)}
+  .certframe .zoom-ic{
+    position:absolute;right:10px;top:10px;width:32px;height:32px;border-radius:50%;
+    background:rgba(4,29,48,.55);color:#fff;display:grid;place-items:center;
+    opacity:0;transition:opacity .2s;pointer-events:none;
+  }
+  .certframe:hover .zoom-ic{opacity:1}
+  .certframe .zoom-ic svg{width:16px;height:16px}
+  .certframe .ph{position:absolute;inset:0;width:100%;height:100%;display:none}
+  .certframe.is-empty img{display:none}
+  .certframe.is-empty .ph{display:block}
+  .certframe.is-empty{cursor:default}
+  .certframe.is-empty .zoom-ic{display:none}
+  .certframe .ph-tag{
+    display:none;position:absolute;left:50%;bottom:8px;transform:translateX(-50%);
+    font-size:.6rem;font-weight:700;color:var(--green-deep);background:#eaf3ec;
+    border:1px solid #cfe7d6;border-radius:var(--pill);padding:.15em .7em;white-space:nowrap;
+  }
+  .certframe.is-empty .ph-tag{display:block}
+  .certcard__body{padding:20px;display:flex;flex-direction:column;gap:12px;flex:1}
+  .certcard__meta{display:flex;flex-direction:column;gap:4px}
+  .certcard__body h3{margin:0;font-size:1rem;font-weight:700;color:#22303a}
+  .certcard__no{margin:0;font-size:.82rem;font-weight:600;color:var(--navy)}
+  .certcard__cap{margin:0;font-size:.75rem;color:#6b7b88}
+  .certcard .card__verify{
+    cursor:pointer;margin-top:auto;padding:0;background:none;border:none;font:inherit;
+    display:inline-flex;align-items:center;gap:5px;color:var(--green);font-weight:700;font-size:.82rem;
+  }
+  .certcard .card__verify svg{width:14px;height:14px}
+
+  /* ---------- Lightbox ---------- */
+  .lb{
+    position:fixed;inset:0;z-index:120;display:none;place-items:center;
+    background:rgba(4,20,34,.9);backdrop-filter:blur(4px);padding:4vw;
+  }
+  .lb.open{display:grid;animation:fade .25s ease}
+  .lb img{max-width:92vw;max-height:82vh;border-radius:10px;box-shadow:0 30px 80px -20px rgba(0,0,0,.7);object-fit:contain}
+  .lb__cap{position:absolute;left:0;right:0;bottom:22px;text-align:center;color:#dbe6f0;font-size:.9rem;padding:0 20px}
+  .lb__close{
+    position:absolute;top:18px;right:20px;width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;
+    background:rgba(255,255,255,.12);color:#fff;display:grid;place-items:center;
+  }
+  .lb__close:hover{background:rgba(255,255,255,.22)}
+  .lb__close svg{width:22px;height:22px}
+
+  /* ---------- WeChat QR popover (compact) ---------- */
+  .qrpop{position:fixed;inset:0;z-index:130;display:none;place-items:center;background:rgba(4,20,34,.55);backdrop-filter:blur(2px);padding:6vw}
+  .qrpop.open{display:grid;animation:fade .2s ease}
+  .qrpop__card{
+    position:relative;background:#fff;border-radius:18px;padding:24px 22px 20px;
+    width:min(300px,86vw);text-align:center;box-shadow:0 30px 70px -20px rgba(0,0,0,.5);
+  }
+  .qrpop__card img{width:210px;height:210px;object-fit:contain;margin:4px auto 12px;display:block;border-radius:10px}
+  .qrpop__card h4{margin:0;color:var(--navy);font-size:1.08rem}
+  .qrpop__card p{margin:.35em 0 0;color:var(--ink-muted);font-size:.82rem;line-height:1.6}
+  .qrpop__close{
+    position:absolute;top:10px;right:10px;width:32px;height:32px;border:none;cursor:pointer;
+    background:#f0efec;color:var(--ink);border-radius:50%;display:grid;place-items:center;
+  }
+  .qrpop__close:hover{background:#e4e2dd}
+  .qrpop__close svg{width:18px;height:18px}
+
+  /* ---------- Premium dark feature cards ---------- */
+  .bannergrid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+  @media (max-width:840px){.bannergrid{grid-template-columns:1fr}}
+  .bannercta{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:40px}
+  .bannercard{
+    position:relative;overflow:hidden;color:#fff;isolation:isolate;
+    display:grid;grid-template-columns:1fr 156px;gap:18px;align-items:center;
+    padding:30px 28px;border-radius:20px;border:1px solid rgba(255,255,255,.1);
+    background:
+      radial-gradient(120% 120% at 100% 0%,rgba(0,153,68,.14),transparent 52%),
+      linear-gradient(150deg,#123f60 0%,#0b2c47 46%,#061f34 100%);
+    box-shadow:0 22px 52px -26px rgba(3,18,28,.95), inset 0 1px 0 rgba(255,255,255,.08);
+    transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;
+  }
+  .bannercard::before{
+    content:"";position:absolute;right:22px;top:50%;transform:translateY(-50%);
+    width:172px;height:172px;border-radius:50%;z-index:0;pointer-events:none;
+    background:radial-gradient(circle,rgba(0,153,68,.32),transparent 66%);
+  }
+  .bannercard::after{
+    content:"";position:absolute;inset:0;border-radius:inherit;z-index:0;pointer-events:none;
+    background:linear-gradient(180deg,rgba(255,255,255,.07),transparent 20%);
+  }
+  .bannercard:hover{transform:translateY(-5px);border-color:rgba(126,224,162,.42);box-shadow:0 32px 66px -28px rgba(3,18,28,1)}
+  .bannercard__body{position:relative;z-index:2}
+  .bannercard h3{
+    margin:0 0 .6em;font-size:1.34rem;color:#fff;font-weight:800;letter-spacing:.01em;
+    display:flex;align-items:center;gap:.55em;
+  }
+  .bannercard h3 .sample-tag{color:#0c3a22;background:#7ee0a2}
+  .bannercard__body>p{margin:0;color:#b9cad8;font-size:.93rem;line-height:1.78;max-width:30ch}
+  .bannercard__vis{position:relative;z-index:2;justify-self:center}
+  .bannercard__vis svg{width:156px;height:132px;display:block;filter:drop-shadow(0 12px 16px rgba(0,0,0,.42));transition:transform .3s ease}
+  .bannercard:hover .bannercard__vis svg{transform:translateY(-3px) scale(1.02)}
+  @media (max-width:480px){
+    .bannercard{grid-template-columns:1fr;text-align:left}
+    .bannercard__vis{justify-self:start;margin-top:6px}
+  }
+
+  /* ---------- CTA band ---------- */
+  .ctaband{
+    color:#fff;text-align:center;position:relative;overflow:hidden;
+    background:radial-gradient(700px 300px at 50% -40%,rgba(0,153,68,.3),transparent 60%),linear-gradient(120deg,var(--navy) 0%,var(--navy-darker) 100%);
+    padding:clamp(48px,7vw,80px) 0;
+  }
+  .ctaband h2{font-size:clamp(1.5rem,3vw,2.2rem);margin:.2em 0 .5em;font-weight:800}
+  .ctaband p{color:#c9d7e4;margin:0 auto 1.6em;max-width:52ch}
+  .ctaband .hero__cta{justify-content:center}
+
+  /* ---------- Markets / tabs ---------- */
+  .tabs{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:30px}
+  .tab{
+    display:inline-flex;align-items:center;gap:.55em;
+    padding:.6em 1.35em;border-radius:var(--pill);border:1px solid var(--line);background:#fff;
+    font-weight:700;color:var(--ink-muted);cursor:pointer;transition:.18s;
+  }
+  .tab__ic{display:inline-flex}
+  .tab__ic svg{width:18px;height:18px}
+  .tab__ic .tf{fill:var(--green);opacity:.18}
+  .tab__ic .ts{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .tab:hover{border-color:var(--navy);color:var(--navy)}
+  .tab[aria-selected="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .tab[aria-selected="true"] .tab__ic .tf{fill:#7ee0a2;opacity:.9}
+  .tab[aria-selected="true"] .tab__ic .ts{stroke:#fff}
+  .panel{display:none}
+  .panel.is-active{display:block;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .quote{
+    display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-items:center;
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-card);
+  }
+  .quote__vis{
+    border-radius:var(--radius);min-height:220px;position:relative;overflow:hidden;
+    background:linear-gradient(160deg,var(--navy),var(--navy-darker));color:#fff;padding:22px;display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .qi{position:relative;z-index:2;display:flex;flex-direction:column;gap:11px}
+  .qi__code{align-self:flex-start;font-size:.72rem;font-weight:800;letter-spacing:.12em;color:#7ee0a2;background:rgba(126,224,162,.14);border-radius:var(--pill);padding:.35em .9em}
+  .qi__name{font-size:1.85rem;font-weight:800;line-height:1.1}
+  .qi__name span{font-size:.95rem;font-weight:600;color:#9db4c8;margin-left:.4em}
+  .qi__desc{margin:0;color:#c9d7e4;font-size:.9rem;line-height:1.7;max-width:38ch}
+  .qi__points{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+  .qi__points li{display:flex;align-items:center;gap:8px;font-size:.9rem;font-weight:600;color:#eaf2f8}
+  .qi__points svg{width:16px;height:16px;flex:0 0 auto;color:#7ee0a2}
+  .qi__art{position:absolute;right:-6px;bottom:-8px;width:148px;height:auto;opacity:.16;z-index:1;pointer-events:none}
+  .specs{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .specs li{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--warm)}
+  .specs .k{font-size:.76rem;color:var(--ink-muted)}
+  .specs .v{font-size:1.15rem;font-weight:800;color:var(--navy)}
+  .sample-tag{font-size:.62rem;font-weight:700;color:var(--green-deep);background:#eaf3ec;border-radius:4px;padding:.1em .4em;margin-left:.3em;vertical-align:middle}
+  @media (max-width:760px){.quote{grid-template-columns:1fr}}
+
+  /* ---------- Harbour (real photo) + stats ---------- */
+  .harbour{
+    position:relative;overflow:hidden;color:#fff;
+    padding:clamp(56px,8vw,96px) 0;
+    background:linear-gradient(180deg,var(--navy-deep),#03151f);
+  }
+  .harbour__photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;z-index:0}
+  .harbour::after{
+    content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(760px 420px at 80% -6%,rgba(0,153,68,.16),transparent 60%),
+      linear-gradient(180deg,rgba(4,29,48,.82) 0%,rgba(4,24,40,.8) 45%,rgba(3,18,28,.9) 100%);
+  }
+  .harbour__inner{position:relative;z-index:3}
+  .harbour__lead{max-width:62ch;margin:0 auto;text-align:center;color:#d6e2ec;font-size:1.05rem;line-height:1.85}
+  .hstats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:44px}
+  .hstat{
+    background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.035));
+    border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:26px 18px;text-align:center;
+    transition:transform .2s ease,border-color .2s ease;
+  }
+  .hstat:hover{transform:translateY(-4px);border-color:rgba(126,224,162,.55)}
+  .hstat .num{font-size:clamp(2rem,4vw,2.9rem);font-weight:800;color:#fff;letter-spacing:-.02em;line-height:1}
+  .hstat .num em{font-style:normal;color:#7ee0a2}
+  .hstat .lab{color:#c9d7e4;font-size:.92rem;margin-top:.6em}
+  .hstat .stag{
+    display:inline-block;margin-top:8px;font-size:.6rem;font-weight:700;color:#0c3a22;background:#7ee0a2;
+    border-radius:var(--pill);padding:.12em .6em;letter-spacing:.02em;
+  }
+  .harbour__note{margin:22px auto 0;text-align:center;font-size:.76rem;color:#8fa6ba}
+  @media (max-width:840px){.hstats{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:420px){.hstats{grid-template-columns:1fr}}
+
+  /* ---------- Qualification standing + progression ---------- */
+  .qualbar{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;max-width:820px;margin:0 auto 38px}
+  .qualbar .qb{
+    display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);
+    border-radius:var(--pill);padding:10px 20px;box-shadow:var(--shadow-card);
+  }
+  .qualbar .qb .dotg{width:8px;height:8px;flex:0 0 auto;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(0,153,68,.14)}
+  .qualbar .qb b{color:var(--navy);font-size:1.02rem;letter-spacing:.01em}
+  .qualbar .qb span{color:var(--ink-muted);font-size:.8rem}
+
+  .stepper{display:grid;grid-template-columns:repeat(4,1fr);gap:0;max-width:900px;margin:0 auto}
+  .stepper .step{position:relative;text-align:center;padding:0 10px}
+  .stepper .step::before{
+    content:"";position:absolute;top:19px;left:-50%;width:100%;height:2px;z-index:0;
+    background:linear-gradient(90deg,var(--green),var(--navy));opacity:.32;
+  }
+  .stepper .step:first-child::before{display:none}
+  .stepper .node{
+    position:relative;z-index:1;width:40px;height:40px;margin:0 auto 15px;border-radius:50%;
+    display:grid;place-items:center;background:#fff;border:2px solid var(--green);color:var(--green-deep);
+    font-weight:800;font-size:.9rem;box-shadow:0 0 0 5px rgba(0,153,68,.1);
+  }
+  .stepper .step--top .node{
+    background:linear-gradient(135deg,var(--green),var(--green-deep));border-color:transparent;color:#fff;
+    box-shadow:0 10px 24px -8px rgba(0,153,68,.6),0 0 0 5px rgba(0,153,68,.18);
+  }
+  .stepper .node svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+  .stepper time{display:block;font-weight:800;color:var(--green-deep);font-size:.8rem;letter-spacing:.02em}
+  .stepper .slab{display:block;margin-top:.32em;color:var(--ink);font-size:.92rem;line-height:1.5}
+  .stepper .step--top .slab{color:var(--navy);font-weight:700}
+  .stepper .toptag{display:inline-block;margin-top:9px;font-size:.62rem;font-weight:800;color:#fff;background:var(--green-deep);border-radius:var(--pill);padding:.2em .75em;letter-spacing:.05em}
+  @media (max-width:720px){
+    .stepper{grid-template-columns:1fr;max-width:460px}
+    .stepper .step{
+      display:grid;grid-template-columns:40px 1fr;column-gap:16px;row-gap:2px;
+      align-items:start;text-align:left;padding:0 0 26px;
+    }
+    .stepper .step:last-child{padding-bottom:0}
+    .stepper .node{margin:0;grid-column:1;grid-row:1}
+    .stepper time{grid-column:2;grid-row:1;align-self:center}
+    .stepper .slab{grid-column:2;grid-row:2;margin-top:2px}
+    .stepper .slab br{display:none}
+    .stepper .toptag{grid-column:2;grid-row:3;justify-self:start;margin-top:6px}
+    .stepper .step::before{top:0;left:19px;width:2px;height:100%;background:linear-gradient(180deg,var(--green),var(--navy))}
+    .stepper .step:first-child::before{display:none}
+  }
+
+  /* ---------- Security guarantees (premium dark, numbered) ---------- */
+  .secband{
+    position:relative;overflow:hidden;color:#fff;
+    background:
+      radial-gradient(680px 300px at 12% -10%,rgba(0,153,68,.16),transparent 60%),
+      radial-gradient(620px 280px at 100% 120%,rgba(22,84,124,.4),transparent 60%),
+      linear-gradient(160deg,#0c3251 0%,#081f34 55%,#05192b 100%);
+  }
+  .secband::before{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:.7;
+    background:
+      linear-gradient(118deg,transparent 40%,rgba(126,224,162,.07) 47%,transparent 53%),
+      linear-gradient(118deg,transparent 60%,rgba(255,255,255,.045) 66%,transparent 72%);
+  }
+  .secband .wrap{position:relative;z-index:2}
+  .secband .kicker{color:#7ee0a2}
+  .secband h2{color:#fff}
+  .secband .head p{color:#aebfce}
+  .secgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  @media (max-width:980px){.secgrid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:560px){.secgrid{grid-template-columns:1fr}}
+  .seccard{
+    position:relative;overflow:hidden;padding:28px 22px 24px;border-radius:18px;
+    background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.1);
+    box-shadow:0 20px 46px -28px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.07);
+    transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;
+  }
+  .seccard::after{
+    content:"";position:absolute;right:-34px;top:-44px;width:150px;height:150px;border-radius:50%;
+    background:radial-gradient(circle,rgba(0,153,68,.22),transparent 66%);pointer-events:none;
+  }
+  .seccard:hover{transform:translateY(-5px);border-color:rgba(126,224,162,.42);box-shadow:0 30px 62px -30px rgba(0,0,0,.95)}
+  .seccard__num{
+    position:absolute;top:6px;right:16px;z-index:0;pointer-events:none;
+    font:800 74px/1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.02em;
+    color:rgba(126,224,162,.05);-webkit-text-stroke:1.4px rgba(126,224,162,.5);
+  }
+  .seccard__ic{
+    position:relative;z-index:1;width:54px;height:54px;border-radius:15px;display:grid;place-items:center;margin-bottom:18px;
+    background:linear-gradient(160deg,rgba(126,224,162,.18),rgba(126,224,162,.04));
+    border:1px solid rgba(126,224,162,.3);box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  .seccard__ic svg{width:27px;height:27px}
+  .seccard__ic .duo{fill:#7ee0a2;opacity:.16;stroke:none}
+  .seccard__ic .st{fill:none;stroke:#dbe8f2;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .seccard__ic .ac{fill:none;stroke:#7ee0a2;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .seccard h3{position:relative;z-index:1;margin:0 0 .5em;font-size:1.16rem;color:#fff;font-weight:800}
+  .seccard p{position:relative;z-index:1;margin:0;color:#aebfce;font-size:.9rem;line-height:1.72}
+
+  /* stat strip */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;text-align:center}
+  .stat .num{font-size:clamp(2rem,4vw,2.8rem);font-weight:800;color:#fff;letter-spacing:-.02em}
+  .stat .lab{color:#c9d7e4;font-size:.9rem}
+  @media (max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+  /* ---------- Footer ---------- */
+  footer.site{background:var(--navy-darker);color:#c9d7e4;padding:56px 0 90px}
+  .foot__grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:32px;margin-bottom:28px}
+  footer.site h4{color:#fff;font-size:.95rem;margin:0 0 12px;letter-spacing:.04em}
+  footer.site a{color:#c9d7e4}
+  footer.site a:hover{color:#fff}
+  .foot__list{list-style:none;padding:0;margin:0;display:grid;gap:8px;font-size:.9rem}
+  .disclaimer{border-top:1px solid rgba(255,255,255,.12);padding-top:22px;font-size:.78rem;color:#8fa6ba;line-height:1.7}
+  .disclaimer b{color:#cdd9e4}
+  @media (max-width:760px){.foot__grid{grid-template-columns:1fr;gap:24px}}
+
+  /* ---------- floating ---------- */
+  .fab{
+    position:fixed;right:18px;bottom:18px;z-index:70;display:flex;flex-direction:column;gap:12px;
+  }
+  .fab a,.fab button{
+    width:auto;border:none;cursor:pointer;
+  }
+  .fab .cs{
+    display:flex;align-items:center;gap:8px;background:var(--green);color:#fff;font-weight:700;
+    padding:.8em 1.2em;border-radius:var(--pill);box-shadow:0 12px 26px -10px rgba(0,153,68,.8);
+  }
+  .fab .top{
+    align-self:flex-end;width:46px;height:46px;border-radius:50%;background:#fff;color:var(--navy);
+    display:grid;place-items:center;box-shadow:var(--shadow-card);opacity:0;pointer-events:none;transition:.25s;
+  }
+  .fab .top.show{opacity:1;pointer-events:auto}
+
+  /* mobile sticky CTA */
+  .mcta{
+    position:fixed;left:0;right:0;bottom:0;z-index:65;display:none;gap:10px;padding:10px 14px;
+    background:rgba(4,29,48,.94);backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,.1);
+  }
+  .mcta .btn{flex:1}
+  @media (max-width:720px){
+    .mcta{display:flex}
+    .fab{bottom:74px}
+    footer.site{padding-bottom:120px}
+  }
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+</style>
+</head>
+<body>
+
+<!-- SVG sprite: certificate placeholder (品牌向量占位，非真实证书) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="certPH" viewBox="0 0 120 160">
+    <rect width="120" height="160" fill="#fbfaf8"/>
+    <rect x="6" y="6" width="108" height="148" fill="none" stroke="#09395f" stroke-width="2"/>
+    <rect x="12" y="12" width="96" height="136" fill="none" stroke="#009944" stroke-width="1" opacity=".6"/>
+    <text x="60" y="30" text-anchor="middle" font-family="serif" font-size="12" font-weight="700" fill="#09395f">HATC</text>
+    <line x1="42" y1="38" x2="78" y2="38" stroke="#009944" stroke-width="1.5"/>
+    <g fill="#c9cfd6">
+      <rect x="26" y="50" width="68" height="4" rx="2"/>
+      <rect x="30" y="60" width="60" height="3" rx="1.5"/>
+      <rect x="34" y="69" width="52" height="3" rx="1.5"/>
+      <rect x="30" y="78" width="60" height="3" rx="1.5"/>
+    </g>
+    <circle cx="60" cy="108" r="15" fill="none" stroke="#09395f" stroke-width="1.5"/>
+    <circle cx="60" cy="108" r="9" fill="#eaf3ec" stroke="#009944" stroke-width="1"/>
+    <path d="M60 103l1.6 3.4 3.7.4-2.8 2.5.8 3.6-3.3-1.9-3.3 1.9.8-3.6-2.8-2.5 3.7-.4z" fill="#009944"/>
+    <path d="M50 123l10 6 10-6v10l-10 6-10-6z" fill="#09395f" opacity=".85"/>
+  </symbol>
+</svg>
+
+<!-- ============ HEADER ============ -->
+<header class="top">
+  <div class="wrap top__bar">
+    <a class="brand" href="#top" aria-label="华安泰昌 HATC 首页">
+      <span class="brand__logo"><img src="assets/hatc-logo.png" alt="HATC" /></span>
+      <span class="brand__name">华安泰昌
+        <span class="brand__sub">HATC GROUP LIMITED</span>
+      </span>
+    </a>
+    <span class="top__spacer"></span>
+    <div class="top__meta">
+      <span class="chip"><span class="dot"></span>会员编号 008 · AA 类行员</span>
+      <a class="btn btn--navy" data-link="register" href="#lead">立即开户</a>
+    </div>
+  </div>
+</header>
+
+<a id="top"></a>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero__fx" aria-hidden="true">
+    <div class="hero__glow"></div>
+  </div>
+  <div class="wrap hero__grid hero__grid--solo">
+    <div class="hero__copy">
+      <span class="hero__kicker">香港黄金交易所 · AA 类行员 · 编号 008</span>
+      <h1>安全稳健的 <em>贵金属交易</em> · 黄金 · 白银</h1>
+      <p class="hero__lead">华安泰昌有限公司（HATC）—— 持牌背书、合规运营的香港贵金属在线交易服务商，为亚太机构及个人提供高流动性投资通道。</p>
+
+      <div class="hero__trust">
+        <span class="tchip">
+          <svg viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M11.6079 9.66664 12.7442 16.0611C12.7569 16.1364 12.7463 16.2138 12.7139 16.2829 12.6815 16.3521 12.6287 16.4097 12.5626 16.448 12.4966 16.4863 12.4204 16.5036 12.3443 16.4974 12.2682 16.4913 12.1957 16.462 12.1367 16.4136L9.45168 14.3984C9.32206 14.3015 9.1646 14.2492 9.0028 14.2492 8.84101 14.2492 8.68355 14.3015 8.55393 14.3984L5.86443 16.4129C5.80542 16.4612 5.73308 16.4904 5.65705 16.4965 5.58103 16.5027 5.50493 16.4855 5.43893 16.4473 5.37292 16.4091 5.32014 16.3516 5.28762 16.2826 5.2551 16.2136 5.2444 16.1364 5.25693 16.0611L6.39243 9.66664M13.5 5.9994C13.5 8.48468 11.4853 10.4994 9 10.4994 6.51472 10.4994 4.5 8.48468 4.5 5.9994 4.5 3.51412 6.51472 1.4994 9 1.4994 11.4853 1.4994 13.5 3.51412 13.5 5.9994Z" stroke="#7EE0A2" stroke-width="2" stroke-linecap="round"/></svg>
+          香港黄金交易所 AA 类行员
+        </span>
+        <span class="tchip">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6.0002 7.99968L7.3334 9.33306L9.9998 6.66631M13.3328 8.66667C13.3328 12.0001 10.9997 13.6668 8.22664 14.6335C8.08143 14.6827 7.9237 14.6804 7.78002 14.6269C5.0003 13.6668 2.6672 12.0001 2.6672 8.66667V3.99985C2.6672 3.82304 2.73743 3.65346 2.86244 3.52843C2.98745 3.4034 3.15701 3.33316 3.3338 3.33316C4.667 3.33316 6.3335 2.53314 7.49338 1.51977C7.63461 1.3991 7.81425 1.3328 8 1.3328C8.18575 1.3328 8.36539 1.3991 8.50662 1.51977C9.67317 2.53981 11.333 3.33316 12.6662 3.33316C12.843 3.33316 13.0125 3.4034 13.1376 3.52843C13.2626 3.65346 13.3328 3.82304 13.3328 3.99985V8.66667Z" stroke="#7EE0A2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          参与者证书 · 成员编号 8
+        </span>
+        <span class="tchip">
+          <svg viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M10.4999 9.75006V6.37479C10.4999 5.2497 11.2498 5.2497 11.2498 3.74958 11.2498 3.1528 11.0127 2.58045 10.5908 2.15846 10.1689 1.73647 9.59668 1.4994 9 1.4994 8.40332 1.4994 7.83108 1.73647 7.40917 2.15846 6.98725 2.58045 6.75023 3.1528 6.75023 3.74958 6.75023 5.2497 7.50015 5.2497 7.50015 6.37479V9.75006M3.75053 16.5006H14.2495M14.9994 11.6252C14.9994 11.1279 14.8019 10.6509 14.4503 10.2993 14.0987 9.94762 13.6218 9.75006 13.1246 9.75006H4.87541C4.37818 9.75006 3.90132 9.94762 3.54972 10.2993 3.19812 10.6509 3.0006 11.1279 3.0006 11.6252V12.7503C3.0006 12.9492 3.07961 13.14 3.22025 13.2807 3.36089 13.4213 3.55163 13.5004 3.75053 13.5004H14.2495C14.4484 13.5004 14.6391 13.4213 14.7798 13.2807 14.9204 13.14 14.9994 12.9492 14.9994 12.7503V11.6252Z" stroke="#7EE0A2" stroke-width="2" stroke-linecap="round"/></svg>
+          香港政府依法公司注册
+        </span>
+      </div>
+
+      <div class="hero__cta">
+        <a class="btn btn--lg" data-link="register" href="#lead">立即免费开户</a>
+      </div>
+
+      <p class="hero__note">风险提示：贵金属交易为高杠杆投资产品，价格波动可能导致资金亏损。请于交易前充分评估自身风险承受能力，理性投资。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 贵金属交易市场（报价组件，紧接 Hero） ============ -->
+<section class="band band--soft" id="markets">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="kicker" style="justify-content:center">贵金属交易市场</span>
+      <h2>黄金 · 白银，一站交易</h2>
+      <p>以下为黄金、白银的主要交易条件；点差为平均参考值，实际成交以交易平台为准。</p>
+    </div>
+
+    <div class="tabs reveal" role="tablist" aria-label="贵金属产品">
+      <button class="tab" role="tab" aria-selected="true" data-tab="gold">
+        <span class="tab__ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="tf" d="M6.5 9h11l2 5H4.5z"/><path class="ts" d="M6.5 9h11l2 5H4.5zM8.5 9l1-3h5l1 3"/><path class="ts" d="M4.5 14l-1 3h17l-1-3"/></svg></span>
+        黄金 Gold
+      </button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="silver">
+        <span class="tab__ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="tf" d="M6.5 9h11l2 5H4.5z"/><path class="ts" d="M6.5 9h11l2 5H4.5zM8.5 9l1-3h5l1 3"/><path class="ts" d="M4.5 14l-1 3h17l-1-3"/></svg></span>
+        白银 Silver
+      </button>
+    </div>
+
+    <div class="panel is-active reveal" data-panel="gold">
+      <div class="quote">
+        <div class="quote__vis">
+          <div class="qi">
+            <span class="qi__code">XAU</span>
+            <div class="qi__name">黄金 <span>Gold</span></div>
+            <p class="qi__desc">国际公认的避险资产与贵金属核心品种，全球高流动性、24 小时连续交易，适合避险与中长期资产配置。</p>
+            <ul class="qi__points">
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>国际公认避险资产</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>5×24 小时连续交易</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>支持双向 T+0</li>
+            </ul>
+          </div>
+          <svg class="qi__art" viewBox="0 0 120 100" fill="none" aria-hidden="true"><g stroke="#7ee0a2" stroke-width="2" stroke-linejoin="round"><path d="M20 60 60 44 100 60 60 76Z"/><path d="M20 60 20 74 60 90 60 76"/><path d="M100 60 100 74 60 90"/><path d="M37 40 60 31 83 40 60 49Z"/></g></svg>
+        </div>
+        <ul class="specs">
+          <li><div class="k">平均点差</div><div class="v">27 点</div></li>
+          <li><div class="k">杠杆</div><div class="v">1:100</div></li>
+          <li><div class="k">交易时间</div><div class="v">5×24h</div></li>
+          <li><div class="k">交易方向</div><div class="v">双向 T+0</div></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="panel reveal" data-panel="silver">
+      <div class="quote">
+        <div class="quote__vis">
+          <div class="qi">
+            <span class="qi__code">XAG</span>
+            <div class="qi__name">白银 <span>Silver</span></div>
+            <p class="qi__desc">兼具贵金属与工业属性，价格弹性较高，是活跃的贵金属交易品种，适合把握市场波动机会。</p>
+            <ul class="qi__points">
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>波动活跃 · 弹性较高</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>5×24 小时连续交易</li>
+              <li><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>支持双向 T+0</li>
+            </ul>
+          </div>
+          <svg class="qi__art" viewBox="0 0 120 100" fill="none" aria-hidden="true"><g stroke="#7ee0a2" stroke-width="2" stroke-linejoin="round"><path d="M20 60 60 44 100 60 60 76Z"/><path d="M20 60 20 74 60 90 60 76"/><path d="M100 60 100 74 60 90"/><path d="M37 40 60 31 83 40 60 49Z"/></g></svg>
+        </div>
+        <ul class="specs">
+          <li><div class="k">平均点差</div><div class="v">30 点</div></li>
+          <li><div class="k">杠杆</div><div class="v">1:100</div></li>
+          <li><div class="k">交易时间</div><div class="v">5×24h</div></li>
+          <li><div class="k">交易方向</div><div class="v">双向 T+0</div></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ 背景彻查 / CREDIBILITY ============ -->
+<section class="band band--white" id="credentials">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="kicker--pill">物理实体与合规文件</span>
+      <h2>资质认证 · 真实可查</h2>
+    </div>
+    <div class="certgrid">
+      <article class="certcard reveal">
+        <button type="button" class="certframe" data-zoom="assets/cert-member.jpg" data-cap="香港黄金交易所行员证书 · No. MEC-2510003" aria-label="放大查看行员证书">
+          <img src="assets/cert-member.jpg" alt="香港黄金交易所行员证书" loading="lazy"
+               onerror="this.closest('.certframe').classList.add('is-empty')">
+          <span class="zoom-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg></span>
+          <svg class="ph" aria-hidden="true"><use href="#certPH"/></svg>
+          <span class="ph-tag">证书示意 · 待替换</span>
+        </button>
+        <div class="certcard__body">
+          <div class="certcard__meta">
+            <h3>香港黄金交易所行员证书</h3>
+            <p class="certcard__no">No. MEC-2510003</p>
+            <p class="certcard__cap">官方盖印 · 纸质行员证书</p>
+          </div>
+          <button type="button" class="card__verify" data-zoom="assets/cert-member.jpg" data-cap="香港黄金交易所行员证书 · No. MEC-2510003">点击查证 <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.9162 7H11.0838M7 11.0838L11.0838 7L7 2.9162" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        </div>
+      </article>
+
+      <article class="certcard reveal">
+        <button type="button" class="certframe" data-zoom="assets/cert-participant.jpg" data-cap="香港黄金交易所参与者证书 · No. MEC-2603003（成员 8）" aria-label="放大查看参与者证书">
+          <img src="assets/cert-participant.jpg" alt="香港黄金交易所参与者证书" loading="lazy"
+               onerror="this.closest('.certframe').classList.add('is-empty')">
+          <span class="zoom-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg></span>
+          <svg class="ph" aria-hidden="true"><use href="#certPH"/></svg>
+          <span class="ph-tag">证书示意 · 待替换</span>
+        </button>
+        <div class="certcard__body">
+          <div class="certcard__meta">
+            <h3>香港黄金交易所参与者证书</h3>
+            <p class="certcard__no">No. MEC-2603003（成员 8）</p>
+            <p class="certcard__cap">核心结算参与地位凭证</p>
+          </div>
+          <button type="button" class="card__verify" data-zoom="assets/cert-participant.jpg" data-cap="香港黄金交易所参与者证书 · No. MEC-2603003（成员 8）">点击查证 <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.9162 7H11.0838M7 11.0838L11.0838 7L7 2.9162" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        </div>
+      </article>
+
+      <article class="certcard reveal">
+        <button type="button" class="certframe" data-zoom="assets/cert-dpms.jpg" data-cap="香港海关 · 贵金属及宝石交易商 A 类注册证明书 · No. A-B-24-12-08564" aria-label="放大查看海关牌照">
+          <img src="assets/cert-dpms.jpg" alt="香港海关贵金属及宝石交易商 A 类注册证明书" loading="lazy"
+               onerror="this.closest('.certframe').classList.add('is-empty')">
+          <span class="zoom-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg></span>
+          <svg class="ph" aria-hidden="true"><use href="#certPH"/></svg>
+          <span class="ph-tag">证书示意 · 待替换</span>
+        </button>
+        <div class="certcard__body">
+          <div class="certcard__meta">
+            <h3>香港海关贵金属交易商牌照</h3>
+            <p class="certcard__no">A 类注册 · No. A-B-24-12-08564</p>
+            <p class="certcard__cap">《打击洗钱及恐怖分子资金筹集条例》第 615 章</p>
+          </div>
+          <button type="button" class="card__verify" data-zoom="assets/cert-dpms.jpg" data-cap="香港海关 · 贵金属及宝石交易商 A 类注册证明书 · No. A-B-24-12-08564">点击查证 <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.9162 7H11.0838M7 11.0838L11.0838 7L7 2.9162" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        </div>
+      </article>
+
+      <article class="certcard reveal">
+        <button type="button" class="certframe" data-zoom="assets/award.jpg" data-cap="华安泰昌 HATC 荣誉奖座 · 底座刻 2026–2027" aria-label="放大查看荣誉奖座">
+          <img src="assets/award.jpg" alt="华安泰昌 HATC 荣誉奖座" loading="lazy"
+               onerror="this.closest('.certframe').classList.add('is-empty')">
+          <span class="zoom-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg></span>
+          <svg class="ph" aria-hidden="true"><use href="#certPH"/></svg>
+          <span class="ph-tag">实拍待替换</span>
+        </button>
+        <div class="certcard__body">
+          <div class="certcard__meta">
+            <h3>品牌荣誉奖座</h3>
+            <p class="certcard__no">实体奖座 · 底座刻 2026–2027</p>
+            <p class="certcard__cap">行业声誉及品牌影响力</p>
+          </div>
+          <button type="button" class="card__verify" data-zoom="assets/award.jpg" data-cap="华安泰昌 HATC 荣誉奖座 · 底座刻 2026–2027">查看大图 <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.9162 7H11.0838M7 11.0838L11.0838 7L7 2.9162" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        </div>
+      </article>
+
+      <article class="certcard reveal">
+        <button type="button" class="certframe" data-zoom="assets/office.jpg" data-cap="华安泰昌香港办公室 · 宏利金融中心 B 座 8 楼 8A 室" aria-label="放大查看办公室">
+          <img src="assets/office.jpg" alt="华安泰昌香港办公室接待处" loading="lazy"
+               onerror="this.closest('.certframe').classList.add('is-empty')">
+          <span class="zoom-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg></span>
+          <svg class="ph" aria-hidden="true"><use href="#certPH"/></svg>
+          <span class="ph-tag">实拍待替换</span>
+        </button>
+        <div class="certcard__body">
+          <div class="certcard__meta">
+            <h3>实体办公室实拍</h3>
+            <p class="certcard__no">香港九龙伟业街 223 号 8 楼</p>
+            <p class="certcard__cap">宏利金融中心 B 座 8A 室</p>
+          </div>
+          <button type="button" class="card__verify" data-zoom="assets/office.jpg" data-cap="华安泰昌香港办公室 · 宏利金融中心 B 座 8 楼 8A 室">查看办公室 <svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.9162 7H11.0838M7 11.0838L11.0838 7L7 2.9162" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 四大保障（精致深色 · 编号卡） ============ -->
+<section class="band secband">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="kicker" style="justify-content:center">四大保障 · 投资安心</span>
+      <h2>以规范机制守护您的每一次交易</h2>
+      <p>合规是底线，透明是态度。我们把安全放在业务的第一位。</p>
+    </div>
+    <div class="secgrid">
+      <article class="seccard reveal">
+        <span class="seccard__num">01</span>
+        <div class="seccard__ic">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="duo" d="M12 2.4 4.4 5.3v5.9c0 4.7 3.1 7.6 7.6 9.2 4.5-1.6 7.6-4.5 7.6-9.2V5.3z"/>
+            <path class="st" d="M12 2.4 4.4 5.3v5.9c0 4.7 3.1 7.6 7.6 9.2 4.5-1.6 7.6-4.5 7.6-9.2V5.3z"/>
+            <path class="ac" d="m8.3 11.8 2.4 2.4 4.9-5.1"/>
+          </svg>
+        </div>
+        <h3>合规监管</h3>
+        <p>作为香港黄金交易所 AA 类行员，运营须遵循交易所规则与香港相关法律要求。</p>
+      </article>
+      <article class="seccard reveal">
+        <span class="seccard__num">02</span>
+        <div class="seccard__ic">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="duo" d="M12 3.2 3.6 8h16.8z"/>
+            <path class="st" d="M2.8 8.2 12 3.2 21.2 8.2z"/>
+            <path class="st" d="M5.5 11v6.4M9.5 11v6.4M14.5 11v6.4M18.5 11v6.4"/>
+            <path class="ac" d="M3.4 20.6h17.2"/>
+            <path class="st" d="M4.6 18.1h14.8"/>
+          </svg>
+        </div>
+        <h3>资金原则</h3>
+        <p>坚持规范的资金流程与账务管理，客户资金处理以合规、可追溯为原则。</p>
+      </article>
+      <article class="seccard reveal">
+        <span class="seccard__num">03</span>
+        <div class="seccard__ic">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect class="duo" x="4.5" y="10.3" width="15" height="9.7" rx="2.4"/>
+            <rect class="st" x="4.5" y="10.3" width="15" height="9.7" rx="2.4"/>
+            <path class="st" d="M7.8 10.3V7.6a4.2 4.2 0 0 1 8.4 0v2.7"/>
+            <circle class="ac" cx="12" cy="14.6" r="1.5"/>
+            <path class="ac" d="M12 16v2.1"/>
+          </svg>
+        </div>
+        <h3>数据安全</h3>
+        <p>客户信息以加密方式存储、严格权限管理，工作人员受保密约束，保护您的隐私。</p>
+      </article>
+      <article class="seccard reveal">
+        <span class="seccard__num">04</span>
+        <div class="seccard__ic">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect class="duo" x="2.8" y="5.2" width="18.4" height="13.6" rx="2.6"/>
+            <rect class="st" x="2.8" y="5.2" width="18.4" height="13.6" rx="2.6"/>
+            <circle class="st" cx="8.4" cy="10.6" r="2.1"/>
+            <path class="st" d="M5.1 15.6a3.4 3.4 0 0 1 6.6 0"/>
+            <path class="ac" d="M14.2 9.8h4.2M14.2 12.8h3"/>
+          </svg>
+        </div>
+        <h3>实名开户</h3>
+        <p>严谨的实名开户流程，账户信息与本人绑定，变更须由本人操作，防范风险。</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 四大优势（深色 banner 卡） ============ -->
+<section class="band band--white">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="kicker" style="justify-content:center">灵活做投资 · 贵金属交易</span>
+      <h2>四大优势，适合各阶段的投资者</h2>
+    </div>
+    <div class="bannergrid">
+      <article class="bannercard reveal">
+        <div class="bannercard__body">
+          <h3>双向交易</h3>
+          <p>看涨看跌皆可参与，T+0 灵活进出，涨跌行情都有机会。</p>
+        </div>
+        <div class="bannercard__vis">
+          <svg viewBox="0 0 156 132" fill="none" aria-hidden="true">
+            <defs>
+              <radialGradient id="c1stage" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#1f5d86"/><stop offset="1" stop-color="#0a2a45" stop-opacity="0"/></radialGradient>
+              <linearGradient id="c1g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fdc82"/><stop offset="1" stop-color="#0c7a3b"/></linearGradient>
+              <linearGradient id="c1t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f8fbe"/><stop offset="1" stop-color="#123f60"/></linearGradient>
+            </defs>
+            <ellipse cx="78" cy="112" rx="54" ry="10" fill="url(#c1stage)"/>
+            <ellipse cx="78" cy="108" rx="32" ry="4.5" fill="#04121e" opacity=".5"/>
+            <g stroke="#9fe8c0" stroke-width="1.6" stroke-linecap="round">
+              <line x1="49" y1="46" x2="49" y2="94"/><line x1="67" y1="34" x2="67" y2="86"/>
+              <line x1="85" y1="52" x2="85" y2="92"/><line x1="103" y1="30" x2="103" y2="86"/>
+            </g>
+            <rect x="43.5" y="56" width="11" height="30" rx="3" fill="url(#c1t)"/>
+            <rect x="61.5" y="42" width="11" height="36" rx="3" fill="url(#c1g)"/>
+            <rect x="79.5" y="60" width="11" height="24" rx="3" fill="url(#c1t)"/>
+            <rect x="97.5" y="38" width="11" height="40" rx="3" fill="url(#c1g)"/>
+            <g fill="#ffffff" opacity=".22">
+              <rect x="43.5" y="56" width="3" height="30" rx="1.5"/><rect x="61.5" y="42" width="3" height="36" rx="1.5"/>
+              <rect x="79.5" y="60" width="3" height="24" rx="1.5"/><rect x="97.5" y="38" width="3" height="40" rx="1.5"/>
+            </g>
+            <path d="M112 40l7-8 7 8" stroke="#7ee0a2" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="119" y1="32" x2="119" y2="52" stroke="#7ee0a2" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M44 84l-7 8-7-8" stroke="#5f7d92" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="37" y1="72" x2="37" y2="92" stroke="#5f7d92" stroke-width="2.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </article>
+
+      <article class="bannercard reveal">
+        <div class="bannercard__body">
+          <h3>灵活时段</h3>
+          <p>5×24 小时交易，支持自动挂单，把握全球贵金属市场脉动。</p>
+        </div>
+        <div class="bannercard__vis">
+          <svg viewBox="0 0 156 132" fill="none" aria-hidden="true">
+            <defs>
+              <radialGradient id="c2stage" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#1f5d86"/><stop offset="1" stop-color="#0a2a45" stop-opacity="0"/></radialGradient>
+              <radialGradient id="c2face" cx="50%" cy="36%" r="72%"><stop offset="0" stop-color="#1e5680"/><stop offset="1" stop-color="#0a2b46"/></radialGradient>
+              <linearGradient id="c2ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7ee0a2"/><stop offset="1" stop-color="#0a7d3a"/></linearGradient>
+            </defs>
+            <ellipse cx="78" cy="116" rx="52" ry="9" fill="url(#c2stage)"/>
+            <ellipse cx="78" cy="112" rx="26" ry="4" fill="#04121e" opacity=".5"/>
+            <circle cx="78" cy="58" r="34" stroke="#123f60" stroke-width="8"/>
+            <circle cx="78" cy="58" r="34" stroke="url(#c2ring)" stroke-width="8" stroke-linecap="round" stroke-dasharray="150 214" transform="rotate(-90 78 58)"/>
+            <circle cx="78" cy="58" r="27" fill="url(#c2face)" stroke="#ffffff" stroke-opacity=".10"/>
+            <g stroke="#9fb6c8" stroke-width="2" stroke-linecap="round" opacity=".8">
+              <line x1="78" y1="35" x2="78" y2="39"/><line x1="101" y1="58" x2="97" y2="58"/>
+              <line x1="78" y1="81" x2="78" y2="77"/><line x1="55" y1="58" x2="59" y2="58"/>
+            </g>
+            <line x1="78" y1="58" x2="78" y2="42" stroke="#eafff3" stroke-width="3.2" stroke-linecap="round"/>
+            <line x1="78" y1="58" x2="91" y2="64" stroke="#7ee0a2" stroke-width="3.2" stroke-linecap="round"/>
+            <circle cx="78" cy="58" r="3.4" fill="#eafff3"/>
+            <circle cx="46" cy="68" r="3.4" fill="#7ee0a2"/>
+            <rect x="59" y="99" width="38" height="16" rx="8" fill="#0e3450" stroke="#7ee0a2" stroke-opacity=".55"/>
+            <text x="78" y="110.5" text-anchor="middle" font-size="9.5" font-weight="800" fill="#7ee0a2" font-family="system-ui,sans-serif">5×24H</text>
+          </svg>
+        </div>
+      </article>
+
+      <article class="bannercard reveal">
+        <div class="bannercard__body">
+          <h3>便捷高效</h3>
+          <p>在线开户、快捷下单，随时随地在手机掌握账户与行情。</p>
+        </div>
+        <div class="bannercard__vis">
+          <svg viewBox="0 0 156 132" fill="none" aria-hidden="true">
+            <defs>
+              <radialGradient id="c3stage" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#1f5d86"/><stop offset="1" stop-color="#0a2a45" stop-opacity="0"/></radialGradient>
+              <linearGradient id="c3body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a5177"/><stop offset="1" stop-color="#0b2c47"/></linearGradient>
+              <linearGradient id="c3area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7ee0a2" stop-opacity=".55"/><stop offset="1" stop-color="#7ee0a2" stop-opacity="0"/></linearGradient>
+            </defs>
+            <ellipse cx="78" cy="116" rx="52" ry="9" fill="url(#c3stage)"/>
+            <ellipse cx="78" cy="112" rx="22" ry="4" fill="#04121e" opacity=".5"/>
+            <rect x="58" y="22" width="40" height="84" rx="10" fill="url(#c3body)" stroke="#ffffff" stroke-opacity=".18"/>
+            <rect x="62.5" y="30" width="31" height="60" rx="5" fill="#06263c"/>
+            <line x1="72" y1="26" x2="84" y2="26" stroke="#ffffff" stroke-opacity=".25" stroke-width="1.6" stroke-linecap="round"/>
+            <line x1="72" y1="98.5" x2="84" y2="98.5" stroke="#7ee0a2" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M65 78 L72 70 L78 74 L84 62 L91 66 L91 88 L65 88 Z" fill="url(#c3area)"/>
+            <polyline points="65,78 72,70 78,74 84,62 91,66" stroke="#7ee0a2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="84" cy="62" r="2.4" fill="#eafff3"/>
+            <rect x="93" y="30" width="30" height="20" rx="6" fill="#0e3450" stroke="#7ee0a2" stroke-opacity=".5"/>
+            <path d="M100 43l4-5 4 5" stroke="#7ee0a2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="104" y1="38" x2="104" y2="46" stroke="#7ee0a2" stroke-width="2" stroke-linecap="round"/>
+            <rect x="111" y="38" width="8" height="4" rx="2" fill="#7ee0a2" opacity=".7"/>
+          </svg>
+        </div>
+      </article>
+
+      <article class="bannercard reveal">
+        <div class="bannercard__body">
+          <h3>专业平台 <span class="sample-tag">示范</span></h3>
+          <p>稳定的交易平台与专业顾问服务（平台细节以正式公布为准）。</p>
+        </div>
+        <div class="bannercard__vis">
+          <svg viewBox="0 0 156 132" fill="none" aria-hidden="true">
+            <defs>
+              <radialGradient id="c4stage" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#1f5d86"/><stop offset="1" stop-color="#0a2a45" stop-opacity="0"/></radialGradient>
+              <linearGradient id="c4sh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1c5680"/><stop offset="1" stop-color="#0a2740"/></linearGradient>
+              <linearGradient id="c4ck" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7ee0a2"/><stop offset="1" stop-color="#0f9b48"/></linearGradient>
+            </defs>
+            <ellipse cx="78" cy="116" rx="52" ry="9" fill="url(#c4stage)"/>
+            <ellipse cx="78" cy="112" rx="24" ry="4" fill="#04121e" opacity=".5"/>
+            <path d="M50 34a40 40 0 0 1 56 0" stroke="#7ee0a2" stroke-opacity=".24" stroke-width="2" stroke-linecap="round"/>
+            <path d="M44 28a52 52 0 0 1 68 0" stroke="#7ee0a2" stroke-opacity=".13" stroke-width="2" stroke-linecap="round"/>
+            <path d="M78 24 L52 34 v22 c0 20 12 31 26 37 14-6 26-17 26-37 V34 Z" fill="url(#c4sh)" stroke="#ffffff" stroke-opacity=".16"/>
+            <path d="M78 26 L54 35 v6 c8-3 40-3 48 0 v-6 Z" fill="#ffffff" opacity=".08"/>
+            <path d="M66 60l9 9 18-19" stroke="url(#c4ck)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="40" cy="52" r="2" fill="#7ee0a2" opacity=".7"/>
+            <circle cx="118" cy="60" r="2.4" fill="#7ee0a2" opacity=".55"/>
+            <circle cx="112" cy="40" r="1.6" fill="#eafff3" opacity=".7"/>
+          </svg>
+        </div>
+      </article>
+    </div>
+    <div class="bannercta reveal">
+      <a class="btn btn--lg" data-link="register" href="#lead">免费开户</a>
+      <a class="btn btn--lg btn--outline" data-link="consult" href="#">在线咨询</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 专业资历（里程碑，standing-first） ============ -->
+<!-- ============ 维港背景 · 数据实力 ============ -->
+<section class="harbour" id="about-hatc">
+  <img class="harbour__photo" src="assets/harbour.jpg" alt="香港维多利亚港夜景" loading="lazy">
+  <div class="wrap harbour__inner">
+    <div class="head reveal" style="margin-bottom:22px">
+      <span class="kicker" style="justify-content:center;color:#7ee0a2">关于华安泰昌</span>
+      <h2 style="color:#fff">植根香港，服务全球投资者</h2>
+    </div>
+    <p class="harbour__lead reveal">
+      华安泰昌有限公司（HATC Group Limited）植根香港，专注为全球投资者提供
+      黄金、白银等贵金属交易服务，助力资产稳健增值。
+    </p>
+
+    <!-- 注意：以下为开发阶段占位数据（非官方事实），上线前须由业主替换/确认，勿写入 HATC_FACTS.md -->
+    <div class="hstats reveal">
+      <div class="hstat">
+        <div class="num"><span data-count="30" data-suffix="">0</span><em>万+</em></div>
+        <div class="lab">平台用户量</div>
+      </div>
+      <div class="hstat">
+        <div class="num"><span data-count="8000" data-suffix="">0</span><em>万+</em></div>
+        <div class="lab">累计处理订单</div>
+      </div>
+      <div class="hstat">
+        <div class="num"><span data-count="30" data-suffix="">0</span><em>+</em></div>
+        <div class="lab">服务国家及地区</div>
+      </div>
+      <div class="hstat">
+        <div class="num"><em>5×</em><span data-count="24" data-suffix="">0</span><em>h</em></div>
+        <div class="lab">全天候交易服务</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 专业资历 · 里程碑 ============ -->
+<section class="band band--soft" id="about">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="kicker" style="justify-content:center">专业资历 · 有据可查</span>
+      <h2>香港黄金交易所 AA 类行员，资质有据可查</h2>
+      <p>华安泰昌有限公司前身为恒远环球有限公司（Eternity Global Limited）；一路取得行员、股份与参与者资格，稳步进阶为 AA 类行员。</p>
+    </div>
+
+    <div class="qualbar reveal">
+      <div class="qb"><span class="dotg"></span><div><b>AA 类行员</b> <span>香港黄金交易所</span></div></div>
+      <div class="qb"><span class="dotg"></span><div><b>会员编号 008</b> <span>Membership No.</span></div></div>
+      <div class="qb"><span class="dotg"></span><div><b>参与者成员编号 8</b> <span>Participant Member</span></div></div>
+    </div>
+
+    <div class="stepper reveal">
+      <div class="step">
+        <div class="node">1</div>
+        <time>2025-01</time>
+        <span class="slab">取得金银业贸易场<br>行员 008 号证书</span>
+      </div>
+      <div class="step">
+        <div class="node">2</div>
+        <time>2025-10</time>
+        <span class="slab">香港黄金交易所<br>行员证书及股份证书</span>
+      </div>
+      <div class="step">
+        <div class="node">3</div>
+        <time>2026-03</time>
+        <span class="slab">香港黄金交易所<br>参与者证书（成员编号 8）</span>
+      </div>
+      <div class="step step--top">
+        <div class="node">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+        </div>
+        <time>2026-03</time>
+        <span class="slab">晋升香港黄金交易所<br>AA 类行员</span>
+        <span class="toptag">现任资质</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="ctaband reveal" style="background:radial-gradient(700px 320px at 50% -30%,rgba(0,153,68,.34),transparent 60%),linear-gradient(120deg,var(--navy-deep),var(--navy-darker))">
+  <div class="wrap">
+    <span class="kicker" style="justify-content:center;color:#7ee0a2">立即行动</span>
+    <h2>开启您的贵金属交易之旅</h2>
+    <p>持牌背书、合规运营。留下联系方式，专属顾问将尽快与您联系并协助开户。</p>
+    <div class="hero__cta">
+      <a class="btn btn--lg" data-link="register" href="#lead">免费开户</a>
+      <a class="btn btn--ghost btn--lg" data-link="consult" href="#lead">在线咨询</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="site">
+  <div class="wrap">
+    <div class="foot__grid">
+      <div>
+        <h4>华安泰昌有限公司 · HATC Group Limited</h4>
+        <ul class="foot__list">
+          <li>香港黄金交易所 AA 类行员 · 会员编号 008</li>
+          <li>注册地址：香港九龙观塘伟业街 223 号宏利金融中心 B 座 8 楼 8A 室</li>
+          <li>行员证书 No. MEC-2510003 · 参与者证书 No. MEC-2603003</li>
+        </ul>
+      </div>
+      <div>
+        <h4>产品</h4>
+        <ul class="foot__list">
+          <li><a href="#markets">黄金</a></li>
+          <li><a href="#markets">白银</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>联系</h4>
+        <ul class="foot__list">
+          <li><a data-link="consult" href="#lead">在线咨询</a></li>
+          <li><a data-link="register" href="#lead">免费开户</a></li>
+          <li><a data-link="cs" href="#">客户服务</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="disclaimer">
+      <p><b>风险披露：</b>贵金属交易属杠杆式产品，价格波动可能导致部分或全部本金亏损，并不适合所有投资者。本页所示交易条件（点差、杠杆、平台等）为<b>示范/占位</b>信息，最终以正式公布为准。投资前请充分了解相关风险并评估自身承受能力，必要时寻求独立专业意见。</p>
+      <p>© <span id="year">2026</span> 华安泰昌有限公司 HATC Group Limited. 版权所有。本页公司资质信息来自官方证书与公司注册记录。</p>
+    </div>
+  </div>
+</footer>
+
+<!-- floating & mobile sticky -->
+<div class="fab">
+  <button class="top" id="toTop" aria-label="回到顶部">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 12l6-6 6 6"/></svg>
+  </button>
+  <a class="cs" data-link="cs" href="#">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
+    在线客服
+  </a>
+</div>
+
+<div class="mcta">
+  <a class="btn btn--ghost" data-link="consult" href="#lead">免费咨询</a>
+  <a class="btn" data-link="register" href="#lead">立即开户</a>
+</div>
+
+<!-- WeChat QR popover -->
+<div class="qrpop" id="qrpop" role="dialog" aria-modal="true" aria-label="在线客服二维码">
+  <div class="qrpop__card">
+    <button class="qrpop__close" id="qrClose" aria-label="关闭">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <img src="assets/wechat-qr.webp" alt="华安泰昌微信二维码" />
+    <h4>微信扫码 · 在线客服</h4>
+    <p>打开微信「扫一扫」，添加专属顾问咨询开户。</p>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lb" id="lightbox" role="dialog" aria-modal="true" aria-label="图片放大">
+  <button class="lb__close" id="lbClose" aria-label="关闭">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
+  <img id="lbImg" src="" alt="">
+  <div class="lb__cap" id="lbCap"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =====================================================================
+   * CONFIG — 运营链接集中于此，便于业主/CMS 替换。
+   * ⚠️ LINKS 为运营链接占位：上线前须由业主确认并替换为正式值。
+   * 交易条件（黄金/白银 平均点差、1:100 杠杆）为业主提供之确认值，
+   * 直接写在 #markets 区块标记中；如需调整请改该处。
+   * ===================================================================== */
+  var CONFIG = {
+    LINKS: {
+      register: "https://user.hatchk.com/admin/registration-steps.php?type=0&accid=0&share=0&activity_id=0&invent_code=", // 开户注册页
+      consult:  "#lead",        // 咨询：默认聚焦留资表单
+      qr:       "assets/wechat-qr.webp", // 在线客服微信 QR
+      verify:   "#"             // 官方查证链接【待业主确认交易所官方网址】
+    },
+    // 提交后自动跳转到开户页的延时（毫秒）；设为 0 则不自动跳转
+    REDIRECT_AFTER_SUBMIT_MS: 1600,
+    // 带到开户页的查询参数名【占位——待开户系统确认真实字段名后替换】
+    LEAD_PARAMS: { name: "name", phone: "phone" }
+  };
+
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  /* apply configurable links (cs 交给下方 QR 弹窗处理) */
+  document.querySelectorAll("[data-link]").forEach(function(el){
+    var key = el.getAttribute("data-link");
+    // cs（在线客服）与 consult（在线咨询）都走微信 QR 弹窗，不设导航链接
+    if(key === "cs" || key === "consult") return;
+    var url = CONFIG.LINKS[key];
+    if(url){
+      el.setAttribute("href", url);
+      if(/^https?:\/\//.test(url)){ el.setAttribute("target","_blank"); el.setAttribute("rel","noopener"); }
+    }
+  });
+
+  /* 在线客服 / 在线咨询 → 弹出微信 QR 小窗（非全屏） */
+  var qrpop = document.getElementById("qrpop");
+  function openQr(){ qrpop.classList.add("open"); document.body.style.overflow = "hidden"; }
+  function closeQr(){ qrpop.classList.remove("open"); document.body.style.overflow = ""; }
+  document.querySelectorAll('[data-link="cs"],[data-link="consult"]').forEach(function(el){
+    el.addEventListener("click", function(e){ e.preventDefault(); openQr(); });
+  });
+  document.getElementById("qrClose").addEventListener("click", closeQr);
+  qrpop.addEventListener("click", function(e){ if(e.target === qrpop) closeQr(); });
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape" && qrpop.classList.contains("open")) closeQr(); });
+
+  /* ---------- Tabs ---------- */
+  var tabs = document.querySelectorAll(".tab");
+  var panels = document.querySelectorAll(".panel");
+  tabs.forEach(function(tab){
+    tab.addEventListener("click", function(){
+      var id = tab.getAttribute("data-tab");
+      tabs.forEach(function(t){ t.setAttribute("aria-selected", t===tab ? "true":"false"); });
+      panels.forEach(function(p){ p.classList.toggle("is-active", p.getAttribute("data-panel")===id); });
+    });
+  });
+
+  /* ---------- Lead form（已改为「单一开户按钮」直达开户页；表单如后续恢复此段仍可用）---------- */
+  var lead = document.getElementById("lead");
+  if(lead){
+    lead.addEventListener("submit", function(e){
+      e.preventDefault();
+      var name = lead.querySelector("#f-name");
+      var phone = lead.querySelector("#f-phone");
+      if(name && !name.value.trim()){ name.focus(); return; }
+      if(phone && !/^\d[\d\s\-]{5,}$/.test(phone.value.trim())){ phone.focus(); return; }
+      lead.classList.add("is-done");
+      if(CONFIG.REDIRECT_AFTER_SUBMIT_MS > 0 && CONFIG.LINKS.register && CONFIG.LINKS.register !== "#lead"){
+        setTimeout(function(){ window.location.href = CONFIG.LINKS.register; }, CONFIG.REDIRECT_AFTER_SUBMIT_MS);
+      }
+    });
+  }
+
+  /* ---------- Reveal on scroll ---------- */
+  var io = ("IntersectionObserver" in window) ? new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); } });
+  }, {threshold:.14}) : null;
+  document.querySelectorAll(".reveal").forEach(function(el){
+    if(io){ io.observe(el); } else { el.classList.add("in"); }
+  });
+
+  /* ---------- Count-up ---------- */
+  function countUp(el){
+    var target = parseInt(el.getAttribute("data-count"),10);
+    var suffix = el.getAttribute("data-suffix") || "";
+    var pad = el.getAttribute("data-count").length >= 2 && target < 100;
+    var start = null, dur = 1100;
+    function step(ts){
+      if(!start) start = ts;
+      var p = Math.min((ts-start)/dur, 1);
+      var val = Math.round((1 - Math.pow(1-p,3)) * target);
+      el.textContent = (el.hasAttribute("data-pad")? String(val).padStart(3,"0") : val) + suffix;
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  var counters = document.querySelectorAll("[data-count]");
+  if("IntersectionObserver" in window){
+    var cio = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){ if(en.isIntersecting){ countUp(en.target); cio.unobserve(en.target); } });
+    }, {threshold:.5});
+    counters.forEach(function(c){ cio.observe(c); });
+  } else {
+    counters.forEach(countUp);
+  }
+
+  /* ---------- Back to top ---------- */
+  var toTop = document.getElementById("toTop");
+  window.addEventListener("scroll", function(){
+    toTop.classList.toggle("show", window.scrollY > 600);
+  }, {passive:true});
+  toTop.addEventListener("click", function(){ window.scrollTo({top:0, behavior:"smooth"}); });
+
+  /* ---------- Lightbox (点击查证 / 图片放大) ---------- */
+  var lb = document.getElementById("lightbox");
+  var lbImg = document.getElementById("lbImg");
+  var lbCap = document.getElementById("lbCap");
+  var lastFocus = null;
+  function openLb(src, cap){
+    lbImg.setAttribute("src", src);
+    lbImg.setAttribute("alt", cap || "");
+    lbCap.textContent = cap || "";
+    lb.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeLb(){
+    lb.classList.remove("open");
+    lbImg.setAttribute("src", "");
+    document.body.style.overflow = "";
+    if(lastFocus){ lastFocus.focus(); lastFocus = null; }
+  }
+  document.querySelectorAll("[data-zoom]").forEach(function(el){
+    el.addEventListener("click", function(e){
+      // 缺图（占位）时不放大
+      var frame = el.closest(".certcard") ? el.closest(".certcard").querySelector(".certframe") : null;
+      if(frame && frame.classList.contains("is-empty")) return;
+      e.preventDefault();
+      lastFocus = el;
+      openLb(el.getAttribute("data-zoom"), el.getAttribute("data-cap"));
+    });
+  });
+  document.getElementById("lbClose").addEventListener("click", closeLb);
+  lb.addEventListener("click", function(e){ if(e.target === lb) closeLb(); });
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape" && lb.classList.contains("open")) closeLb(); });
+
+})();
+</script>
+</body>
+</html>

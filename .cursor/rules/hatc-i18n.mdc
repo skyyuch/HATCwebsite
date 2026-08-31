@@ -1,0 +1,26 @@
+---
+description: HATC i18n / translation conventions (next-intl, JSON messages)
+globs: src/**/*.{ts,tsx},src/messages/*.json
+alwaysApply: false
+---
+
+# HATC i18n
+
+- All copy lives in JSON message files under `src/messages/` (`zh-Hant`, `zh-Hans`, `en`).
+  `zh-Hant` is the default locale.
+- Never hard-code user-facing text in components; always read from messages.
+- Reuse keys: identical text must NOT get a new key. Search existing keys first and
+  reuse. Only add a key when the string is genuinely new.
+- Keep the same key set across all locales; do not let files drift out of sync.
+- Use clear, hierarchical keys (e.g. `home.hero.title`), not the literal text as the key.
+- Operational links (customer service, contact) come from CMS config, not messages.
+
+## Example
+
+```json
+// ❌ BAD: duplicate keys for the same text
+{ "home.cta": "聯絡我們", "footer.contactUs": "聯絡我們" }
+
+// ✅ GOOD: one shared key, reused in both places
+{ "common.contactUs": "聯絡我們" }
+```

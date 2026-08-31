@@ -1,0 +1,30 @@
+---
+description: HATC SEO, metadata and analytics conventions
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# HATC SEO & Analytics
+
+Build SEO in from the start, not as an afterthought.
+
+## Metadata
+
+- Use the Next.js Metadata API per page (title, description, canonical, OpenGraph, Twitter).
+- Localise metadata via next-intl; every page provides all three locales.
+- Emit `hreflang` alternates for `zh-Hant` (default), `zh-Hans`, `en`, plus `x-default`.
+
+## Crawlability & structure
+
+- Provide `sitemap.xml` (all locales) and `robots.txt`.
+- Semantic HTML: one `<h1>` per page, correct heading order, `<nav>/<main>/<footer>`,
+  descriptive `alt` text, meaningful link text.
+- Add JSON-LD structured data (e.g. `Organization`) sourced from `docs/HATC_FACTS.md`.
+- Set `<html lang>` to the active locale.
+
+## Analytics / tracking
+
+- Tracking is built in from launch, but IDs/keys are configurable (env or CMS),
+  never hard-coded.
+- Load tags via `next/script` with appropriate strategy; do not block rendering.
+- Respect privacy/consent; keep tracking easy to disable per environment.

@@ -1,0 +1,24 @@
+#!/bin/sh
+# HATC pre-commit hook.
+#
+# Verifies the i18n message catalogues (`src/messages/*.json`) stay in sync:
+# every non-empty key in the source locale (zh-Hant) must exist and be non-empty
+# in every target locale (zh-Hans, en). This mirrors the CI gate.
+#
+# It only runs when a message file is staged, so unrelated commits stay fast.
+# Enabled automatically by `npm install` (the `prepare` script sets
+# core.hooksPath to .githooks); to wire it manually run:
+#   git config core.hooksPath .githooks
+#
+# To bypass in an emergency: `git commit --no-verify` (avoid — it skips the gate).
+
+if git diff --cached --name-only | grep -q '^src/messages/.*\.json$'; then
+  echo "[pre-commit] i18n message files changed — checking key parity…"
+  if ! npm run --silent i18n:check; then
+    echo "[pre-commit] i18n check failed. Add the missing keys, or draft them with:" >&2
+    echo "             npm run i18n:translate -- --to <locale>   (needs MT_API_KEY)" >&2
+    exit 1
+  fi
+fi
+
+exit 0

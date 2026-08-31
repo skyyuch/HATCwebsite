@@ -1,0 +1,122 @@
+/* HATC design tokens — see docs/DESIGN_DIRECTION.md
+   Warm white, charcoal, brand navy, with green as a sparing accent.
+   Palette aligned to the official HATC logo (navy #09395f, green #009944). */
+:root {
+  /* Colour */
+  --color-bg: #f7f5f1;          /* warm white */
+  --color-surface: #ffffff;
+  --color-ink: #1f1c19;         /* charcoal */
+  --color-ink-soft: #4a453f;    /* = shadcn --color-muted-foreground */
+  --color-ink-muted: #857f77;   /* muted TEXT grey (was --color-muted) */
+  --color-muted-surface: #eef1f4; /* shadcn muted SURFACE (bg-muted) */
+  --color-line: #e3ddd3;        /* hairline = shadcn --color-border/-input */
+  --color-brand: #09395f;       /* HATC navy (primary) */
+  --color-brand-deep: #06283f;
+  --color-brand-darker: #04202f; /* deepest navy — closing CTA band */
+  --color-brand-bright: #0d5a8f; /* lighter navy — gradient partner */
+  --color-accent: #009944;      /* HATC green (sparing accent only) */
+  --color-accent-deep: #007a37;
+
+  /* Typography — Sora is the shared app font (owner 2026-08-10, Figma-led).
+     CJK falls back to the system stack; Inter powers the ticker numbers. */
+  --font-app: var(--font-sora);
+  --font-sans: var(--font-app, ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif);
+  --font-serif: ui-serif, Georgia, "Songti TC", "Noto Serif TC", serif;
+  --font-ticker: var(--font-inter, ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", "Noto Sans TC", sans-serif);
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.5rem;
+  --text-3xl: 3.25rem;
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.6;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+
+  /* Structure — Vantage-informed redesign 2026-08-07 (see DESIGN_DIRECTION):
+     pill radius allowed for buttons/badges/tabs; cards up to 12px. */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;   /* cards / media frames */
+  --radius-pill: 999px;
+  --container: 1120px;
+  --container-narrow: 780px;
+
+  /* Elevation — soft, brand-tinted (no glow, no neon) */
+  --shadow-sm: 0 2px 16px rgba(9, 57, 95, 0.08);
+  --shadow-card: 0 20px 44px -24px rgba(9, 57, 95, 0.45);
+  --shadow-hero: 0 26px 54px -28px rgba(9, 57, 95, 0.4);
+
+  /* Vertical rhythm for full-bleed sections */
+  --section-pad: clamp(4rem, 6vw, 6rem);
+
+  --header-h: 80px;
+}
+
+/* ── Figma homepage (dark trading-desk) tokens — additive, owner 2026-08-10 ──
+   Shared design system going forward; the warm-white system above still powers
+   the About page and other non-homepage surfaces. Homepage components reference
+   these via explicit classes/vars so the two systems coexist without clashing.
+   See docs/FIGMA_HOMEPAGE_SPEC.md §1. */
+:root {
+  --fig-ink: #070a14;              /* deepest bg / button text */
+  --fig-nav: rgba(9, 12, 23, 0.92); /* sticky nav bg */
+  --fig-surface: #111625;          /* cards / trust strip */
+  --fig-ticker-bg: rgba(8, 10, 18, 0.85);
+  --fig-light: #f4f6f9;            /* light interleaved sections */
+  --fig-border: #1f293d;           /* dark-section border */
+  --fig-border-light: #e4e7ec;     /* light-section card border */
+  --fig-gold: #d4af37;             /* primary accent */
+  --fig-gold-hover: #e0bd4a;
+  --fig-heading-dark: #0c111d;     /* headings on light sections */
+  --fig-text-dark: #ffffff;        /* text on dark sections */
+  --fig-text-dim: #8e99b0;         /* body on dark sections */
+  --fig-text-muted: #475467;       /* body on light sections */
+  --fig-up: #10b981;               /* card gain */
+  --fig-up-ticker: #21c773;        /* ticker gain */
+  --fig-down: #eb4545;             /* loss */
+
+  --header-h-fig: 80px;
+}
+
+/* ── Light "概覽" /trading page tokens — additive, owner 2026-08-10 (Figma 44:4) ──
+   The trading overview page is a lighter navy/gold direction (white body, navy
+   #1a3366 primary, softer gold #c9a84c, Instrument Serif display + Geist body),
+   consistent with the white global Header. Additive so the dark homepage/About/
+   products and the warm-white system are untouched; /trading components reference
+   these via explicit classes. See docs/HANDOFF.md 第十八輪. */
+:root {
+  --trd-navy: #1a3366;            /* primary: headings, buttons, accents */
+  --trd-navy-hover: #12264d;
+  --trd-gold: #c9a84c;            /* softer gold accent (page-scoped) */
+  --trd-cream: #fdfbf7;           /* badge / highlighted column bg */
+  --trd-cream-border: #eadcc1;    /* highlighted column border */
+  --trd-heading: #1f2937;         /* neutral heading (non-navy) */
+  --trd-body: #4b5563;            /* body text */
+  --trd-muted: #9ca3af;           /* disclaimers / muted */
+  --trd-border: #e5e7eb;          /* hairline / table border */
+  --trd-row-alt: #f5f6f8;         /* zebra row / light section bg */
+  --trd-up: #16a34a;              /* gain */
+  --trd-down: #dc2626;            /* loss */
+
+  --font-serif-display: var(--font-instrument-serif, ui-serif, Georgia,
+    "Songti TC", "Noto Serif TC", serif);
+  --font-geist: var(--font-geist, ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif);
+}

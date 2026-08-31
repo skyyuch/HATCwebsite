@@ -1,0 +1,672 @@
+{
+  "metadata": {
+    "home": {
+      "title": "HATC Group Limited",
+      "description": "HATC Group Limited offers precious-metals CFD trading — gold and silver — backed by its Hong Kong Gold Exchange AA membership (member no. 008)."
+    },
+    "about": {
+      "title": "About",
+      "description": "About HATC Group Limited: an AA-class member of the Hong Kong Gold Exchange (member no. 008), holding member and participant certificates, with a physical office in Kwun Tong, Kowloon, Hong Kong."
+    },
+    "products": {
+      "title": "Precious-metals CFD products",
+      "description": "HATC precious-metals CFD products — gold and silver — backed by our Hong Kong Gold Exchange AA membership (member no. 008) and traded on the MT5 platform."
+    },
+    "productsAll": {
+      "title": "All trading products",
+      "description": "A full list of HATC's tradeable products and specifications. Table figures are illustrative; actual conditions follow official announcements and live MT5 quotes."
+    },
+    "accounts": {
+      "title": "Trading accounts",
+      "description": "HATC trading account types and the account-opening process. Account specifications are illustrative; actual conditions follow official announcements and the MT5 platform."
+    },
+    "funding": {
+      "title": "Deposits & withdrawals",
+      "description": "HATC deposits and withdrawals: secure, convenient funding methods with processing times and fees. Channels and timelines are illustrative; actual conditions follow official announcements."
+    },
+    "trading": {
+      "title": "Gold trading services overview",
+      "description": "An overview of HATC's gold trading services — Loco London gold and kilobar trading, the MT5 platform, trading accounts and full client support — backed by our Hong Kong Gold Exchange AA membership (member no. 008)."
+    },
+    "news": {
+      "title": "Latest news",
+      "description": "Latest news and activity notices from HATC. Content is published by HATC — this page is the source of truth."
+    },
+    "academy": {
+      "title": "Gold Academy",
+      "description": "HATC Gold Academy: neutral educational content on precious-metals markets and platform basics. Nothing on this site constitutes investment advice."
+    }
+  },
+  "common": {
+    "brand": "HATC",
+    "brandFull": "HATC Group Limited",
+    "register": "Register",
+    "userCenter": "Account",
+    "contactUs": "Contact us",
+    "learnMore": "Learn more",
+    "startTrading": "Start trading",
+    "viewProducts": "Explore products",
+    "viewMore": "View more",
+    "comingSoon": "Coming soon",
+    "comingSoonNote": "This feature is under construction. Please check back later.",
+    "readMore": "Read more",
+    "skipToContent": "Skip to content",
+    "language": "Language",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "close": "Close"
+  },
+  "nav": {
+    "home": "Home",
+    "aboutHatc": "About HATC",
+    "goldTrading": "Trading",
+    "mt5": "MT5 Platform",
+    "goldAcademy": "Gold Academy",
+    "support": "Client Support",
+    "login": "Log in",
+    "openAccount": "Open account",
+    "products": "Products",
+    "primary": "Primary navigation",
+    "mega": {
+      "openLabel": "Open trading menu",
+      "products": {"title": "Gold products"},
+      "support": {"title": "Support & process"},
+      "items": {
+        "overview": {"title": "Overview", "desc": "A full introduction to HATC's gold trading services"},
+        "allProducts": {"title": "All products", "desc": "Browse the full instrument list and trading specifications"},
+        "account": {"title": "Trading accounts", "desc": "Account opening for institutions and individuals"},
+        "conditions": {"title": "Trading conditions", "desc": "Competitive spreads, leverage and session details"},
+        "funding": {"title": "Deposits & withdrawals", "desc": "Fast, secure ways to move your funds"}
+      },
+      "banner": {"title": "Open an account", "desc": "— Start your professional gold / silver investment journey"}
+    }
+  },
+  "locale": {
+    "zh-Hant": "繁體中文",
+    "zh-Hans": "简体中文",
+    "en": "English"
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "AA-class member of the Hong Kong Gold Exchange",
+      "titleLead": "Precious-metals",
+      "titleAccent": "CFD",
+      "titleTail": "trading",
+      "subtitle": "Trade CFDs on gold and silver — backed by our Hong Kong Gold Exchange AA membership.",
+      "imageAlt": "HATC reception at the Hong Kong office"
+    },
+    "heroV2": {
+      "badge": "Hong Kong Gold Exchange · AA-class member No. 008",
+      "titleLine1": "Connecting global gold markets",
+      "titleBrand": "HATC",
+      "titleTail": "at your side",
+      "subtitle": "Built on our AA-class membership of the Hong Kong Gold Exchange (member no. 008), HATC offers a compliant, professional channel for Loco London gold and silver trading — connecting you to global gold markets.",
+      "ctaPrimary": "Learn more",
+      "bgAlt": "Gold bars over a market chart (illustrative)",
+      "priceTitle": "Live gold price",
+      "sampleData": "Sample data",
+      "high": "Day high",
+      "low": "Day low"
+    },
+    "trust": {
+      "field": {"title": "Gold & Silver Exchange", "sub": "Hong Kong gold & silver exchange • a compliant, accredited exchange member"},
+      "grade": {"title": "AA-class member", "sub": "Highest-tier accredited member • authorised for Loco London gold/silver and physical gold"},
+      "member": {"title": "Member no. 008", "sub": "Officially accredited seat number • funds supervised under exchange rules"}
+    },
+    "goldServices": {
+      "kicker": "PREMIUM TRADING SERVICES",
+      "heading": "Premium gold trading services",
+      "subheading": "A focused, compliant and efficient Loco London gold/silver channel",
+      "body": "Backed by its AA-class membership of the Hong Kong Gold Exchange, HATC offers two-way trading in Loco London gold and silver, giving you a clear and transparent way to take part in global precious-metals markets.",
+      "features": {
+        "f1": {"title": "Flexible leverage, low entry", "sub": "Take part in precious-metals markets with a lower capital threshold."},
+        "f2": {"title": "24-hour two-way trading", "sub": "Follow global market sessions and act on opportunities flexibly."},
+        "f3": {"title": "Fast order-execution channel", "sub": "A stable order-placing and execution experience."}
+      },
+      "cta": "Explore gold trading",
+      "chartSymbol": "XAU/USD (Loco London Gold)",
+      "live": "Live trading",
+      "chartSample": "Sample data (design placeholder)",
+      "loco": {"gold": "Loco London Gold", "silver": "Loco London Silver"}
+    },
+    "mt5": {
+      "kicker": "METATRADER 5 PLATFORM",
+      "heading": "The world-class MT5 trading platform",
+      "subheading": "Powerful, seamlessly connected across devices",
+      "body": "Trade precious metals on the industry-standard MetaTrader 5 platform, seamlessly synced across desktop, web and mobile so you can follow prices and positions anytime.",
+      "features": {
+        "f1": {"title": "Always-on, multi-device", "sub": "Available on desktop, web and mobile devices."},
+        "f2": {"title": "Fine-grained order & position management", "sub": "A full range of order types and risk-control tools."},
+        "f3": {"title": "Advanced smart charting", "sub": "Multi-timeframe charts and rich technical-analysis tools."}
+      },
+      "ctaPrimary": "Explore MT5",
+      "ctaSecondary": "User guide",
+      "screenshotAlt": "MT5 trading platform shown across multiple devices (illustrative)"
+    },
+    "whyV2": {
+      "kicker": "WHY CHOOSE HATC",
+      "heading": "Why choose HATC",
+      "cards": {
+        "c1": {"title": "Compliant & secure", "body": "AA-class membership of the Hong Kong Gold Exchange; funds supervised under exchange rules."},
+        "c2": {"title": "First-class execution", "body": "A stable trading system and order-execution channel."},
+        "c3": {"title": "Personalised premium service", "body": "A dedicated team providing attentive client support."},
+        "c4": {"title": "Investment education", "body": "A full Gold Academy and market-analysis library."}
+      }
+    },
+    "goldAcademy": {
+      "kicker": "HATC GOLD ACADEMY",
+      "heading": "Gold Academy",
+      "readMore": "Read more",
+      "browseAll": "Browse all Academy content",
+      "imageAlt": "Academy article cover",
+      "articles": {
+        "a1": {"tag": "Basics", "title": "How Loco London gold (XAU) relates to the US dollar", "excerpt": "Understand the common price relationship and drivers between gold and the US dollar.", "imageAlt": "Gold bars and a market chart"},
+        "a2": {"tag": "MT5 in practice", "title": "Using MA crossover strategies on MT5", "excerpt": "A practical walkthrough of using moving-average crossovers as entry/exit references.", "imageAlt": "MT5 chart with moving averages"},
+        "a3": {"tag": "Macro view", "title": "How 2024 geopolitical conflicts affect gold's safe-haven role", "excerpt": "A macro look at how geopolitical events influence safe-haven demand for gold.", "imageAlt": "Global financial network"}
+      }
+    },
+    "story": {
+      "kicker": "ABOUT HATC GROUP",
+      "heading": "Rooted in Hong Kong's financial hub, expanding globally with integrity",
+      "body": "HATC Group Limited is rooted in Hong Kong and, as an AA-class member of the Hong Kong Gold Exchange (member no. 008), serves clients with integrity and professionalism — connecting them to global precious-metals markets.",
+      "cta": "Read our company story",
+      "seatLabel": "TRADE FIELD MEMBER SEAT",
+      "bgAlt": "Hong Kong city skyline"
+    },
+    "support": {
+      "kicker": "HATC CLIENT SUPPORT",
+      "heading": "Comprehensive, professional client support",
+      "cta": "Contact our dedicated online team",
+      "cards": {
+        "s1": {"title": "Account opening", "body": "Help completing account opening and verification."},
+        "s2": {"title": "MT5 platform use", "body": "Assistance with installing, logging in and using the platform."},
+        "s3": {"title": "Funding & withdrawals", "body": "Help with deposit/withdrawal processes and related questions."},
+        "s4": {"title": "Markets & trading basics", "body": "General information on precious-metals markets and trading basics."}
+      }
+    },
+    "finalCta": {
+      "heading": "Start your gold investment journey today",
+      "body": "Served by an AA-class member of the Hong Kong Gold Exchange (member no. 008).",
+      "ctaPrimary": "Open an account online",
+      "ctaSecondary": "Free demo account",
+      "bgAlt": "Hong Kong financial market (illustrative)"
+    },
+    "footerV2": {
+      "brandDesc": "HATC Group Limited is an AA-class member of the Hong Kong Gold Exchange (member no. 008), offering compliant, professional Loco London gold and silver trading services.",
+      "cols": {
+        "about": {"title": "About us", "l1": "Company profile", "l2": "Exchange seat", "l3": "Security & supervision", "l4": "Latest news"},
+        "trading": {"title": "Trading services", "l1": "Loco London gold", "l2": "Loco London silver", "l3": "Market trading rules", "l4": "Contract margin"},
+        "mt5": {"title": "MT5 platform", "l1": "MT5 client download", "l2": "Mobile platform guide", "l3": "EA / algo support", "l4": "Common how-to guides"},
+        "academy": {"title": "Gold Academy", "l1": "Foundation courses", "l2": "Advanced analysis", "l3": "Macro fundamentals", "l4": "Technical indicators"}
+      },
+      "risk": "Risk disclosure: precious-metals trading involves risk and prices can move sharply; you may lose part or all of your capital. All prices, charts and figures shown on this website are sample data for design demonstration only and do not constitute investment advice or an offer. Please make sure you fully understand the risks before trading.",
+      "privacy": "Privacy Policy",
+      "disclaimer": "Disclaimer"
+    },
+    "facts": {
+      "exchangeLabel": "Exchange",
+      "exchangeValue": "Hong Kong Gold Exchange",
+      "membershipLabel": "Membership",
+      "membershipValue": "AA-class member",
+      "memberNoLabel": "Member no.",
+      "memberNoValue": "008"
+    },
+    "milestones": {
+      "heading": "Milestones & credentials",
+      "items": {
+        "m1": "Obtained the Chinese Gold & Silver Exchange Society member no. 008 certificate",
+        "m2": "Obtained the Hong Kong Gold Exchange member no. 008 certificate and share certificate",
+        "m3": "Obtained the Hong Kong Gold Exchange participant certificate",
+        "m4": "Promoted to AA-class member of the Hong Kong Gold Exchange"
+      }
+    },
+    "assetPending": "[To be confirmed] asset"
+  },
+  "about": {
+    "hero": {
+      "titleLead": "About ",
+      "subtitle": "Rooted in Hong Kong and connecting global gold markets, giving institutional and individual investors the smoothest trading access.",
+      "bgAlt": "Hong Kong city skyline at night"
+    },
+    "identity": {
+      "kicker": "COMPANY OVERVIEW",
+      "heading": "Company profile",
+      "p1": "HATC Group Limited is rooted in Hong Kong, focused on compliant, professional electronic trading of precious metals.",
+      "p2": "As an AA-class member of the Hong Kong Gold Exchange (member no. 008), we hold the exchange's member and participant certificates and trade Loco London gold, Loco London silver and other precious metals.",
+      "p3": "We always put client asset safety first and, through the industry-standard MT5 platform, provide institutional and individual investors with a stable, transparent trading experience.",
+      "imageAlt": "HATC Hong Kong office"
+    },
+    "credentials": {
+      "kicker": "AUTHORITATIVE CREDENTIALS",
+      "heading": "Membership & authoritative standing",
+      "cards": {
+        "c1": {"title": "Hong Kong Gold Exchange", "sub": "An accredited dealer seat", "body": "The Hong Kong Gold Exchange (formerly the Chinese Gold & Silver Exchange Society) strictly supervises its accredited members, building a compliant and secure trading framework."},
+        "c2": {"title": "AA-class member", "sub": "Highest operating tier", "body": "AA is the highest member tier of the exchange, authorised to trade Loco London gold, Loco London silver and more."},
+        "c3": {"title": "Member no. 008", "sub": "A distinguished early seat number", "body": "We hold the exchange's accredited member seat no. 008; funds are supervised under exchange rules."}
+      },
+      "security": {
+        "title": "Supervision & asset-safety statement",
+        "body": "All of HATC's business complies with the Hong Kong Gold Exchange rules. Client funds are held in a designated custodial trust account, strictly segregated from the company's operating funds."
+      }
+    },
+    "principles": {
+      "kicker": "OUR PRINCIPLES",
+      "heading": "Our service principles",
+      "items": {
+        "p1": {"title": "Professional, compliant service", "body": "We follow the Hong Kong Gold Exchange's compliance and operating standards to provide professional, trustworthy trading services."},
+        "p2": {"title": "Clear, transparent information", "body": "We provide clear and transparent market and quote information so every trade is easy to understand."},
+        "p3": {"title": "Knowledge from the Academy", "body": "Through the Gold Academy we continually share practical macro and technical-analysis knowledge."},
+        "p4": {"title": "Wholehearted client care", "body": "Dedicated one-to-one bilingual client service helps you complete account opening and trading smoothly."}
+      }
+    },
+    "timeline": {
+      "kicker": "DEVELOPMENT HISTORY",
+      "heading": "HATC development history",
+      "items": {
+        "m1": {"title": "Gold & silver exchange member"},
+        "m2": {"title": "Gold Exchange member"},
+        "m3": {"title": "Participant status"},
+        "m4": {"title": "Promoted to AA-class member"}
+      }
+    },
+    "hongkong": {
+      "kicker": "HONG KONG LEGACY, GLOBAL REACH",
+      "headingLead": "Rooted in Hong Kong's financial hub",
+      "headingAccent": "serving Chinese-speaking markets worldwide",
+      "body": "The Hong Kong Gold Exchange is a long-standing centre of precious-metals trading and an important hub of the global gold market. HATC connects Hong Kong's physical gold network with the pulse of international investment through the smoothest digital channels.",
+      "bgAlt": "Victoria Harbour, Hong Kong"
+    },
+    "gallery": {
+      "kicker": "LICENSES · OFFICE · HONORS",
+      "heading": "Licenses, office & honors",
+      "licenseLabel": "Exchange member certificate",
+      "officeLabel": "Office environment",
+      "honorLabel": "Brand honor trophy",
+      "documentLabel": "Exchange participant certificate",
+      "customsLabel": "HK Customs Class-A registration",
+      "zoomHint": "Click to enlarge",
+      "note": "The above shows HATC's real licenses, office and honors.",
+      "alt": {
+        "license": "Hong Kong Gold Exchange member certificate",
+        "office": "HATC Hong Kong office",
+        "honor": "HATC brand honor trophy",
+        "document": "Hong Kong Gold Exchange participant certificate",
+        "customs": "HK Customs precious-metals & stones dealer Class-A registration certificate"
+      }
+    },
+    "cta": {
+      "heading": "Explore HATC's gold trading services",
+      "body": "To learn about online account opening, one-to-one client support or further market information, get in touch with our professional team today.",
+      "ctaSecondary": "Explore gold trading"
+    }
+  },
+  "products": {
+    "hero": {
+      "titleLead": "Precious-metals ",
+      "titleAccent": "CFD",
+      "titleTail": " products",
+      "subtitle": "Trade gold and silver CFDs on the MT5 platform, backed by our Hong Kong Gold Exchange AA membership (member no. 008).",
+      "bgAlt": "Gold market chart (illustrative)"
+    },
+    "list": {
+      "kicker": "OUR PRODUCTS",
+      "heading": "Tradeable products",
+      "subheading": "We currently offer gold and silver contracts for difference (CFDs).",
+      "spreadLabel": "Average spread",
+      "leverageLabel": "Max leverage"
+    },
+    "items": {
+      "gold": {"name": "Gold CFD", "desc": "A contract for difference on Loco London gold (XAU/USD), with two-way trading and flexible leverage."},
+      "silver": {"name": "Silver CFD", "desc": "A contract for difference on Loco London silver (XAG/USD), with two-way trading and flexible leverage."}
+    },
+    "conditions": {
+      "kicker": "TRADING CONDITIONS",
+      "heading": "Trading conditions",
+      "colProduct": "Product",
+      "colSymbol": "Symbol",
+      "colSpread": "Average spread",
+      "colLeverage": "Max leverage",
+      "colPlatform": "Platform",
+      "pointsUnit": "points",
+      "platformValue": "MetaTrader 5",
+      "pendingLabel": "Other conditions (minimum lot size, fees, execution mode, etc.)",
+      "pending": "To be announced",
+      "note": "Spreads are reference averages; actual dealing spreads follow the platform's live quotes. Leverage can amplify both profits and losses — please make sure you fully understand the risks before trading."
+    },
+    "credibility": {
+      "kicker": "WHY TRADE WITH HATC",
+      "heading": "Why trade with HATC"
+    },
+    "cta": {
+      "heading": "Ready to start trading?",
+      "body": "Served by an AA-class member of the Hong Kong Gold Exchange (member no. 008). Open an account or get in touch with our dedicated team today."
+    }
+  },
+  "productsAll": {
+    "hero": {
+      "breadcrumb": "All products",
+      "titleLead": "All ",
+      "titleAccent": "trading",
+      "titleTail": " products",
+      "subtitle": "Explore HATC's full list of tradeable products and specifications. Backed by our Hong Kong Gold Exchange AA membership (member no. 008) and traded on the MT5 platform."
+    },
+    "table": {
+      "kicker": "ALL PRODUCTS",
+      "heading": "Tradeable products",
+      "sampleLabel": "Sample data",
+      "sampleNote": "Contract size, spread, leverage and trading hours below are illustrative. Actual trading conditions follow official announcements and live MT5 quotes.",
+      "colProduct": "Product",
+      "colContractSize": "Contract size",
+      "colSpread": "Spread",
+      "colLeverage": "Leverage",
+      "colHours": "Trading hours",
+      "scrollHint": "Swipe to see the full table",
+      "empty": "The product list will be published soon."
+    },
+    "categories": {
+      "metals": "Precious metals",
+      "forex": "Forex",
+      "indices": "Indices",
+      "energy": "Energy",
+      "other": "Other"
+    },
+    "sample": {
+      "rows": [
+        {"symbol": "XAU/USD", "name": "Loco London Gold", "category": "metals", "contractSize": "100 oz", "spread": "27", "leverage": "1:100", "tradingHours": "Mon–Fri, 24 hours"},
+        {"symbol": "XAG/USD", "name": "Loco London Silver", "category": "metals", "contractSize": "5000 oz", "spread": "30", "leverage": "1:100", "tradingHours": "Mon–Fri, 24 hours"}
+      ]
+    }
+  },
+  "accounts": {
+    "hero": {
+      "breadcrumb": "Trading accounts",
+      "badge": "MULTIPLE ACCOUNT TYPES FOR YOU",
+      "titleLead": "Choose the ",
+      "titleAccent": "precious-metals CFD",
+      "titleTail": " account that suits you",
+      "subtitle": "We offer multiple account types — from a zero-commission standard account to an ultra-low-spread professional account — to match your gold and silver trading strategy and capital.",
+      "ctaOpen": "Open an account",
+      "ctaDemo": "Try a free demo"
+    },
+    "tiers": {
+      "kicker": "CHOOSE YOUR TIER",
+      "heading": "Compare account types",
+      "subtitle": "Choose the account model that best fits your risk appetite, capital and trading frequency.",
+      "specLabels": {
+        "minDeposit": "Minimum deposit",
+        "spread": "Minimum spread",
+        "commission": "Commission / lot",
+        "leverage": "Leverage",
+        "execution": "Execution",
+        "platform": "Platforms"
+      },
+      "note": "Account specifications above are illustrative; actual conditions follow HATC's official announcements and the MT5 platform. Leveraged trading can amplify both gains and losses — please fully understand the risks."
+    },
+    "tiersSample": [
+      {"key": "standard", "code": "Standard STP", "badge": "Most popular", "popular": true, "name": "Standard STP account", "desc": "A popular entry choice with no commission and simple, transparent costs.", "minDeposit": "USD 100", "spread": "From 1.0 pip", "commission": "Zero commission", "leverage": "Up to 1:500", "execution": "STP straight-through", "platform": "MT4, MT5, TradingView"},
+      {"key": "raw", "code": "Raw ECN", "badge": "Ultra-low spread", "popular": false, "name": "RAW ECN account", "desc": "Built for high-frequency and professional traders seeking raw institutional spreads.", "minDeposit": "USD 500", "spread": "From 0.0 pip", "commission": "USD 3.00 / lot (per side)", "leverage": "Up to 1:500", "execution": "ECN network", "platform": "MT4, MT5, TradingView"},
+      {"key": "vip", "code": "Premium VIP", "badge": "For large volumes", "popular": false, "name": "Premium VIP account", "desc": "For large-capital clients, with the best spread discounts and round-the-clock dedicated support.", "minDeposit": "USD 10,000", "spread": "From 0.0 pip", "commission": "USD 1.50 / lot (per side)", "leverage": "Up to 1:500", "execution": "ECN network", "platform": "MT4, MT5"},
+      {"key": "cent", "code": "Cent Account", "badge": "Minimal risk", "popular": false, "name": "Micro Cent account", "desc": "Settled in cents — validate your automated systems and strategies in a very low-risk environment.", "minDeposit": "USD 10", "spread": "From 1.2 pip", "commission": "Zero commission", "leverage": "Up to 1:1000", "execution": "STP straight-through", "platform": "MT4"}
+    ],
+    "benefits": {
+      "kicker": "CORE BENEFITS",
+      "heading": "Trading advantages built for you",
+      "items": [
+        {"title": "Zero commission (standard account)", "desc": "The standard account is fully commission-free — costs are built into competitive spreads, ideal for medium-to-long-term and swing traders."},
+        {"title": "RAW institutional spreads", "desc": "RAW ECN offers raw spreads direct from liquidity providers, from as low as 0.0 pip, suited to high-frequency and algorithmic strategies."},
+        {"title": "Low entry, flexible funding", "desc": "Take part in live markets from a low threshold with the cent account, with flexible funding options that ease pressure on your capital."},
+        {"title": "Top trading platforms supported", "desc": "Accounts work with MT4, MT5 and TradingView for fast execution, deep charting and expert advisors (EA)."}
+      ]
+    },
+    "spreads": {
+      "kicker": "LIVE SPREADS PREVIEW",
+      "heading": "Popular product spreads",
+      "note": "The quotes and spreads below are illustrative, not a live feed; actual fills follow live MT5 quotes.",
+      "colPair": "Instrument",
+      "colBid": "Bid",
+      "colAsk": "Ask",
+      "colSpread": "Avg. spread"
+    },
+    "spreadsSample": [
+      {"pair": "XAU/USD (Gold)", "bid": "2,342.30", "ask": "2,342.80", "spread": "0.5 pip"},
+      {"pair": "XAG/USD (Silver)", "bid": "27.83", "ask": "27.85", "spread": "0.8 pip"}
+    ],
+    "platforms": {
+      "kicker": "WORLD-CLASS PLATFORMS",
+      "heading": "Backed by leading trading platforms",
+      "items": [
+        {"name": "MetaTrader 4 (MT4)", "desc": "A widely used trading platform supporting many custom indicators and EA automation strategies."},
+        {"name": "MetaTrader 5 (MT5)", "desc": "A next-generation multi-asset terminal with faster execution, more timeframes and built-in technical analysis."},
+        {"name": "TradingView direct", "desc": "Analyse on TradingView and connect directly to your account to place orders for a smooth charting experience."}
+      ]
+    },
+    "steps": {
+      "kicker": "EASY 3-STEP START",
+      "heading": "Start trading in three simple steps",
+      "items": [
+        {"title": "Register your account", "desc": "Provide your basic personal details and submit ID and proof of address online to complete verification."},
+        {"title": "Fund securely", "desc": "Multiple mainstream funding methods are supported; available channels and processing times follow official announcements."},
+        {"title": "Start trading", "desc": "Log in to MT4/MT5 or TradingView, connect your chosen account type and start trading gold, silver and more."}
+      ]
+    },
+    "faq": {
+      "kicker": "COMMON QUESTIONS",
+      "heading": "Frequently asked questions",
+      "items": [
+        {"q": "What is the minimum deposit to open a live account?", "a": "Minimums vary by account type (illustrative: cent account from about USD 10, standard from about USD 100, RAW ECN from about USD 500). Actual thresholds follow HATC's official announcements."},
+        {"q": "What is the main difference between Standard and RAW ECN accounts?", "a": "The standard account uses all-in, zero-commission pricing with slightly higher spreads; RAW ECN offers lower raw spreads but charges a fixed commission per lot. This is an illustrative summary; actual conditions follow official announcements."},
+        {"q": "Can I try a free demo account first?", "a": "We plan to offer a demo account so you can get familiar with the platform in a risk-free environment. Availability and details will be announced separately."},
+        {"q": "Can I use automated (EA) strategies on the platform?", "a": "MT4 and MT5 support expert advisors (EA) and automated trading scripts, suited to algorithmic trading."},
+        {"q": "What is the maximum leverage, and can it be adjusted?", "a": "Account leverage is illustrative (e.g. up to 1:500, cent account up to 1:1000); actual leverage and any adjustments follow HATC's official announcements. Leverage amplifies both gains and losses — assess carefully."}
+      ]
+    },
+    "cta": {
+      "heading": "Begin your precious-metals trading journey",
+      "body": "Experience secure fund custody and professional client support, and start allocating to gold and silver whenever you're ready."
+    }
+  },
+  "funding": {
+    "hero": {
+      "breadcrumb": "Deposits & withdrawals",
+      "badge1": "✓ Segregated client funds",
+      "badge2": "✓ Secure, convenient access",
+      "titleLead": "Secure, convenient ",
+      "titleAccent": "deposits & withdrawals",
+      "titleTail": " for your funds",
+      "subtitle": "We offer diverse, transparent deposit and withdrawal channels so you can fund your account and take out profits securely and smoothly — seizing every market opportunity.",
+      "ctaOpen": "Open an account"
+    },
+    "methods": {
+      "colMethod": "Method",
+      "colTime": "Processing time",
+      "colFee": "Fee",
+      "colCurrencies": "Available currencies",
+      "scrollHint": "Swipe left/right to see the full table"
+    },
+    "deposit": {
+      "kicker": "DEPOSIT CHANNELS",
+      "heading": "Supported deposit channels & timelines",
+      "note": "The channels, processing times, fees and available currencies below are illustrative. Actual available channels and conditions follow HATC's official announcements.",
+      "intro": {
+        "heading": "How to deposit funds into your trading account",
+        "body": "After opening an account, log in to your client portal to deposit. We support a range of convenient deposit options to build a secure bridge for your funds.",
+        "cta": "Log in to deposit →"
+      },
+      "steps": [
+        {"text": "Log in to your live client portal"},
+        {"text": "Go to \"Funds\" ➜ \"Deposit\""},
+        {"text": "Choose a deposit channel, enter the amount and complete the transaction"}
+      ],
+      "methodsSample": [
+        {"method": "Visa / Mastercard", "time": "Instant to 30 minutes", "fee": "Free", "free": true, "currencies": "USD, EUR, GBP, AUD, SGD"},
+        {"method": "Apple Pay / Google Pay", "time": "Instant", "fee": "Free", "free": true, "currencies": "USD, EUR, GBP"},
+        {"method": "UnionPay", "time": "15 - 30 minutes", "fee": "Free", "free": true, "currencies": "CNH, USD"},
+        {"method": "Wire transfer (SWIFT)", "time": "2 - 5 business days", "fee": "Free from us (bank may charge)", "free": false, "currencies": "All major currencies"},
+        {"method": "Neteller e-wallet", "time": "Instant", "fee": "Free", "free": true, "currencies": "USD, EUR, GBP"},
+        {"method": "Perfect Money", "time": "Instant", "fee": "Free", "free": true, "currencies": "USD, EUR"},
+        {"method": "Fasapay", "time": "Instant", "fee": "Free", "free": true, "currencies": "USD, IDR"},
+        {"method": "JCB", "time": "Instant", "fee": "Free", "free": true, "currencies": "JPY, USD"}
+      ]
+    },
+    "withdraw": {
+      "kicker": "WITHDRAWAL CHANNELS",
+      "heading": "Supported withdrawal channels & timelines",
+      "note": "The channels, processing times, fees and available currencies below are illustrative. Actual available channels and conditions follow HATC's official announcements.",
+      "intro": {
+        "heading": "How to withdraw funds from your trading account",
+        "body": "To comply with international anti-money-laundering rules, withdrawals are generally returned to your original deposit channel (\"same-route\" return).",
+        "cta": "Request a withdrawal →"
+      },
+      "steps": [
+        {"text": "Log in to your client portal and go to \"Funds\" ➜ \"Withdraw\""},
+        {"text": "Choose a withdrawal channel and enter the amount"},
+        {"text": "Submit — our back-office specialists review it on business days"}
+      ],
+      "methodsSample": [
+        {"method": "Visa / Mastercard", "time": "1 - 3 business days", "fee": "Free", "free": true, "currencies": "USD, EUR, GBP, AUD, SGD"},
+        {"method": "UnionPay (same-route return)", "time": "1 - 2 business days", "fee": "Free", "free": true, "currencies": "CNH, USD"},
+        {"method": "Online bank transfer (local bank)", "time": "Within 1 business day", "fee": "Free", "free": true, "currencies": "Local fiat currency"},
+        {"method": "International wire", "time": "3 - 5 business days", "fee": "Free from us (intermediary bank may charge)", "free": false, "currencies": "All major currencies"},
+        {"method": "Neteller e-wallet", "time": "Instant after approval", "fee": "Free", "free": true, "currencies": "USD, EUR, GBP"},
+        {"method": "Skrill e-wallet", "time": "Instant after approval", "fee": "Free", "free": true, "currencies": "USD, EUR, GBP"}
+      ]
+    },
+    "topics": {
+      "kicker": "SUPPORT TOPICS",
+      "heading": "Frequently searched support topics",
+      "subtitle": "Have a question? Quickly find where to look for answers to common queries.",
+      "items": [
+        {"title": "Trading with us", "desc": "Trading rules and processes", "icon": "trendingUp"},
+        {"title": "Cashier & funding", "desc": "Deposit and withdrawal methods", "icon": "wallet"},
+        {"title": "Your trading account", "desc": "Account management & verification", "icon": "user"},
+        {"title": "Managing your funds", "desc": "Fund segregation & oversight", "icon": "shield"},
+        {"title": "Partner programme", "desc": "Introducing broker & agent plans", "icon": "users"},
+        {"title": "Our trading platform", "desc": "MT5 and mobile app tutorials", "icon": "smartphone"}
+      ]
+    },
+    "testimonials": {
+      "kicker": "CLIENT VOICES",
+      "heading": "Client testimonials",
+      "subtitle": "Testimonials are published by the owner after review in the CMS."
+    },
+    "cta": {
+      "heading": "Ready to get started?",
+      "body": "Open your gold and silver allocation in a secure, transparent environment. Once your account is open you can experience the full funding service.",
+      "ctaOpen": "Open a live account",
+      "ctaDemo": "Explore trading accounts"
+    }
+  },
+  "trading": {
+    "hero": {
+      "titleLine1": "Trade gold securely",
+      "titleLine2": "and efficiently with HATC",
+      "subtitle": "As an AA-class member of the Hong Kong Gold Exchange (member no. 008), HATC offers professional Loco London gold and kilobar trading, the MT5 platform and comprehensive client support — helping you navigate the gold market under solid oversight and clear conditions.",
+      "imageAlt": "MT5 trading platform interface (illustrative)"
+    },
+    "services": {
+      "badge": "Precision · Integrity",
+      "heading": "Gold trading services & tools",
+      "subtitle": "With a top-tier technology platform and flexible physical and derivative trading models, we meet your varied gold allocation needs.",
+      "items": {
+        "londonGold": {"title": "Loco London Gold (XAU/USD)", "desc": "Connected to the international spot gold market, offering high liquidity and 24-hour gold quotes and trading."},
+        "kilobar": {"title": "Kilobar trading", "desc": "Trading, settlement, deposit and withdrawal of physical gold kilobars, with assured purity and compliant delivery."},
+        "mt5": {"title": "MT5 trading platform", "desc": "Powered by the widely adopted MT5 terminal, supporting fast order placement, rich technical indicators and automated strategies."},
+        "support": {"title": "Client support", "desc": "A dedicated team providing one-to-one account-opening guidance, platform-installation help and funding assistance."}
+      }
+    },
+    "accounts": {
+      "badge": "Flexible setup",
+      "heading": "Trading account comparison",
+      "subtitle": "An account structure designed for different trading volumes and strategies, helping you configure your trading edge flexibly.",
+      "recommend": "Recommended",
+      "colSpec": "Account specs / features",
+      "standard": "Standard account",
+      "professional": "Professional account",
+      "rows": {
+        "minDeposit": "Minimum deposit",
+        "instruments": "Instruments",
+        "spread": "Spread",
+        "leverage": "Leverage",
+        "platform": "Platform",
+        "support": "Client support",
+        "education": "Education",
+        "manager": "Dedicated account manager"
+      },
+      "pending": "To be confirmed",
+      "instrumentsStandard": "Loco London Gold",
+      "instrumentsPro": "Loco London Gold, kilobar",
+      "platformValue": "MT5",
+      "priority": "✓ Priority",
+      "disclaimer": "The account details above are an illustrative format; actual conditions follow HATC's official announcements. Market trading can involve leverage risk — please make sure you understand the relevant terms."
+    },
+    "trust": {
+      "cards": {
+        "compliance": {"badge": "Compliance", "label": "HK Gold & Silver Exchange", "title": "AA-class accredited member", "desc": "Regulatory accreditation from Hong Kong's historic and authoritative precious-metals exchange."},
+        "member": {"badge": "Member no. 008", "label": "Member no. 008", "title": "HATC Group Limited", "desc": "Serving Hong Kong as accredited member no. 008, operating with integrity."},
+        "custody": {"badge": "Fund safety", "label": "Robust security system", "title": "Physical gold custody & settlement", "desc": "Standard kilobars held in a high-grade vault, with a transparent delivery and stock-taking process."}
+      },
+      "partner": {"title": "Partner & certification logo area", "desc": "(HK Gold & Silver Exchange mark, MT5 platform certification, industry custody partners)"}
+    },
+    "pricing": {
+      "badge": "Live spreads",
+      "heading": "See competitive trading conditions in real time",
+      "subtitle": "Transparent live spreads and liquidity quotes with no hidden fees, for a sound trading-execution environment.",
+      "cols": {
+        "instrument": "Instrument",
+        "bid": "Bid",
+        "ask": "Ask",
+        "spread": "Spread",
+        "change": "Change",
+        "session": "Session"
+      },
+      "session": "Mon–Fri 24 hours",
+      "names": {"londonGold": "Loco London Gold", "kilobarHkd": "Kilobar (HKD)"},
+      "disclaimer": "* Sample data for reference only. Actual quotes and liquidity follow the live trading screen on the MT5 platform.",
+      "cta": "View full trading conditions"
+    },
+    "faq": {
+      "badge": "Support centre",
+      "heading": "Frequently asked questions",
+      "subtitle": "Answers to common questions about gold trading, platform technology and security & compliance. For anything else, feel free to contact our support team.",
+      "items": {
+        "q1": {"q": "How do I open a trading account with HATC?", "a": "Opening an account is simple. Click \u201cOpen account\u201d at the top right, fill in your basic details and upload identity and address documents as instructed; once verified, you'll receive an MT5 trading account. Our client-support team is happy to help if needed."},
+        "q2": {"q": "What gold trading products does HATC offer?", "a": "We mainly offer internationally connected spot \u201cLoco London Gold (XAU/USD)\u201d trading, together with \u201ckilobar\u201d trading that meets Hong Kong physical standards — letting you flexibly allocate both physical and price-based gold assets."},
+        "q3": {"q": "What is Loco London Gold (XAU/USD)?", "a": "Loco London Gold is the common term for international spot gold trading. Priced in US dollars, it offers near-24-hour two-way trading and high liquidity, and is a widely used tool for gold allocation."},
+        "q4": {"q": "How do I use the MT5 platform?", "a": "HATC uses the industry-standard MetaTrader 5 platform, available on desktop, web and mobile. We provide platform tutorials and operating guidance to help you install, log in and place orders smoothly."},
+        "q5": {"q": "How do deposits and withdrawals work?", "a": "Client funds are held in a designated custodial trust account, strictly segregated from the company's operating funds. For the specific deposit and withdrawal methods and process, please follow the platform guidance after opening an account, or contact our client-support team for details."},
+        "q6": {"q": "What are HATC's trading hours?", "a": "Loco London Gold generally trades near 24 hours from Monday to Friday (subject to daylight-saving adjustments), helping investors take part across major global market sessions. Actual sessions follow the trading platform's announcements."}
+      }
+    },
+    "cta": {
+      "heading": "Ready to start trading gold?",
+      "body": "Contact HATC's professional team today to learn about account opening, account conditions and trading-service details — and explore a solid channel for precious-metals allocation together."
+    }
+  },
+  "news": {
+    "kicker": "LATEST NEWS & ACTIVITIES",
+    "heading": "Latest news & activities",
+    "empty": "No news has been published yet. Official updates will appear here when available.",
+    "viewAll": "View all news",
+    "imageAlt": "News cover"
+  },
+  "academy": {
+    "kicker": "HATC GOLD ACADEMY",
+    "heading": "Gold Academy",
+    "empty": "No Academy articles have been published yet. Official educational content will appear here when available.",
+    "imageAlt": "Academy article cover",
+    "disclaimer": "Academy content is neutral educational information and does not constitute investment advice or an offer.",
+    "backToList": "Back to Academy",
+    "breadcrumb": "Academy navigation",
+    "bodyEmpty": "This article does not have a full body yet. Please check back later, or return to the list for other articles."
+  },
+  "footer": {
+    "memberInfo": "AA-class member of the Hong Kong Gold Exchange (member no. 008)",
+    "address": "Unit 8A, 8/F., Tower B, Manulife Financial Centre, 223 Wai Yip Street, Kowloon, Hong Kong",
+    "rights": "All rights reserved"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist or has been moved.",
+    "back": "Back to home"
+  }
+}
