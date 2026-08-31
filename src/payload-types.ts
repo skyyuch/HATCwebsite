@@ -418,7 +418,7 @@ export interface AcademyArticle {
    */
   cover?: (number | null) | Media;
   /**
-   * e.g. Basics, MT5 practice, Macro view.
+   * For the /academy filter to match, use one of the canonical categories: Gold basics / Trading strategy / Technical analysis / Market moves / Risk management / Portfolio. Free text is allowed but unlisted values will not appear as a filter option.
    */
   category?: string | null;
   publishedAt?: string | null;

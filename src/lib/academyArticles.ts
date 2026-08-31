@@ -28,6 +28,8 @@ export type AcademyArticle = {
   coverAlt?: string;
   publishedAt?: string;
   order: number;
+  /** Estimated reading time in minutes, derived from body/excerpt length (0 = unknown). */
+  readMinutes: number;
 };
 
 export type AcademyArticleDetail = AcademyArticle & {
@@ -77,6 +79,32 @@ function lexicalFromPlainText(text: string): AcademyArticleBody {
   };
 }
 
+/** Walk a Lexical richtext tree and concatenate all text-node strings. */
+function lexicalToPlainText(body: unknown): string {
+  const out: string[] = [];
+  const visit = (node: unknown): void => {
+    if (!node || typeof node !== 'object') return;
+    const n = node as Record<string, unknown>;
+    if (typeof n.text === 'string') out.push(n.text);
+    const children = n.children;
+    if (Array.isArray(children)) children.forEach(visit);
+    const root = n.root;
+    if (root) visit(root);
+  };
+  visit(body);
+  return out.join(' ');
+}
+
+/**
+ * Reading-time estimate from content length. ~350 chars/min works reasonably for
+ * mixed CJK/Latin. This is a derived UI estimate (not a fabricated fact).
+ */
+function estimateReadMinutes(text: string): number {
+  const len = text.trim().length;
+  if (!len) return 0;
+  return Math.max(1, Math.round(len / 350));
+}
+
 function mapCover(cover: PayloadAcademyArticle['cover']): {
   coverUrl?: string;
   coverAlt?: string;
@@ -100,16 +128,20 @@ function mapListItem(
   const slug = (doc.slug as string) || '';
   if (!title || !slug) return null;
   const {coverUrl, coverAlt} = mapCover(doc.cover);
+  const excerpt = (doc.excerpt as string) || undefined;
+  const bodyText = lexicalToPlainText(doc.body);
+  const readMinutes = estimateReadMinutes(bodyText || excerpt || '');
   return {
     id: String(doc.id),
     slug,
     title,
-    excerpt: (doc.excerpt as string) || undefined,
+    excerpt,
     category: (doc.category as string) || undefined,
     coverUrl,
     coverAlt,
     publishedAt: (doc.publishedAt as string) || undefined,
-    order: (doc.order as number) ?? orderFallback
+    order: (doc.order as number) ?? orderFallback,
+    readMinutes
   };
 }
 
@@ -140,7 +172,8 @@ async function getAcademyArticlesFallback(
       category: item?.tag || undefined,
       coverUrl: FALLBACK_COVERS[key],
       coverAlt: item?.imageAlt || undefined,
-      order: index
+      order: index,
+      readMinutes: estimateReadMinutes(item?.excerpt || '')
     };
   }).filter((item) => item.title);
 }

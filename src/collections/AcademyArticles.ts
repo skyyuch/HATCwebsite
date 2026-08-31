@@ -111,9 +111,9 @@ export const AcademyArticles: CollectionConfig = {
       label: adminLabel('Category tag', '分類標籤', '分类标签'),
       admin: {
         description: adminLabel(
-          'e.g. Basics, MT5 practice, Macro view.',
-          '例如：基礎教學、MT5實戰、巨集觀視野。',
-          '例如：基础教学、MT5实战、宏观视野。'
+          'For the /academy filter to match, use one of the canonical categories: Gold basics / Trading strategy / Technical analysis / Market moves / Risk management / Portfolio. Free text is allowed but unlisted values will not appear as a filter option.',
+          '為讓 /academy 分類篩選能對應，請使用固定分類之一：黃金基礎／交易策略／技術分析／市場動態／風險管理／投資組合。可自由填寫，但未列於清單的分類不會出現在篩選選項。',
+          '为让 /academy 分类筛选能对应，请使用固定分类之一：黄金基础／交易策略／技术分析／市场动态／风险管理／投资组合。可自由填写，但未列于清单的分类不会出现在筛选选项。'
         )
       }
     },

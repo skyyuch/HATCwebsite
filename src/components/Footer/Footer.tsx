@@ -34,10 +34,10 @@ const FOOTER_LINKS: Record<Col, Record<LinkKey, string>> = {
   },
   mt5: {l1: '/#mt5', l2: '/#mt5', l3: '/#mt5', l4: '/#mt5'},
   academy: {
-    l1: '/#academy',
-    l2: '/#academy',
-    l3: '/#academy',
-    l4: '/#academy'
+    l1: '/academy',
+    l2: '/academy',
+    l3: '/academy',
+    l4: '/academy'
   }
 };
 

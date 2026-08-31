@@ -20,7 +20,7 @@ const NAV: ReadonlyArray<Omit<NavLink, 'label'>> = [
   // 2026-08-10); /products remains the trading-conditions detail sub-page.
   {key: 'goldTrading', href: '/trading', mega: true},
   {key: 'platforms', href: '/platforms'},
-  {key: 'goldAcademy', href: '/#academy'},
+  {key: 'goldAcademy', href: '/academy'},
   {key: 'support', href: '/#support'}
 ];
 

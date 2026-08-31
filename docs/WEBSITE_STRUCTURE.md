@@ -9,7 +9,8 @@
   交易概覽 `/trading`、產品 `/products`、所有交易產品 `/products/all`、交易帳戶 `/accounts`、
   入金與出金 `/funding`、**交易平台 `/platforms`**（Figma `89:4`；CMS `trading-platforms`
   ＋ faqs `platforms` 分類）、最新消息 `/news`（CMS `home-activities`）、
-  黃金學堂 `/academy`＋`/academy/[slug]`（CMS `academy-articles`）
+  黃金學院 `/academy`（Figma `98:4` 改版：hero＋分類篩選/排序/分頁＋電子報）
+  ＋`/academy/[slug]`（CMS `academy-articles`）
 - CMS：Phase 0–4 完成（infra／FAQ／新聞活動／學堂／行銷 globals＋示意表）
 - 後續階段（待規劃）：交易平台細節、Credentials 獨立頁、Contact 獨立頁（如需）
 
@@ -25,8 +26,9 @@
 - 交易平台 ✅（`/[locale]/platforms`，Figma `89:4`；分頁 MT5＋HATC App＋網頁交易端＝
   業主確認之平台，Payload `trading-platforms`＋faqs `platforms`；平台截圖為漸層佔位待業主素材）
 - 最新消息 ✅（`/[locale]/news`，Payload `home-activities`；無內容時中性空狀態）
-- 黃金學堂 ✅（`/[locale]/academy` 列表＋`/[locale]/academy/[slug]` 詳情；Payload
-  `academy-articles` Lexical body；無 DB／空 CMS → i18n 種子 a1–a3）
+- 黃金學院 ✅（`/[locale]/academy` 列表〔Figma `98:4`：navy/gold hero＋分類篩選 sidebar
+  ＋排序＋分頁＋電子報誠實佔位〕＋`/[locale]/academy/[slug]` 詳情；Payload `academy-articles`
+  Lexical body；無 DB／空 CMS → i18n 種子 a1–a3；篩選分類＝固定 6 類 `academy.categories`）
 - 資質與證書 Credentials 【後續】
   - 真實證書展示（About 已有牌照牆）
 - 聯絡我們 Contact 【後續】

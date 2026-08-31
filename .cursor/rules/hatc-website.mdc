@@ -254,6 +254,53 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  `/accounts` 曾列為示意）；(c) demo 流程（現 demo CTA→`/accounts`）；(d) Footer「MT5平台」欄是否一併更名/
  改指 `/platforms`。
 
+- **2026-08-31 (第三十九輪): 黃金學院 `/academy` 列表頁改版（Figma `98:4`，忠實還原版型）。**
+ 業主給的 frame 又是 **Vantage 範本**（橘漸層 hero＋**浮動 3D 金幣/金條/bokeh/glow** 裝飾、範本 nav/footer、
+ 佔位文章標題含**外匯/CFD/指數**、電子報宣稱「每週…最權威…外匯分析」）。owner 指示「先完成 UI/UX，文章後面
+ 再處理」，依既有 `/accounts`/`/funding`/`/platforms` 先例的治理紅線落地：① **橘→ HATC 金 `#d4af37`／navy
+ `#1a3366`**，沿用既有**淺色 `--fig-*`** 系統（與現有 academy 列表/詳情一致）；② **hero 依紅線移除浮動金幣/
+ 發光金條/bokeh/glow**（「floating 3D coins / glowing gold」在避免清單上），改克制的 navy→gold 漸層＋金色細線；
+ ③ **用全域白 Header＋深色 Footer**，丟掉範本 nav/footer；④ **範本文章佔位標題（外匯/CFD/指數）不採用**——
+ 資料仍走 CMS `academy-articles`（無 DB／空→i18n 種子 a1–a3，全金/白銀）；⑤ **電子報**：橘→navy、移除「外匯」
+ 與「最權威」超級宣稱、去掉「每週」不可保證的頻率承諾；**無 email 後端＝誠實佔位**（送出僅前端驗證＋顯示
+ 「訂閱功能即將開放」，不假造成功、不送資料）——比照見證「不造假」原則。
+ - **IA / 導覽**：`nav.goldAcademy`「黃金學堂」→**「黃金學院」**、href `/#academy`→ **`/academy`**
+ （`Header.tsx` NAV）；**Footer 學院欄 4 連結全改指 `/academy`**（原 `/#academy`）＋欄標題改「黃金學院」。
+ 頁面標題/breadcrumb/metadata 均統一為**黃金學院**（英文維持 Gold Academy）。麵包屑＝首頁 › 黃金學院。
+ - **元件**：`src/components/academy/*` — `AcademyHero`（server，麵包屑＋navy/gold hero band）／
+ `AcademyExplorer`（**client**，分類篩選 sidebar〔多選 checkbox＋套用/重設〕＋結果標題「📚 學院文章」＋
+ 金色 count badge＋排序 `<select>`〔最新/最早發佈〕＋文章格＋**分頁**，全在 client 對 server 傳入的完整清單做
+ filter/sort/paginate → **維持 SSG**，PAGE_SIZE=9）／`AcademyNewsletter`（client，誠實佔位）。重寫
+ `AcademyList`（server）組合三區塊，讀 `getAcademyArticles(locale)`＋`t.raw('academy.categories')`。
+ - **受控分類 taxonomy（無 schema migration）**：篩選選項＝i18n **`academy.categories`** 固定 6 類
+ （黃金基礎／交易策略／技術分析／市場動態／風險管理／投資組合）；**seed 三筆 tag 已對齊**到其中值（a1 黃金基礎／
+ a2 技術分析／a3 市場動態，三語同步，homepage 深色卡同步一致），故 seed 資料下篩選即可運作。`category` 欄**仍為
+ 自由文字**（未改 schema），僅在 `AcademyArticles.ts` 欄位說明加註「請用固定分類之一，未列者不會出現在篩選」。
+ ⚠ **follow-up**：若要嚴格保證，未來可將 `category` 改 `select`（受控 enum）＝需 schema migration，待業主定案。
+ - **readMinutes**：reader `academyArticles.ts` 新增 `readMinutes`（走訪 Lexical body 取純文字，~350 字/分
+ 估算；seed 無 body 用 excerpt）＝**內容長度衍生的 UI 估算，非捏造事實**；卡片有值才顯示。日期用 `publishedAt`
+ 有值才顯示（seed 無 → 不顯示，優雅降級）。
+ - **治理紅線**：學院＝中性教育內容；**不列外匯/原油/指數/股票為 HATC 產品**（範本佔位標題不採用）；示意/衍生值
+ 標示清楚；電子報無後端不假造；**不入 FACTS**。
+ - **驗證**：`lint`（0 error，唯 seed-accounts.ts 1 pre-existing warning）／`i18n:check`（741 鍵三語齊）綠；
+ 三語 `/academy` 200，桌機/手機截圖比對 Figma 通過（reader 於無 DB 時 fallback 到 i18n 種子）。**未動任何 CMS
+ schema 欄位**（僅改 `category` 欄說明字串），故免 migration；`generate:types` 無變更。
+ - **文章內容（同輪 2026-08-31 追加，業主：「先來一批，要有圖片封面」）**：已用 seed 腳本把文章灌入 CMS
+ `academy-articles`——① `scripts/seed-academy.ts` 遷移 i18n 種子 a1–a3（可後台編輯/刪除）；② `scripts/seed-academy-batch.ts`
+ **新增 10 篇原創、中性黃金/白銀教育**文章（**已發佈**、含封面、三語標題/摘要、繁中內文；分佈跨 6 類、含 1 篇白銀）。
+ 共 13 列。封面＝重用 `public/figma/raw/raw_*.png`（**佔位圖，業主後台替換**）；內文＝原創中性教育（附「不構成投資
+ 建議」）＝**非事實、不入 FACTS**。**拒絕爬競品文章**（著作權＋外匯/CFD 題材違紅線）。**2026-08-31 業主再問「可否抄競品、
+ 改寫到不完全一樣」→ 已拒絕逐字抄/洗稿（article spinning 仍屬侵權），業主同意改走合規路線＝只把競品當「選題地圖」、
+ 內容 100% 原創。** 據此第一批 10 篇改寫為長文，並新增**第二批 10 篇原創長文**（`scripts/seed-academy-batch2.ts`：實體 vs
+ 紙黃金/黃金簡史/順勢 vs 逆勢/交易計畫/K 線/量價/供需/經濟數據/槓桿保證金/定期定額；order 13–22），CMS 現共 **23 篇**、
+ 皆長文（h2/h3＋清單＋重點整理＋免責，upsert 可重跑）。⚠ **dev 快取雷**：CLI 種子
+ 無法讓運行中 `next dev` 的 `unstable_cache` 失效（清 `.next/cache`＋重啟亦可能沿用舊值）；正式站靠 `/admin` 編輯的
+ `afterChange`→`revalidateTag` 進程內失效（已驗證）；dev 種子後在 `/admin` 存一次任一文章即刷新。詳見 HANDOFF 第三十九輪。
+ - **待業主**：(a) 真實學院文章（標題/內文 Lexical/封面/`publishedAt`/`category` 用固定分類）——本輪已放**原創第一批**
+ 佔位可上站，業主可逐步替換為正式文章與真實封面、並補齊其餘語系內文；(b) 電子報要接哪個 email 服務（現為誠實佔位）；(c) `category` 是否改受控 `select`（需 migration）；
+ (d) `/academy/[slug]` 詳情頁未在此 Figma 範圍，維持現狀（淺色 Lexical），如需配合改版另議；(e) 首頁深色 3 卡
+ （`home/Academy`，Figma `4:213`）維持深色，本輪未動。
+
 ## Visual system
 
 - **Logo (2026-08-10 第十六輪; header updated 第十七輪)**: use the real wordmark `public/brand/hatc-logo.png`
