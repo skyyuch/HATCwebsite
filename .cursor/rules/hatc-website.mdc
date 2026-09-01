@@ -479,6 +479,12 @@ CMS. Full plan + phases in `docs/HANDOFF.md` (第十九輪, planning). Key rules
   Payload CLI/tsx 無法解析 server-only 會整個掛掉）；它們僅由 server 端（endpoint/script/server 元件）引入。
 - **env**（`.env.example`）：`MT_PROVIDER`(`llm`|`deepl`)／`MT_API_KEY`／`MT_BASE_URL`／`MT_MODEL`／
   `MT_DEEPL_URL`。無 `MT_API_KEY`＝按鈕 disabled＋endpoint 501＋站台照常（SSG/fallback 不受影響）。
+- **引擎（第四十輪，2026-08-31 業主定案）＝Google Gemini 的 OpenAI 相容端點**（OpenAI 香港不可用）：
+  `MT_PROVIDER=llm`（不變）／`MT_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai`／
+  `MT_MODEL=gemini-3.6-flash`。金鑰＝Google AI Studio（`aistudio.google.com/apikey`）。**免費額度每日上限
+  對長文太小**（易撞 429 quota），業主已於 Cloud 專案**開帳單**取得較高上限。`LlmProvider` 已加
+  **withRetry 指數退避**（重試長批次的 `UND_ERR_SOCKET`/`fetch failed` 斷線＋429/5xx；401/404 立即拋出）。
+  診斷：`scripts/check-academy-i18n.ts` 回報各篇各語系 body 是否已填。
 - **第三十三輪已補**：翻譯權限**已收緊為僅 full-access**；**Phase 2 richText 已做**（見上「範圍」）；
  **`translate-messages.ts` 已上線**（`src/messages/*` 批次機翻，`zh-Hant`→其他語系，預設只填缺漏/空、
  `--overwrite` 全譯、`--to`/`--only` 旗標；需 `MT_API_KEY`、不需 DB）；glossary 已擴充核可術語＋補齊

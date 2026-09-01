@@ -70,6 +70,62 @@ function isNonEmpty(v: string | null | undefined): v is string {
   return typeof v === 'string' && v.trim().length > 0;
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Run a request with exponential-backoff retries. Retries on transient network
+ * errors (e.g. `fetch failed` / socket reset — common with long batches on the
+ * Gemini/OpenAI-compatible endpoints) and on retryable HTTP status codes
+ * (429 rate limit, 5xx). Non-retryable HTTP errors (e.g. 401/404) throw
+ * immediately so misconfiguration surfaces fast.
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  {
+    attempts = 5,
+    baseDelayMs = 1500,
+    label = 'request'
+  }: {attempts?: number; baseDelayMs?: number; label?: string} = {}
+): Promise<T> {
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      const retryable =
+        err instanceof RetryableHttpError || isTransientNetworkError(err);
+      if (!retryable || attempt === attempts) throw err;
+      const delay = baseDelayMs * 2 ** (attempt - 1) + Math.floor(Math.random() * 500);
+      console.warn(
+        `[mt] ${label} failed (attempt ${attempt}/${attempts}), retrying in ${delay}ms: ${
+          err instanceof Error ? err.message : String(err)
+        }`
+      );
+      await sleep(delay);
+    }
+  }
+  throw lastErr;
+}
+
+/** Signals an HTTP status the caller may retry (429 / 5xx). */
+class RetryableHttpError extends Error {}
+
+/** Detect transient fetch/socket failures worth retrying. */
+function isTransientNetworkError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  if (err.name === 'TypeError' && /fetch failed/i.test(err.message)) return true;
+  const cause = (err as {cause?: {code?: string}}).cause;
+  const code = cause?.code;
+  return (
+    code === 'UND_ERR_SOCKET' ||
+    code === 'ECONNRESET' ||
+    code === 'ETIMEDOUT' ||
+    code === 'EAI_AGAIN' ||
+    code === 'ECONNREFUSED'
+  );
+}
+
 /**
  * Build the system prompt for the LLM engine: institutional tone, verbatim
  * preservation of numbers / symbols / codes, and the approved glossary.
@@ -111,36 +167,46 @@ class LlmProvider implements TranslationProvider {
     const system = buildSystemPrompt(opts);
     const userPayload = {inputs: toSend.map((x) => x.t)};
 
-    const res = await fetch(`${this.baseUrl.replace(/\/$/, '')}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`
-      },
-      body: JSON.stringify({
-        model: this.model,
-        temperature: 0,
-        response_format: {type: 'json_object'},
-        messages: [
-          {role: 'system', content: system},
-          {
-            role: 'user',
-            content: `Translate the "inputs" array. Respond with {"translations": [...]}.\n${JSON.stringify(
-              userPayload
-            )}`
+    const json = await withRetry(
+      async () => {
+        const res = await fetch(`${this.baseUrl.replace(/\/$/, '')}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.apiKey}`
+          },
+          body: JSON.stringify({
+            model: this.model,
+            temperature: 0,
+            response_format: {type: 'json_object'},
+            messages: [
+              {role: 'system', content: system},
+              {
+                role: 'user',
+                content: `Translate the "inputs" array. Respond with {"translations": [...]}.\n${JSON.stringify(
+                  userPayload
+                )}`
+              }
+            ]
+          })
+        });
+
+        if (!res.ok) {
+          const body = await res.text().catch(() => '');
+          const message = `LLM translate failed (${res.status}): ${body.slice(0, 300)}`;
+          if (res.status === 429 || res.status >= 500) {
+            throw new RetryableHttpError(message);
           }
-        ]
-      })
-    });
+          throw new Error(message);
+        }
 
-    if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      throw new Error(`LLM translate failed (${res.status}): ${body.slice(0, 300)}`);
-    }
+        return (await res.json()) as {
+          choices?: {message?: {content?: string}}[];
+        };
+      },
+      {label: `${opts.targetLocale} batch (${toSend.length} strings)`}
+    );
 
-    const json = (await res.json()) as {
-      choices?: {message?: {content?: string}}[];
-    };
     const content = json.choices?.[0]?.message?.content ?? '';
     let translations: unknown;
     try {

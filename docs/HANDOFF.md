@@ -60,6 +60,30 @@
 > **⏭️ 下一步：業主補**：(a) 逐步以正式文章／真實封面替換佔位（現為原創教育＋`raw_*.png` 佔位圖）；
 > (b) 用一鍵機翻補齊簡中/英文**內文**再校對（現 body 走 fallback 顯示繁中）；(c) 電子報要接的 email 服務
 > （現誠實佔位）；(d) `category` 是否改受控 `select`（需 schema migration）。
+>
+> **第四十輪（2026-08-31）：學院 23 篇 body 已機翻補齊簡中/英文（Gemini）＋MT provider 加重試。**
+> 業主啟用一鍵機翻（項目 b）。**OpenAI 香港不可用 → 改用 Google Gemini 的 OpenAI 相容端點**
+> （`MT_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai`、`MT_MODEL=gemini-3.6-flash`、
+> `MT_PROVIDER=llm` 不變，**零程式改動即相容**）。Gemini **免費額度每日上限對長文太小**（跑到 14/23 撞 429），
+> 業主於 Cloud 專案**開啟帳單（pay-as-you-go）**後一次跑完。`LlmProvider` 新增 **withRetry 指數退避重試**
+> （處理長批次的 `UND_ERR_SOCKET`/`fetch failed` 暫時性斷線＋429/5xx；401/404 立即拋出）。
+> 用 `scripts/translate-content.ts -- --only academy-articles`（只填空、可重跑）灌入，**23/23 簡中＋23/23 英文
+> body 到位**（`Filled 425 field(s)`），抽查品質良好（簡體正確、英文流暢、術語/數字保留）。新增唯讀診斷
+> `scripts/check-academy-i18n.ts`（回報各篇各語系 body 是否已填）。`lint` 0 error（僅 seed-* 2 個既有 warning）。
+> ⚠ **dev 快取**：本機 next dev 的 `unstable_cache` 不會因 CLI 種子失效 → 在 `/admin` 存一次任一文章即刷新
+> （正式站靠 `afterChange`→`revalidateTag`）。**待業主**：於 `/admin` 校對機翻草稿（＝草稿非事實）。
+>
+> **第四十輪追加（同日）：修 dev 快取造成的兩個學院症狀 ＋ 新增 dev-only revalidate 工具。**
+> 症狀：`/academy` 清單在 **en/zh-Hans 只出 3 篇**（＝i18n fallback a1–a3），zh-Hant 正常（9/頁）；
+> 詳情頁**切語系需強制刷新**才顯示對應語言。根因＝**清單 reader 的 `unstable_cache`（key 含 locale）在某次
+> 冷啟動 DB 未 warm 時把 fallback（3 篇）快取住**，且清單快取 key（`academy-articles`）與詳情快取
+> （`academy-article-by-slug`）不同 → 前一輪只驗證詳情頁沒察覺清單仍舊。**修法＝在 dev server 進程內
+> `revalidateTag`**（CLI 腳本在別的進程，無法讓運行中的 dev 失效）。新增 **dev-only 路由
+> `src/app/api/dev-revalidate/route.ts`**（GET 觸發 revalidate 全部 CMS reader tags；**production 回 404**；
+> 放 `/api/*` 以繞過 next-intl proxy 的語系前綴）。觸發後三語清單皆回正常（9/頁、en 顯示真實批次 slug）。
+> **用法**：CLI 種子/機翻後 `curl http://127.0.0.1:3000/api/dev-revalidate`（或照舊在 `/admin` 存一次任一文章）。
+> 正式站不受影響（route 404；靠 `afterChange`→`revalidateTag`）。lint 0 error。切語系「需硬刷新」預期隨快取修正
+> 消失（屬 Next client Router Cache＋當時 server 端 stale 疊加）；若仍重現再於 `LocaleSwitcher` 加 `router.refresh()`。
 > **第三十七輪（2026-08-31）：整合入金頁（Figma 誤拆兩頁）**——業主指 Figma frame `75:5`（入金）與
 > `75:189`（出金）為同一頁誤拆，已**整合成單一 `/funding`**：一個 hero → 入金說明＋入金渠道表 → 出金說明＋
 > 出金渠道表 → 共用 支援主題／見證／CTA。`funding-methods` 加 **`type`（deposit/withdrawal）** 欄一表兩用；
