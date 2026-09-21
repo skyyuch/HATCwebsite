@@ -300,6 +300,12 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  佔位可上站，業主可逐步替換為正式文章與真實封面、並補齊其餘語系內文；(b) 電子報要接哪個 email 服務（現為誠實佔位）；(c) `category` 是否改受控 `select`（需 migration）；
  (d) `/academy/[slug]` 詳情頁未在此 Figma 範圍，維持現狀（淺色 Lexical），如需配合改版另議；(e) 首頁深色 3 卡
  （`home/Academy`，Figma `4:213`）維持深色，本輪未動。
+- **2026-09-01 (第四十一輪): 學院第三批 4 篇原創長文＋LocaleSwitcher `router.refresh()`。**
+  `scripts/seed-academy-batch3.ts`（upsert）：金市心理／實體黃金保管與驗證／黃金 ETF vs CFD／常見詐騙辨識
+  （order 23–26；封面 `raw_{12,13,16,1}.png` 佔位）。仍 100% 原創、只做黃金/白銀、ETF 文不暗示 HATC 賣 ETF、
+  不寫核可點差槓桿數字、不入 FACTS。本機已種＋Gemini 只填空機翻，`check-academy-i18n.ts` **27/27** 簡中/英文
+  body。`LocaleSwitcher` 切語系後 `router.refresh()`（第四十輪 follow-up e）。種子後
+  `curl http://127.0.0.1:3000/api/dev-revalidate`。未動 schema。
 
 ## Visual system
 

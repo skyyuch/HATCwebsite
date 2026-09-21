@@ -20,6 +20,7 @@ export default function LocaleSwitcher() {
     startTransition(() => {
       // @ts-expect-error -- params are passed through for dynamic segments
       router.replace({pathname, params}, {locale: next});
+      router.refresh();
     });
   }
 

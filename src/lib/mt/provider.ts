@@ -111,6 +111,18 @@ async function withRetry<T>(
 /** Signals an HTTP status the caller may retry (429 / 5xx). */
 class RetryableHttpError extends Error {}
 
+/**
+ * Strip a Markdown code fence (```json … ``` or ``` … ```) that some
+ * OpenAI-compatible endpoints (notably Gemini) wrap around JSON despite
+ * `response_format: json_object`. Returns the inner content unchanged if no
+ * fence is present.
+ */
+function stripJsonFences(s: string): string {
+  const t = s.trim();
+  const m = t.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?```$/i);
+  return (m ? m[1] : t).trim();
+}
+
 /** Detect transient fetch/socket failures worth retrying. */
 function isTransientNetworkError(err: unknown): boolean {
   if (!(err instanceof Error)) return false;
@@ -157,6 +169,14 @@ class LlmProvider implements TranslationProvider {
     private readonly model: string
   ) {}
 
+  /**
+   * Max strings per request. Long articles can have hundreds of text leaves;
+   * sending them all in one call makes the request/response too large and the
+   * upstream (Gemini/OpenAI-compatible) endpoint drops the socket. Chunking
+   * keeps each request small and reliable while preserving order.
+   */
+  private static readonly MAX_BATCH = 10;
+
   async translateBatch(texts: string[], opts: TranslateOptions): Promise<string[]> {
     if (texts.length === 0) return [];
     // Preserve empties; only send non-empty strings to the model.
@@ -164,8 +184,32 @@ class LlmProvider implements TranslationProvider {
     const toSend = indexed.filter((x) => isNonEmpty(x.t));
     if (toSend.length === 0) return texts.map(() => '');
 
+    const out = texts.map(() => '');
+    const size = LlmProvider.MAX_BATCH;
+    const chunks = Math.ceil(toSend.length / size);
+    for (let start = 0, c = 0; start < toSend.length; start += size, c += 1) {
+      const chunk = toSend.slice(start, start + size);
+      const label = `${opts.targetLocale} batch ${c + 1}/${chunks} (${chunk.length} strings)`;
+      const translations = await this.translateChunk(
+        chunk.map((x) => x.t),
+        opts,
+        label
+      );
+      chunk.forEach((x, k) => {
+        out[x.i] = translations[k];
+      });
+    }
+    return out;
+  }
+
+  /** Translate one chunk of non-empty strings; returns same-length output. */
+  private async translateChunk(
+    inputs: string[],
+    opts: TranslateOptions,
+    label: string
+  ): Promise<string[]> {
     const system = buildSystemPrompt(opts);
-    const userPayload = {inputs: toSend.map((x) => x.t)};
+    const userPayload = {inputs};
 
     const json = await withRetry(
       async () => {
@@ -204,26 +248,22 @@ class LlmProvider implements TranslationProvider {
           choices?: {message?: {content?: string}}[];
         };
       },
-      {label: `${opts.targetLocale} batch (${toSend.length} strings)`}
+      {label}
     );
 
-    const content = json.choices?.[0]?.message?.content ?? '';
+    const content = stripJsonFences(json.choices?.[0]?.message?.content ?? '');
     let translations: unknown;
     try {
       translations = (JSON.parse(content) as {translations?: unknown}).translations;
     } catch {
-      throw new Error('LLM translate returned non-JSON content');
+      // Transient: the endpoint occasionally returns truncated / non-JSON
+      // content. Retry with backoff (a fresh call usually succeeds).
+      throw new RetryableHttpError('LLM translate returned non-JSON content');
     }
-    if (!Array.isArray(translations) || translations.length !== toSend.length) {
-      throw new Error('LLM translate returned mismatched array length');
+    if (!Array.isArray(translations) || translations.length !== inputs.length) {
+      throw new RetryableHttpError('LLM translate returned mismatched array length');
     }
-
-    const out = texts.map(() => '');
-    toSend.forEach((x, k) => {
-      const value = translations[k];
-      out[x.i] = typeof value === 'string' ? value : String(value ?? '');
-    });
-    return out;
+    return translations.map((v) => (typeof v === 'string' ? v : String(v ?? '')));
   }
 }
 

@@ -10,7 +10,7 @@
   入金與出金 `/funding`、**交易平台 `/platforms`**（Figma `89:4`；CMS `trading-platforms`
   ＋ faqs `platforms` 分類）、最新消息 `/news`（CMS `home-activities`）、
   黃金學院 `/academy`（Figma `98:4` 改版：hero＋分類篩選/排序/分頁＋電子報）
-  ＋`/academy/[slug]`（CMS `academy-articles`）
+  ＋`/academy/[slug]`（CMS `academy-articles`，目前 27 篇原創長文；封面為佔位圖）
 - CMS：Phase 0–4 完成（infra／FAQ／新聞活動／學堂／行銷 globals＋示意表）
 - 後續階段（待規劃）：交易平台細節、Credentials 獨立頁、Contact 獨立頁（如需）
 
@@ -28,7 +28,7 @@
 - 最新消息 ✅（`/[locale]/news`，Payload `home-activities`；無內容時中性空狀態）
 - 黃金學院 ✅（`/[locale]/academy` 列表〔Figma `98:4`：navy/gold hero＋分類篩選 sidebar
   ＋排序＋分頁＋電子報誠實佔位〕＋`/[locale]/academy/[slug]` 詳情；Payload `academy-articles`
-  Lexical body；無 DB／空 CMS → i18n 種子 a1–a3；篩選分類＝固定 6 類 `academy.categories`）
+  目前 27 篇原創長文；無 DB／空 CMS → i18n 種子 a1–a3；篩選分類＝固定 6 類 `academy.categories`）
 - 資質與證書 Credentials 【後續】
   - 真實證書展示（About 已有牌照牆）
 - 聯絡我們 Contact 【後續】

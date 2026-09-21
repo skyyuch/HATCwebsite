@@ -70,21 +70,34 @@ const globals = payload.config.globals.filter(
 );
 
 let totalFilled = 0;
+let failedDocs = 0;
 
 for (const collection of collections) {
   const slug = collection.slug;
   const list = await p.find({collection: slug, limit: 1000, depth: 0, locale: 'all'});
   payload.logger.info(`Translating ${slug} (${list.docs.length} docs)…`);
   for (const doc of list.docs) {
-    const result = await translateDocument({
-      payload,
-      target: {kind: 'collection', slug, id: doc.id},
-      targetLocales,
-      overwrite
-    });
-    if (result.ok && result.filled) {
-      const filled = Object.values(result.filled).reduce((a, b) => a + (b || 0), 0);
-      totalFilled += filled;
+    // Resilient per-doc: a single failing document (e.g. an upstream hiccup on a
+    // long article) must not abort the whole batch. translateDocument only fills
+    // empties, so re-running later completes any skipped doc.
+    try {
+      const result = await translateDocument({
+        payload,
+        target: {kind: 'collection', slug, id: doc.id},
+        targetLocales,
+        overwrite
+      });
+      if (result.ok && result.filled) {
+        const filled = Object.values(result.filled).reduce((a, b) => a + (b || 0), 0);
+        totalFilled += filled;
+      }
+    } catch (err) {
+      failedDocs += 1;
+      payload.logger.error(
+        `Translate failed for ${slug}#${doc.id}: ${
+          err instanceof Error ? err.message : String(err)
+        } — continuing.`
+      );
     }
   }
 }
@@ -103,5 +116,8 @@ for (const global of globals) {
   }
 }
 
-payload.logger.info(`Machine translation done. Filled ${totalFilled} field(s).`);
+payload.logger.info(
+  `Machine translation done. Filled ${totalFilled} field(s).` +
+    (failedDocs > 0 ? ` ${failedDocs} doc(s) failed — re-run to complete them.` : '')
+);
 process.exit(0);

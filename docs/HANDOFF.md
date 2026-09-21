@@ -1,11 +1,32 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-08-31（第三十九輪追加：黃金學院 23 篇長文已灌入 CMS，commit `427fc17` 已 push）
+> 最後更新：2026-09-01（第四十二輪：GitBook 知識庫 22 篇已搬入 `/academy`、三語補譯完成、MT 分塊修復；學院現共 49 篇）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
 ## ▶ 下一步（下一位 agent）
 
+> **✅ 第四十二輪（2026-09-01）完成：業主 GitBook 知識庫已搬入黃金學院 `/academy`（22 篇、三語）。**
+> 來源＝**GitBook Content API**（業主提供 token＋space；存 `.env` `GITBOOK_API_TOKEN`/`GITBOOK_SPACE_ID`，
+> 不進 git）。腳本 `scripts/seed-academy-from-gitbook.ts`（抓目錄樹→每頁 Markdown→Payload 內建
+> `convertMarkdownToLexical`→upsert by slug）。學院現共 **49 篇**（既有 27＋GitBook 22）。詳見下方「🟢 第四十二輪」。
+>
+> **⏭️ 下一棒可選（非阻塞，皆待業主）：**
+> - **/admin 校對機翻草稿**：22 篇的簡中/英文**標題/摘要/內文**為 Gemini 草稿，業主應在 `/admin` 校對。
+> - **真實封面替換**：GitBook 頁面無內嵌圖，封面沿用 `public/figma/raw/raw_*.png` 佔位，業主可於後台替換。
+> - **內部交叉連結**：GitBook「相關內容」內部相對連結目前**攤平為純文字**（因 `localePrefix:'always'`，
+>   單一硬編 `/academy/x` 無法三語通用）。follow-up：加 locale-aware 自訂 RichText link converter。
+> - **git commit/push**：本輪尚未 commit（見下方「未 commit 清單」）。
+>
+> **第四十一輪（2026-09-01）：學院第三批 4 篇原創長文上線＋LocaleSwitcher `router.refresh()`。**
+> 接續第四十輪可選項「第三批文章」。`scripts/seed-academy-batch3.ts` 灌入 4 篇（order 23–26、
+> publishedAt 較新故列表排前）：金市心理／實體黃金保管與驗證／黃金 ETF vs CFD／常見詐騙辨識。
+> 仍 100% 原創、只做黃金/白銀、不入 FACTS、附「不構成投資建議」。標題/摘要三語齊；繁中長文 body
+> 已用既有 Gemini 管線只填空機翻簡中/英文（`Filled 314`；診斷 **27/27** 兩語 body 到位）。
+> `LocaleSwitcher` 在 `replace` 後加 `router.refresh()`，降低 Next Client Router Cache 造成切語系
+> 需硬刷新的機會（第四十輪 follow-up e）。`lint` 0 error／`i18n:check` 741 鍵齊；三語列表＋詳情 200。
+> 見下方「🟢 第四十一輪」。
+>
 > CMS Phase 0–4 **已完成**。第二十四輪：Payload **admin 介面多語**業主已確認「可以了」。
 > 第二十五輪：首頁鉑金文案已對齊 FACTS（僅金銀）。
 > **第二十六輪：`/academy/[slug]` 詳情頁已上線**（Lexical body）。
@@ -83,7 +104,8 @@
 > 放 `/api/*` 以繞過 next-intl proxy 的語系前綴）。觸發後三語清單皆回正常（9/頁、en 顯示真實批次 slug）。
 > **用法**：CLI 種子/機翻後 `curl http://127.0.0.1:3000/api/dev-revalidate`（或照舊在 `/admin` 存一次任一文章）。
 > 正式站不受影響（route 404；靠 `afterChange`→`revalidateTag`）。lint 0 error。切語系「需硬刷新」預期隨快取修正
-> 消失（屬 Next client Router Cache＋當時 server 端 stale 疊加）；若仍重現再於 `LocaleSwitcher` 加 `router.refresh()`。
+> 消失（屬 Next client Router Cache＋當時 server 端 stale 疊加）。**第四十一輪已於 `LocaleSwitcher` 加
+> `router.refresh()`**（防 Client Router Cache 殘留）。
 > **第三十七輪（2026-08-31）：整合入金頁（Figma 誤拆兩頁）**——業主指 Figma frame `75:5`（入金）與
 > `75:189`（出金）為同一頁誤拆，已**整合成單一 `/funding`**：一個 hero → 入金說明＋入金渠道表 → 出金說明＋
 > 出金渠道表 → 共用 支援主題／見證／CTA。`funding-methods` 加 **`type`（deposit/withdrawal）** 欄一表兩用；
@@ -98,6 +120,185 @@
 2. **第十八輪 `/trading` 暫緩 UI／驗收項**（多數需業主拍板）：淺色系是否推廣、帳戶分級真偽、
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
+
+## 🟢 第四十二輪（實作，2026-09-01）：GitBook 知識庫 → 黃金學院 `/academy`（22 篇、三語）
+
+**任務**：業主在 GitBook 上有自有知識庫，遷入官網**黃金學院**（沿用既有 `academy-articles` CMS，
+**未新建頁面/集合**）。前台 `/academy` 列表（分類篩選/排序/分頁）與 `/academy/[slug]` 詳情已就緒，
+匯入後自動出卡。學院現共 **49 篇**（既有 27＋GitBook 22）。
+
+### 實作結果（業主已定案）
+
+**業主定案（AskQuestion）**：來源＝**GitBook API**；對應＝**1 頁＝1 篇**；分類＝**agent 依主題判定**；
+封面＝**agent 依主題挑既有 `raw_*` 佔位**；「關於 HATC」6 頁＝**全部匯入**；聯絡資訊＝**逐字保留**於內文
+（反詐/查證需要，且 space 本就公開）；新公司事實＝**同步登錄 `HATC_FACTS.md`**。
+
+**來源與腳本**
+- 來源＝**GitBook Content API**：`GET /v1/spaces/{id}/content`（目錄樹）＋
+  `GET /v1/spaces/{id}/content/page/{id}?format=markdown`（單頁 Markdown）。
+- token/space 存 **`.env`**：`GITBOOK_API_TOKEN` / `GITBOOK_SPACE_ID`（**server-only、不進 git**）。
+- 腳本 **`scripts/seed-academy-from-gitbook.ts`**：抓樹→flatten（**跳過純目錄 root index**）→每頁 Markdown
+  →**Payload 內建 `convertMarkdownToLexical`＋`editorConfigFactory`**（節點與編輯器一致，非自寫 builder）
+  →**upsert by slug**（保留既有封面）。冪等可重跑。
+  - 執行：`npm run payload -- run scripts/seed-academy-from-gitbook.ts`（`-- --dry` 乾跑）。
+
+**匯入 22 篇分佈**：MT5 操作中心 10＋認識黃金市場 6＋關於 HATC 6。`order` 27–48、`publishedAt=2026-09-01`、
+`enabled=true`。分類已 map 到固定 6 類（見腳本 `PAGE_MAP`）；封面沿用 `public/figma/raw/raw_*.png` 佔位。
+
+**Markdown 前處理（進 Lexical 前）**
+- **剝 frontmatter＋首個 H1**（標題另存欄位、詳情頁自帶 H1）。
+- **表格→項目清單**：學院 Lexical 編輯器/渲染器**無表格**功能（詳情頁只 style h2/h3/p/ul/ol/li/a/blockquote），
+  故 2 欄 key/value→`**key**：value`、多欄比較表→`**列**｜表頭＝值；…`（不失資訊）。
+- **內部相對連結攤平為純文字**：`localePrefix:'always'` 下單一硬編 `/academy/x` 無法三語通用；
+  保留 `http/https/mailto/tel/#` 外部與錨點連結。**follow-up**：locale-aware 自訂 RichText link converter。
+
+**三語（既有 Gemini 管線；本輪修復其穩定性）**
+- 標題/摘要/內文＝繁中來源；簡中/英文用 `scripts/translate-content.ts --only academy-articles` **只填空**補譯，
+  業主於 `/admin` 校對。診斷 `scripts/check-academy-i18n.ts`。
+- **分類三語鎖定＝三步流程**（避開 Payload「localized 欄位寫入需該語系已有 title」驗證）：
+  ① 跑 seed（灌繁中＋封面）→② 跑 translate-content 補齊簡中/英文 title→③ **再跑一次 seed** 把 `category`
+  鎖成各語系 canonical 值（篩選才對得上；seed 內對簡中/英文以 `fallbackLocale:false` 判斷有 title 才寫 category）。
+- **MT 穩定性修復（`src/lib/mt/provider.ts`）**：長文一次送數百字串會被上游（Gemini）斷 socket／回非 JSON／
+  陣列長度不符 → 加 **`MAX_BATCH=10` 分塊**（`translateChunk`）＋`stripJsonFences`（剝 ```json fence）＋
+  非 JSON/長度不符改丟 `RetryableHttpError` 走 `withRetry` 退避。`scripts/translate-content.ts` 加
+  **per-doc try/catch**（單篇失敗不中止整批、可重跑補完）。
+
+**紅線落地**：GitBook 內容經審查**全屬黃金/白銀**（無外匯/原油/指數/加密/股票需剔除）；聯絡資訊逐字保留
+（業主決定）；新公司事實（公司編號 2608603／BR 68493300-000／官網 hatchk.com／客服電話／地址／008 沿革）
+**已登錄 `HATC_FACTS.md`**（見該檔「Official company identity／Official contact & website／Exchange membership」）；
+學院＝中性教育；示意數字為假設性範例；**內容未入 FACTS 冒充事實**（事實只登在 FACTS.md）。
+
+**驗證（全綠）**：`lint` 0 error（改動檔 provider.ts／translate-content.ts／seed 腳本皆過）；`i18n:check` 三語齊；
+三語 `/academy` 列表＋多篇詳情 **200**；抽查 en `what-is-hatc`（H1/分類 chip/內文 H2 全英譯）、
+簡中 margin 篇（H1 簡體、chip「风险管理」）、最頑固的 margin en（H1 英譯、320 li）皆正確。清單頁 GitBook 文章領先。
+**未動 collection schema 欄位＝免 `generate:types`／`generate:importmap`。**
+
+**⚠ 未 commit 清單（本輪尚未 git commit）**：`scripts/seed-academy-from-gitbook.ts`（新）、
+`src/lib/mt/provider.ts`（MT 分塊/容錯）、`scripts/translate-content.ts`（per-doc 容錯）、
+`docs/HATC_FACTS.md`（新事實）、`docs/HANDOFF.md`（本段）、`.env.example`（GitBook 變數說明）。
+`.env`（真實 token）**勿 commit**。
+
+**待業主 follow-up**：(a) `/admin` 校對 22 篇機翻草稿；(b) 真實封面替換 `raw_*` 佔位；
+(c) 內部交叉連結改 locale-aware（現攤平為純文字）；(d) `category` 是否改受控 `select`（需 migration）。
+
+---
+
+### 原規劃（第四十一輪末，保留參考）
+
+**業主已定（第四十一輪末 AskQuestion）**
+- 目的地＝**`/academy`**（學院教育文章）。
+- 內容性質＝**教育＋操作教學混合**（gold/silver 教育、how-to 都可能有）。
+- 執行者＝**下一個 agent**（本輪只規劃＋寫 kickoff，未動內容）。
+- 取得來源＝**業主待定**，需 agent 教學後選擇（見下「來源方式」）。
+
+**來源方式（業主擇一；kickoff 對三種都適用）**
+1. **貼上**：業主把文章文字貼給 agent（適合少量；圖片/連結需人工補）。
+2. **Git Sync 匯出 Markdown（建議）**：GitBook Space → Settings → Integrations → **Git Sync** 同步成
+   GitHub repo 的 `.md`（含 `SUMMARY.md` 目錄、圖片相對路徑）。業主把 `.md` 放進 **`content/gitbook/`**
+   或給匯出 repo，agent 寫 Markdown→Lexical seed 批次轉入。
+3. **GitBook API**：`developer.gitbook.com` token → `GET /v1/spaces/{id}/content`（回自有 block JSON，
+   需轉換器；token server-only、不進 git）。
+
+**技術做法（沿用既有學院管線，勿另造）**
+- 新 seed 腳本（建議 `scripts/seed-academy-from-gitbook.ts`）：讀來源 → 轉 **Lexical**（沿用
+  `seed-academy-batch*.ts` 的 `heading/paragraph/listNode/richtext` builder；Markdown 來源需再支援
+  **粗體/連結/圖片**節點）→ **upsert by slug**（保留既有封面）。每篇需：`slug`(ASCII)／`title`／
+  `excerpt`／`category`(固定 6 類之一：黃金基礎/交易策略/技術分析/市場動態/風險管理/投資組合)／
+  `publishedAt`／`order`（接在 27 之後，或依 GitBook 目錄排序）／封面（有圖用之，無則沿用 `raw_*` 佔位）。
+- **標題/摘要**：來源多為繁中 → 其餘語系用既有 Gemini 管線只填空：
+  `npm run payload -- run scripts/translate-content.ts -- --only academy-articles`；診斷
+  `scripts/check-academy-i18n.ts`。dev 看結果 `curl http://127.0.0.1:3000/api/dev-revalidate`。
+- **圖片**：Markdown 圖片可匯入 `media`（比照 batch 腳本 `importCover`），或先放 `public/` 引用。
+
+**治理紅線（業主自有內容也要守）**
+- **只做黃金/白銀**：GitBook 若含外匯/原油/指數/加密/股票，**不得**列為 HATC 產品，遷入時剔除或改寫為中性說明。
+- **操作教學（how-to：開戶/入金/出金/平台登入）**：可作教育說明，但**具體 operational 連結（客服/開戶/入金
+  入口）一律走 CMS `siteSettings`（`primaryContactHref` 等），不得硬編**；不得寫死未確認的到賬時限/渠道/手續費。
+- **交易條件/公司事實**：GitBook 若含點差/槓桿/手數/牌照/會員等，**屬事實層** → 只有 `HATC_FACTS.md`
+  已核可者可當事實呈現（金27/銀30/1:100 仍只在 `products/tradingConditions.ts`）；未核可者**先問業主、不自動登**。
+- 學院定位＝中性教育，保留/附「不構成投資建議」；示意值標清楚；**內容不入 FACTS**。
+- CMS reader 一律 DB→i18n fallback；SSG＋afterChange revalidateTag（勿改此架構）。
+
+**驗證**：`npm run lint`／`npm run i18n:check`（741 鍵基準，若新增 UI 字串要三語齊）；三語 `/academy` 與
+新詳情頁 200。**未動 collection 欄位＝免 `generate:types`**；若因圖片/欄位需求動 schema 才 `generate:types`
+（＋動 admin 元件才 `generate:importmap`）。
+
+**開放問題（下一棒開工前向業主確認）**
+- (a) 最終用哪種來源方式（貼上／Git Sync／API）；(b) GitBook 目錄結構是否 1 頁＝1 篇，或需合併/拆分；
+- (c) 每篇歸到哪個固定分類；(d) 封面策略（沿用佔位 or 業主提供）；(e) 內含 how-to/事實段落如何處理（依上紅線）。
+
+## 🟢 第四十一輪（2026-09-01）：學院第三批 4 篇原創長文＋切語系 `router.refresh()`
+
+**背景**：第四十輪 kickoff 待業主項多為校對／素材／電子報／category select；可獨立推進的是可選
+「第三批文章」＋ follow-up (e) 切語系硬刷新。
+
+**文章（`scripts/seed-academy-batch3.ts`，upsert 可重跑）**
+- `gold-market-psychology`（交易策略）：恐懼／貪婪、FOMO、損失厭惡、確認／近因／錨定偏誤、連贏加碼與報復交易、計畫與日誌。
+- `physical-gold-custody-and-authentication`（黃金基礎）：自行保管 vs 金庫、已分配／未分配、序號與成色、查驗步驟、紅旗；**與 FACTS「客戶資金託管」分開說明**（現金隔離 ≠ 家裡有金條）。
+- `gold-etf-vs-cfd`（投資組合）：結構／成本／槓桿／最壞情況比較；**不列外匯／原油／指數／股票為 HATC 產品**、不寫核可點差槓桿數字（條件仍只在 `tradingConditions.ts`）、不暗示 HATC 提供 ETF。
+- `spotting-gold-investment-scams`（風險管理）：保證收益／假平台／假客服／實金調包紅旗與查核步驟；不虛構受害人。
+- 封面重用 `public/figma/raw/raw_{12,13,16,1}.png`（佔位，業主後台替換）。CMS 現共 **27 篇**。
+- 執行：`npm run payload -- run scripts/seed-academy-batch3.ts`；機翻：
+  `npm run payload -- run scripts/translate-content.ts -- --only academy-articles`（只填空）。
+  本輪 `Created 4`、`Filled 314`；`check-academy-i18n.ts` → **27/27** zh-Hans + en body。
+
+**LocaleSwitcher**：`router.replace(..., {locale})` 之後呼叫 `router.refresh()`，讓 Client Router Cache
+  跟著語系換新 RSC payload（動態 `[slug]` 仍傳 `params`）。無法用 curl 模擬 client 導航；server 端三語
+  詳情已確認各語內文到位（簡體用詞、英文 disclaimer）。
+
+**驗證**：`lint` 0 error（既有 seed-* 2 warning）／`i18n:check` 741 鍵；三語 `/academy` 與四篇詳情 200。
+  種子後已 `curl http://127.0.0.1:3000/api/dev-revalidate`。**未動 CMS schema**，免 `generate:types`。
+
+**待業主**：(a) `/admin` 校對機翻草稿（含本批 4 篇）；(b) 正式文章／真實封面替換 `raw_*.png`；
+  (c) 電子報 email 服務；(d) `category` 是否改受控 `select`（需 migration）。
+
+## 📋 kickoff（下一棒，可直接複製貼給下一個 agent）
+
+```
+任務：把業主 GitBook 上的自有知識搬進 HATC 官網「黃金學院」/academy（沿用既有 academy-articles CMS，
+不新建頁面/集合）。Next.js 16 + Payload CMS + next-intl；繁中為主、簡中/英文並存。
+
+必讀（動工前）：AGENTS.md、docs/HATC_PROJECT_BRIEF.md、docs/HATC_FACTS.md、docs/WEBSITE_STRUCTURE.md、
+docs/DESIGN_DIRECTION.md、docs/HANDOFF.md（尤其「🟢 第四十二輪（規劃）」＋「🟢 第四十一輪」＋頂部
+「▶ 下一步」）、.cursor/rules/hatc-website.mdc（自動載入）。
+
+開工前先向業主確認（開放問題）：
+- 來源方式：貼上／Git Sync 匯出 Markdown（建議，放 content/gitbook/）／GitBook API token；
+- 目錄如何對應文章（1 頁=1 篇 or 合併拆分）；每篇歸哪個固定分類；封面策略；how-to/事實段落如何處理。
+
+現況（第四十一輪）：
+- 學院 CMS 已有 27 篇長文（seed-academy.ts a1–a3 + seed-academy-batch{,2,3}.ts）。前台 /academy 列表
+  （分類篩選/排序/分頁，client 端做維持 SSG）＋ /academy/[slug] 詳情（Lexical body）皆就緒；新資料自動出卡。
+- 學院欄位：slug/title/excerpt/category/publishedAt/order/cover/enabled/body(Lexical)。分類＝固定 6 類
+  academy.categories（黃金基礎/交易策略/技術分析/市場動態/風險管理/投資組合），篩選才對得上。
+- 翻譯：Google Gemini（OpenAI 相容端點）。env MT_PROVIDER=llm、
+  MT_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai、MT_MODEL=gemini-3.6-flash、
+  MT_API_KEY=<server-only，勿 commit>。批次補譯：
+  npm run payload -- run scripts/translate-content.ts -- --only academy-articles（只填空、可重跑）；
+  診斷 scripts/check-academy-i18n.ts。dev 看結果：curl http://127.0.0.1:3000/api/dev-revalidate。
+
+做法（沿用既有管線，勿另造架構）：
+- 寫 seed（建議 scripts/seed-academy-from-gitbook.ts）：來源 → Lexical（沿用 batch 腳本的
+  heading/paragraph/listNode/richtext builder；Markdown 來源要再支援粗體/連結/圖片節點）→ upsert by slug
+  （保留既有封面）。圖片可比照 batch importCover 匯入 media。order 接在 27 之後或依 GitBook 目錄。
+- 標題/摘要通常繁中 → 其餘語系用上面 translate-content 只填空補齊，業主再於 /admin 校對。
+
+紅線（業主自有內容也要守）：
+- 只做黃金/白銀：GitBook 若含外匯/原油/指數/加密/股票，不得列為 HATC 產品，剔除或改中性說明。
+- how-to（開戶/入金/出金/平台）：operational 連結一律走 CMS siteSettings（primaryContactHref 等），
+  不硬編；不得寫死未確認的到賬時限/渠道/手續費。
+- 交易條件/公司事實：只有 HATC_FACTS.md 已核可者可當事實（金27/銀30/1:100 只在 products/tradingConditions.ts）；
+  未核可先問業主、不自動登。學院＝中性教育＋「不構成投資建議」；示意值標清楚；內容不入 FACTS。
+- CMS reader 一律 DB→i18n fallback；SSG＋afterChange revalidateTag。金鑰 server-only。
+
+驗證：npm run lint、npm run i18n:check（新增 UI 字串要三語齊）；三語 /academy 與新詳情 200。
+未動欄位＝免 generate:types；動 schema 才 generate:types（動 admin 元件才 generate:importmap）。
+
+仍待業主（非本任務主線，記錄）：/admin 校對機翻草稿；正式封面替換 raw_*.png；電子報接 email 服務；
+category 是否改受控 select（需 migration）。
+
+每次交棒：更新 docs/HANDOFF.md 並在對話輸出可貼 kickoff。
+```
 
 ## 🟢 第三十九輪（2026-08-31）：黃金學院 `/academy` 列表頁改版（Figma 98:4）
 
@@ -194,32 +395,6 @@ body 長度自動估算，改長文後列表卡的「N 分鐘 閱讀」會自動
 的 email 服務（現誠實佔位）；(c) `category` 是否改受控 `select`（需 migration）；(d) `/academy/[slug]` 詳情頁
 不在此 Figma 範圍，維持現狀（淺色 Lexical），如需配合改版另議；(e) 首頁深色 3 卡（`home/Academy`，Figma
 `4:213`）維持深色，本輪未動。
-
-## 📋 kickoff（下一棒，可直接複製貼給下一個 agent）
-
-```
-任務：接續 HATC 官網。可能方向：(1) 業主提供真實黃金學院文章 → 於 Payload `academy-articles` 建立
-（title/slug/excerpt/body〔Lexical〕/cover/publishedAt/category〔用固定 6 類：黃金基礎/交易策略/技術分析/
-市場動態/風險管理/投資組合〕/order/enabled），前台 `/academy` 會自動出卡＋分類篩選/排序/分頁生效；
-(2) 電子報接真實 email 服務（現為誠實佔位，見 `AcademyNewsletter.tsx`）；(3) 其他頁面/Figma。
-
-必讀（動工前）：AGENTS.md、docs/HATC_PROJECT_BRIEF.md、docs/HATC_FACTS.md、docs/WEBSITE_STRUCTURE.md、
-docs/DESIGN_DIRECTION.md、docs/HANDOFF.md（本檔，尤其「🟢 第三十九輪」）、.cursor/rules/hatc-website.mdc。
-
-業主已定案（紅線）：
-- 事實只來自 HATC_FACTS.md；示意/衍生值一律標示、集中易改、不入 FACTS。
-- HATC 產品僅黃金/白銀；勿列外匯/原油/指數/股票；勿寫虛構客戶數/獎項/見證/未確認宣稱。
-- 學院＝中性教育；電子報無後端不得假造成功；operational 連結走 CMS（不硬編）。
-- 淺色頁沿用 `--fig-*`（白/navy #1a3366/gold #d4af37）；hero 禁浮動 3D 金幣/發光金條。
-
-現況：`/academy` 列表已按 Figma 98:4 改版（AcademyHero/AcademyExplorer/AcademyNewsletter；client 端
-filter/sort/paginate 維持 SSG）；分類＝i18n `academy.categories` 固定 6 類；seed a1–a3 tag 已對齊；
-reader 有 readMinutes（Lexical 估算）。Header/Footer 學院連結指 `/academy`。三語 200、lint／i18n:check 綠。
-
-注意：本機 DB dev 有既有 drizzle 互動式 push 卡點；純前台驗證可用 `DATABASE_URI="" npm run dev` 走 i18n
-fallback。改集合欄位務必 `generate:types`（＋若動 admin 元件 `generate:importmap`）；新集合＝新表需 push/migration。
-每次交棒更新 docs/HANDOFF.md 並輸出可貼 kickoff。
-```
 
 ## 🟢 第三十八輪（2026-08-31）：`/platforms` 交易平台頁（Figma 89:4）＋ menu 改名
 
