@@ -171,18 +171,6 @@ export default async function AccountComparison() {
                   }))}
                 />
               ))}
-
-              {/* Owner-pending conditions are never invented. */}
-              <Row
-                label={conditions('pendingLabel')}
-                featured={featured}
-                featuredCell={featuredCell}
-                muted
-                values={ACCOUNT_TIERS.map((tier) => ({
-                  key: tier.key,
-                  value: conditions('pending')
-                }))}
-              />
             </tbody>
           </table>
         </div>
@@ -213,7 +201,6 @@ function Row({
   featured,
   featuredCell,
   zebra = false,
-  muted = false,
   highlightValue = false
 }: {
   label: string;
@@ -222,7 +209,6 @@ function Row({
   featured: string;
   featuredCell: string;
   zebra?: boolean;
-  muted?: boolean;
   highlightValue?: boolean;
 }) {
   return (
@@ -249,11 +235,9 @@ function Row({
           className={cn(
             'px-5 py-4 text-center text-sm',
             cell.key === featured && featuredCell,
-            muted
-              ? 'text-[var(--trd-muted)]'
-              : highlightValue
-                ? 'font-bold text-[var(--trd-gold)]'
-                : 'font-medium text-[var(--trd-heading)]'
+            highlightValue
+              ? 'font-bold text-[var(--trd-gold)]'
+              : 'font-medium text-[var(--trd-heading)]'
           )}
         >
           {cell.value}

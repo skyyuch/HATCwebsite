@@ -122,18 +122,6 @@ export default async function TradingConditions() {
                   {t('feeFree')}
                 </td>
               </tr>
-              <tr className="border-t border-[var(--fig-border)]">
-                <th
-                  scope="row"
-                  colSpan={5}
-                  className="px-5 py-4 font-sans text-[13px] font-normal text-[var(--fig-text-dim)]"
-                >
-                  {t('pendingLabel')}
-                </th>
-                <td className="px-5 py-4 text-[13px] text-[var(--fig-text-dim)]">
-                  {t('pending')}
-                </td>
-              </tr>
             </tbody>
           </table>
         </div>

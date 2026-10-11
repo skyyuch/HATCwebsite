@@ -1,10 +1,43 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-11（第五十七輪：行銷文案補齊第三個 CFD 品種；Footer 交易服務欄改由 `CFD_PRODUCTS` 生成）
+> 最後更新：2026-10-11（第五十八輪：移除「其餘交易條件（執行方式等）」待公佈列；登入按鈕改 CMS 設定、未填即隱藏）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
 ## ▶ 下一步（下一位 agent）
+
+> **✅ 第五十八輪（2026-10-11）完成：官網不再提及未提供的「執行方式」；Header 登入按鈕改走
+> CMS 設定、未填即隱藏。**
+>
+> 業主本輪兩項指示：「去除其餘交易條件（執行方式等）」＋「先隱藏登入按鈕」。兩個方向級問題先問齊，
+> 業主拍板：**四處全部移除（含免責聲明那句）**、登入**改成 CMS 可設定**（而非直接刪掉按鈕）。
+> - **移除「待公佈」佔位（四處）**：`/products` 條件表與 `/trading` 帳戶比較表的
+>   「其餘交易條件（執行方式等）／將另行公佈」列、`accounts.tiers.note` 的「執行方式將另行公佈。」、
+>   `/disclaimer`「交易條件」章節的對應句子（三語）。`products.conditions.pendingLabel` 已刪；
+>   **`pending`（將另行公佈）保留**——`/products/all` 仍用它填「CMS 自建但無核可條件」的格子。
+>   `legal.updatedAt` 本就是 2026-10-11（＝改動日），無需再動。
+> - **🚩 順手修掉一個與 FACTS 衝突的舊文案**：`/trading` FAQ「HATC 的交易時間是？」原答
+>   「**華安泰昌的實際交易時段將另行公佈**」——交易時段早在第四十七輪就成為**已核可事實**
+>   （夏令／冬令，見 FACTS「Contract size & trading hours」），該句直接與同站其他頁矛盾。
+>   已三語改寫為核可時段＋每日休市一小時，**依紅線不標夏令/冬令轉換日期**。
+>   （`faqs(category='trading')` DB 無資料 → 走 i18n fallback，改 messages 即生效。）
+> - **登入 ＝ 第四個 CMS 營運連結**：新欄位 `SiteSettings.memberLoginUrl`（＋
+>   `NEXT_PUBLIC_MEMBER_LOGIN_URL` fallback）＋ `memberLoginHref()`；`Header`／`HeaderMobileMenu`
+>   **未設定即不渲染**（比照 `demoAccountHref()`）。原先硬指 `/account`「即將推出」＝對真客戶是死路。
+>   `/account` 佔位頁保留但**已無連結指向、也不在 sitemap**。
+>   ⚠ **schema 變更** → migration `20261011_122325_add_member_login_url`（本機 dev 另手動
+>   `ALTER TABLE site_settings ADD COLUMN member_login_url varchar`，因為 build 會讀這個 global）。
+> - **驗收**：`lint` 0 error（僅 `seed-academy.ts` 1 既有 warning）／`tsc --noEmit`／`i18n:check`
+>   三語 **716 鍵**（718 −`pendingLabel` −免責那句）／`migrate:check` 無漂移／`rm -rf .next` 冷建綠
+>   ● SSG。實測 **CMS 填值→登入出現（桌機＋手機抽屜、三語）／清空→消失**；`/products`、`/trading`、
+>   `/accounts`、`/products/all`、`/disclaimer` 渲染後的 markup 已無「其餘交易條件」與多餘的
+>   「將另行公佈」（僅 `/accounts` FAQ 的模擬帳戶那句保留＝仍屬實）。
+> - **⚠ 本輪踩到的環境雷（新增紀錄）**：`lsof -ti:3000 | xargs kill` **只殺掉監聽程序，`npm start`
+>   外層仍在**，接著 `rm -rf .next && npm run build` 會與它搶 `.next` → 冷建失敗並噴出看似無關的
+>   `next/font/google queries have exactly one entry`（Google Fonts 其實連得到）。**建置前請
+>   `pkill -f "next start"; pkill -f "next-server"`**，失敗後要再 `rm -rf .next` 才能恢復。
+>   另外 `npm start` 與 `chrome-headless-shell` 都**必須以背景 Shell 任務執行**（用 `&` 起會被收掉，
+>   症狀是 curl 回 `000`、截圖變成錯誤頁）。
 
 > **✅ 第五十七輪（2026-10-11）完成：全站行銷文案補齊第三個 CFD 品種「人民幣公斤條」，Footer
 > 交易服務欄改由 `CFD_PRODUCTS` 生成；順手拆掉兩個會讓文案修正「看不見」的陷阱。**

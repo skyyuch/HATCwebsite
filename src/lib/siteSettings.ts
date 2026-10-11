@@ -21,6 +21,8 @@ export type SiteSettings = {
   openAccountUrl?: string;
   /** Demo-account application entry point; unset = hide the demo CTAs. */
   demoAccountUrl?: string;
+  /** Member login entry point; unset = hide the header login link. */
+  memberLoginUrl?: string;
 };
 
 function envFallback(): SiteSettings {
@@ -30,7 +32,8 @@ function envFallback(): SiteSettings {
     email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || undefined,
     liveChatUrl: process.env.NEXT_PUBLIC_CONTACT_LIVECHAT || undefined,
     openAccountUrl: process.env.NEXT_PUBLIC_OPEN_ACCOUNT_URL || undefined,
-    demoAccountUrl: process.env.NEXT_PUBLIC_DEMO_ACCOUNT_URL || undefined
+    demoAccountUrl: process.env.NEXT_PUBLIC_DEMO_ACCOUNT_URL || undefined,
+    memberLoginUrl: process.env.NEXT_PUBLIC_MEMBER_LOGIN_URL || undefined
   };
 }
 
@@ -45,7 +48,8 @@ async function fetchSiteSettingsFromDb(): Promise<SiteSettings> {
       email: (settings?.email as string) || undefined,
       liveChatUrl: (settings?.liveChatUrl as string) || undefined,
       openAccountUrl: (settings?.openAccountUrl as string) || undefined,
-      demoAccountUrl: (settings?.demoAccountUrl as string) || undefined
+      demoAccountUrl: (settings?.demoAccountUrl as string) || undefined,
+      memberLoginUrl: (settings?.memberLoginUrl as string) || undefined
     };
   } catch {
     return envFallback();
@@ -91,4 +95,14 @@ export function primaryContactHref(s: SiteSettings): string | null {
  */
 export function openAccountHref(s: SiteSettings): string | null {
   return s.openAccountUrl?.trim() || primaryContactHref(s);
+}
+
+/**
+ * Member-login URL, or null when the owner has not supplied one. Callers must
+ * then hide the login link: the header used to point it at the `/account`
+ * "coming soon" stub, which is a dead end for a real client (owner 2026-10-11,
+ * 第五十七輪 — same rule as demoAccountHref).
+ */
+export function memberLoginHref(s: SiteSettings): string | null {
+  return s.memberLoginUrl?.trim() || null;
 }

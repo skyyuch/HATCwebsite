@@ -16,6 +16,7 @@ export default function HeaderMobileMenu({
   links,
   mega,
   loginLabel,
+  loginHref,
   openAccountLabel,
   openAccountHref,
   menuLabel,
@@ -23,7 +24,8 @@ export default function HeaderMobileMenu({
 }: {
   links: NavLink[];
   mega: MegaData;
-  loginLabel: string;
+  loginLabel: string | null;
+  loginHref: string | null;
   openAccountLabel: string;
   openAccountHref: string | null;
   menuLabel: string;
@@ -97,13 +99,15 @@ export default function HeaderMobileMenu({
             )}
 
             <div className="mt-3 flex flex-col gap-3 border-t border-[#e6e6e6] pt-4">
-              <Link
-                href="/account"
-                onClick={close}
-                className="px-3 text-[15px] font-semibold text-[#181917]"
-              >
-                {loginLabel}
-              </Link>
+              {loginHref && loginLabel ? (
+                <a
+                  href={loginHref}
+                  onClick={close}
+                  className="px-3 text-[15px] font-semibold text-[#181917]"
+                >
+                  {loginLabel}
+                </a>
+              ) : null}
               {openAccountHref ? (
                 <a
                   href={openAccountHref}

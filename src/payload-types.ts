@@ -900,6 +900,10 @@ export interface SiteSetting {
    * Leave empty to hide the demo-account buttons across the site.
    */
   demoAccountUrl?: string | null;
+  /**
+   * Destination of the header "Log in" link. Leave empty to hide it.
+   */
+  memberLoginUrl?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1416,6 +1420,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   liveChatUrl?: T;
   openAccountUrl?: T;
   demoAccountUrl?: T;
+  memberLoginUrl?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -18,8 +18,12 @@
  *    renders products.conditions.feeFree under the label colFee
  *    (「交易手續費」/ "Trading commission") and the three table notes spell the
  *    exclusions out. Never shorten it to「免任何費用」/ "no fees at all".
- * ⚠️ Still owner-pending — never fabricate: execution mode. The UI renders it
- *    as "將另行公佈 / To be announced" (products.conditions.pending).
+ * ⚠️ Still owner-pending — never fabricate: execution mode. It is simply NOT
+ *    mentioned on the site (owner 2026-10-11, 第五十七輪): the dedicated
+ *    「其餘交易條件（執行方式等）／將另行公佈」rows and note sentences were
+ *    removed, so do not re-add a placeholder row for it. The remaining
+ *    products.conditions.pending is only for CMS-added instruments that have no
+ *    approved conditions at all (see src/lib/instruments.ts).
  *
  * Platform is MetaTrader 5. MT4 is NOT offered (owner 2026-10-11).
  * Labels/units come from i18n; every value below is locale-neutral.

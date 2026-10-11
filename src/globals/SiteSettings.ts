@@ -77,6 +77,22 @@ export const SiteSettings: GlobalConfig = {
               '留空＝全站隐藏「申请模拟账户」按钮（不做死链接）。'
             )
           }
+        },
+        {
+          name: 'memberLoginUrl',
+          type: 'text',
+          label: adminLabel(
+            'Member login URL',
+            '會員登入連結 (URL)',
+            '会员登录链接 (URL)'
+          ),
+          admin: {
+            description: adminLabel(
+              'Destination of the header "Log in" link. Leave empty to hide it.',
+              '頁首「登入」連結的目的地（例如交易端登入頁）。留空＝隱藏該連結。',
+              '页首「登录」链接的目的地（例如交易端登录页）。留空＝隐藏该链接。'
+            )
+          }
         }
       ]
     }

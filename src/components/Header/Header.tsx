@@ -2,7 +2,11 @@ import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
-import {getSiteSettings, openAccountHref} from '@/lib/siteSettings';
+import {
+  getSiteSettings,
+  memberLoginHref,
+  openAccountHref
+} from '@/lib/siteSettings';
 import LocaleSwitcher from '../LocaleSwitcher/LocaleSwitcher';
 import BrandLogo from '../BrandLogo';
 import HeaderNav, {type MegaData, type NavLink} from './HeaderNav';
@@ -39,8 +43,11 @@ export default async function Header() {
   const t = await getTranslations('common');
   const nav = await getTranslations('nav');
   const settings = await getSiteSettings();
-  // Open-account is an operational link → resolve via CMS, never hard-coded.
+  // Open-account and member login are operational links → resolve via CMS,
+  // never hard-coded. Login stays hidden until the owner supplies a real
+  // destination (owner 2026-10-11, 第五十七輪).
   const openHref = openAccountHref(settings);
+  const loginHref = memberLoginHref(settings);
 
   const links: NavLink[] = NAV.map((item) => ({...item, label: nav(item.key)}));
 
@@ -82,12 +89,14 @@ export default async function Header() {
 
         <div className="hidden items-center gap-5 lg:flex">
           <LocaleSwitcher />
-          <Link
-            href="/account"
-            className="text-sm font-semibold text-[#181917] hover:text-[#1C4A70]"
-          >
-            {nav('login')}
-          </Link>
+          {loginHref ? (
+            <a
+              href={loginHref}
+              className="text-sm font-semibold text-[#181917] hover:text-[#1C4A70]"
+            >
+              {nav('login')}
+            </a>
+          ) : null}
           {openHref ? (
             <a
               href={openHref}
@@ -108,7 +117,8 @@ export default async function Header() {
         <HeaderMobileMenu
           links={links}
           mega={mega}
-          loginLabel={nav('login')}
+          loginLabel={loginHref ? nav('login') : null}
+          loginHref={loginHref}
           openAccountLabel={nav('openAccount')}
           openAccountHref={openHref}
           menuLabel={t('openMenu')}

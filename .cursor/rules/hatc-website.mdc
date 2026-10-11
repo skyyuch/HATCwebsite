@@ -821,6 +821,42 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  mega 橫幅單行不換行；footer 桌機 1440／平板 834／手機 390 ＋英文版截圖逐一看過
  （平板「人民幣公斤條 CFD」會換成兩行，與鄰欄「行動與網頁交易端」一致，非回歸）。
 
+- **2026-10-11 (第五十八輪): 官網不再提及未提供的「執行方式」 ＋ 登入按鈕改 CMS 設定、未填即隱藏。**
+ 業主兩項指示：「去除其餘交易條件（執行方式等）」＋「先隱藏登入按鈕」。先問方向級問題，業主拍板
+ **四處全部移除（含免責聲明那句）** ＋ 登入**改成 CMS 可設定**（不是直接刪按鈕）。
+ - **移除「待公佈」佔位（四處）**：`products/TradingConditions` 與 `trading/AccountComparison` 的
+ 「其餘交易條件（執行方式等）／將另行公佈」列、`accounts.tiers.note` 的「執行方式將另行公佈。」、
+ `legal.disclaimer.sections[3].body[2]`（三語）。刪鍵 `products.conditions.pendingLabel`；
+ **`products.conditions.pending`（將另行公佈）保留**——`/products/all` 用它填「CMS 自建但無核可
+ 條件」的格子（`lib/instruments.ts`）。順手移除 `AccountComparison` 的 `Row muted` prop（已成死碼）。
+ - **🚩 紅線解讀（重要）**：移除「將另行公佈」**不等於**執行方式變成事實。FACTS
+ 「Account types & trading conditions」仍列它為**仍待業主提供（不得虛構）**，只是**不對外標示為
+ 待公佈**；已在 FACTS 加註本輪決定，**不要再加回任何執行方式的佔位列**。
+ - **🚩 同時修掉一句與 FACTS 衝突的舊文案**：`/trading` FAQ「HATC 的交易時間是？」原答
+ 「華安泰昌的實際交易時段**將另行公佈**」，但交易時段早在第四十七輪就是**已核可事實** → 與
+ `/products`、`/products/all` 直接矛盾。已三語改寫為核可時段（夏令 週一 06:00–週六 04:45／
+ 冬令 週一 07:00–週六 05:45 ＋ 週二至週五每日休市一小時，香港時間 GMT+8），**依紅線不標轉換日期**。
+ `faqs(category='trading')` DB 無列 → 走 i18n fallback，改 messages 即生效。
+ **慣例**：日後任何事實由「待公佈」轉為「已核可」時，必須全站搜一次舊的「將另行公佈／to be
+ announced」句子，別讓同一條件在兩頁講相反的話。
+ - **登入 ＝ 第四個 CMS 營運連結**：新欄位 **`SiteSettings.memberLoginUrl`**（網站營運設定 →
+ 帳戶入口 → 會員登入連結；＋`NEXT_PUBLIC_MEMBER_LOGIN_URL` fallback）＋ 解析器
+ **`memberLoginHref()`**（`src/lib/siteSettings.ts`）。`Header.tsx` 桌機連結與
+ `HeaderMobileMenu.tsx` 抽屜連結**未設定即不渲染**（`loginLabel`／`loginHref` 皆改 `string | null`），
+ 比照第四十四輪的 `demoAccountHref()`。原先硬指 `/account`「即將推出」＝對真客戶是死路。
+ `/account` 佔位頁**保留但已無任何連結指向、也不在 sitemap**（檔頭已註明，不要再把登入指回去）。
+ ⚠ **schema 變更** → migration `20261011_122325_add_member_login_url`（`.ts`＋`.json`＋`index.ts`
+ 已一起 commit）；本機 dev 另手動 `ALTER TABLE site_settings ADD COLUMN member_login_url varchar`，
+ 因為 `build` 會讀這個 global（欄位不存在會讓整個 build 掛掉，不是走 fallback）。
+ - **驗收**：`lint` 0 error（僅 `seed-academy.ts` 1 既有 warning）／`tsc --noEmit`／`i18n:check`
+ 三語 **716 鍵**／`migrate:check` 無漂移／`rm -rf .next` 冷建綠 ● SSG。實測 **CMS 填值→登入出現
+ （桌機＋手機抽屜、zh-Hant／en）／清空→消失**；五個相關頁渲染後 markup 已無「其餘交易條件」。
+ 殘留的「執行方式」只在**學院文章**（中性 MT5 教學解釋規格欄位，非 HATC 條件宣稱）＝刻意保留。
+ - **⚠ 環境雷（本輪新增）**：`lsof -ti:3000 | xargs kill` **只殺監聽程序，`npm start` 外層還活著**，
+ 緊接著 `rm -rf .next && npm run build` 會與它搶 `.next` → 冷建失敗並噴看似無關的
+ `next/font/google queries have exactly one entry`（Google Fonts 其實連得到，別去查網路）。
+ **建置前 `pkill -f "next start"; pkill -f "next-server"`**，失敗後需再 `rm -rf .next` 才能恢復。
+
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾
  顯示退役的黃金 27／白銀 30 且缺公斤條。已改為條件欄位全部由 `tradingConditions.ts` 產生、
