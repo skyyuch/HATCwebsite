@@ -12,7 +12,7 @@ import BrandLogo from '../BrandLogo';
 // These are content-navigation links (not operational customer-service links,
 // which still resolve via getSiteSettings()), so internal route paths are fine.
 // The risk statement makes clear that all on-site prices/charts are sample data.
-const COLS = ['about', 'trading', 'mt5', 'academy'] as const;
+const COLS = ['about', 'trading', 'platforms', 'academy'] as const;
 const LINKS = ['l1', 'l2', 'l3', 'l4'] as const;
 
 type Col = (typeof COLS)[number];
@@ -24,6 +24,12 @@ type LinkKey = (typeof LINKS)[number];
 // conditions, so the former `/trading-rules` and `/margin` stubs are retired and
 // the 交易服務 column points at `/products` anchors instead. `/news`, `/privacy`,
 // `/disclaimer` remain "coming soon" stubs awaiting owner content.
+//
+// 2026-10-11 (第五十三輪): the former `mt5` column is now `platforms` — it pointed
+// every link at the homepage `#mt5` teaser and advertised destinations that don't
+// exist (client download, mobile guide) plus an unconfirmed platform capability
+// (EA / algo support). It now resolves to the real `/platforms` page and its
+// section anchors, matching the header rename done in 第三十八輪.
 const FOOTER_LINKS: Record<Col, Record<LinkKey, string>> = {
   about: {l1: '/about', l2: '/about', l3: '/about', l4: '/news'},
   trading: {
@@ -32,7 +38,12 @@ const FOOTER_LINKS: Record<Col, Record<LinkKey, string>> = {
     l3: '/products#conditions',
     l4: '/products#conditions'
   },
-  mt5: {l1: '/#mt5', l2: '/#mt5', l3: '/#mt5', l4: '/#mt5'},
+  platforms: {
+    l1: '/platforms',
+    l2: '/platforms#platform-types',
+    l3: '/platforms#platform-types',
+    l4: '/platforms#platform-faq'
+  },
   academy: {
     l1: '/academy',
     l2: '/academy',

@@ -308,12 +308,12 @@
           "l3": "Market trading rules",
           "l4": "Contract margin"
         },
-        "mt5": {
-          "title": "MT5 platform",
-          "l1": "MT5 client download",
-          "l2": "Mobile platform guide",
-          "l3": "EA / algo support",
-          "l4": "Common how-to guides"
+        "platforms": {
+          "title": "Trading platforms",
+          "l1": "Platform overview",
+          "l2": "MetaTrader 5",
+          "l3": "Mobile & web terminal",
+          "l4": "Platform FAQ"
         },
         "academy": {
           "title": "Gold Academy",

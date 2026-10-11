@@ -654,6 +654,25 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  每個外框的螢幕都用 `style={{aspectRatio}}` ＋ `fill` 影像。另外 **CDP 截區塊**別用「scrollIntoView
  ＋viewport clip」（會截到錯位的空白），改用**文件絕對座標＋`captureBeyondViewport:true`**。
 
+- **2026-10-11 (第五十三輪): Footer「MT5平台」欄改為「交易平台」並接上 `/platforms` 真實錨點。**
+ 業主選定此項（第五十／五十一／五十二輪留下的候選之一）。**不只是改名**——該欄四個連結原本**全部**
+ 指向首頁 `/#mt5` teaser，且標籤承諾了不存在的目的地（MT5客戶端下載／移動平台操作／操作常見指南），
+ 其中 **「EA程序化支持」＝未確認的平台能力宣稱**（FACTS「Trading platforms」明列不得聲稱跟單/量化等
+ 能力），屬紅線。落地：
+ - **i18n 鍵改名** `home.footerV2.cols.mt5` → **`cols.platforms`**（三語；`Footer.tsx` 的 `COLS`
+ tuple ＋ `FOOTER_LINKS` 同步）。鍵數不變＝**665 鍵**。沿用第三十八輪 header `nav.mt5`→`nav.platforms`
+ 的命名。
+ - **四個連結全部指向真實目的地**：平台總覽→`/platforms`、MetaTrader 5→`/platforms#platform-types`、
+ 行動與網頁交易端→`/platforms#platform-types`、平台常見問題→**`/platforms#platform-faq`**。
+ 新錨點＝`PlatformFaq` 區段補上 `id="platform-faq"` ＋ `scroll-mt-20`（比照 `#platform-types`；
+ 實測兩個錨點都停在 header 下方 80px，不被 sticky header 蓋住）。
+ - **慣例**：footer 連結標籤必須對得上站上真實存在的頁面或區段；沒有目的地就不要列，**更不可**用
+ 標籤去承諾未確認的功能（下載點、操作指南、EA／量化）。
+ - **未處理但已記錄的同類問題（下一棒候選，見 HANDOFF 第五十三輪）**：交易服務欄只有倫敦金/銀、
+ **缺人民幣公斤條**；學院欄四個標籤與 `academy.categories` 的真實六分類對不上且無法深連；關於我們欄
+ 三個連結都指 `/about` 無錨點；`metadata.platforms.description`（三語）仍寫「平台視覺為示意」——
+ 第五十一／五十二輪換成真實截圖後已不實。
+
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾
  顯示退役的黃金 27／白銀 30 且缺公斤條。已改為條件欄位全部由 `tradingConditions.ts` 產生、

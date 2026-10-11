@@ -16,7 +16,7 @@ export default async function PlatformFaq() {
   const items = await getFaqs(locale, 'platforms');
 
   return (
-    <section className="bg-[var(--fig-light)]">
+    <section id="platform-faq" className="scroll-mt-20 bg-[var(--fig-light)]">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-12 px-6 py-20 sm:px-10 lg:px-[120px] lg:py-24">
         <div className="flex flex-col items-center gap-3 text-center">
           <SectionTitle kicker={t('kicker')} heading={t('heading')} />

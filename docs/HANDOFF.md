@@ -1,10 +1,30 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-11（第五十二輪：開戶連結進 CMS ＋ 平台視覺改走首頁視覺概念、交易端截圖重截為手機螢幕）
+> 最後更新：2026-10-11（第五十三輪：Footer「MT5平台」欄改為「交易平台」並接上 `/platforms` 真實錨點）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
 ## ▶ 下一步（下一位 agent）
+
+> **✅ 第五十三輪（2026-10-11）完成：Footer「MT5平台」欄改為「交易平台」，四個連結從首頁 teaser
+> 改接 `/platforms` 的真實區段；順手清掉該欄的未確認平台能力宣稱。**
+>
+> 業主本輪從候選清單選此項，並同意先把落後的兩個 commit push（已推，origin＝`25417e0`）。
+> - **不只是改名**：該欄四個連結原本**全部**指向首頁 `/#mt5` teaser，標籤還承諾了不存在的目的地
+>   （MT5客戶端下載／移動平台操作／操作常見指南），其中 **「EA程序化支持」是未確認的平台能力宣稱**
+>   （FACTS「Trading platforms」明列不得聲稱跟單/量化等能力）→ 整欄重做。
+> - **i18n 鍵改名** `home.footerV2.cols.mt5` → **`cols.platforms`**（三語，沿用第三十八輪 header
+>   `nav.mt5`→`nav.platforms` 的命名）；鍵數不變 **665 鍵**。新標籤＝平台總覽／MetaTrader 5／
+>   行動與網頁交易端／平台常見問題。
+> - **連結全部落到真實目的地**：`/platforms`、`/platforms#platform-types`（×2）、
+>   **`/platforms#platform-faq`**。最後一個是新錨點 → `PlatformFaq` 區段補 `id="platform-faq"`
+>   ＋`scroll-mt-20`（比照 `#platform-types`）。實測兩個錨點都停在 sticky header 下方，未被遮住。
+> - **驗收**：`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／
+>   `i18n:check` 三語 665 鍵／`migrate:check` 無漂移（未動 schema）／`rm -rf .next` 後 `build` 綠且
+>   頁面維持 ● SSG。三語 × 桌機 1440／平板 834／手機 390 的 footer 截圖逐一看過，無溢出或斷行問題；
+>   全站掃過已無任何 `/#mt5` 連結。
+> - **🚩 同時發現、本輪刻意沒動的同類問題**（都在 footer／平台頁，列為下一棒候選，見下方「待業主」）。
+> - 細節見下方「🟢 第五十三輪」。
 
 > **✅ 第五十二輪（2026-10-11）完成：① 開戶連結正式進 CMS（並修掉「開戶按鈕指到客服連結」的語意錯誤）；
 > ② 平台視覺照業主指示改走首頁那張圖的「概念」，交易端截圖全部重截成真正的手機螢幕。**
@@ -427,6 +447,84 @@
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
 
+## 🟢 第五十三輪（實作，2026-10-11）：Footer「MT5平台」欄 → 「交易平台」並接上 `/platforms`
+
+### 業主決策
+
+- 從第五十／五十一／五十二輪留下的候選清單中選定「Footer『MT5平台』欄是否改名／改指 `/platforms`」。
+- 同意先把落後的兩個 commit（`920a76c`、`25417e0`）push 上去 —— 已推，origin 現為 `25417e0`。
+
+### 一、為什麼不只是改名
+
+第三十八輪把 header 的 `nav.mt5`「MT5平台」改名 `nav.platforms`「交易平台」並改指 `/platforms` 時，
+**footer 的同名欄位被留著沒動**（當時明寫「本輪未動，業主如要一併更名/改指再議」）。實際檢查該欄：
+
+| 原標籤 | 原連結 | 問題 |
+|---|---|---|
+| MT5客戶端下載 | `/#mt5` | 站上**沒有**下載頁，也沒有任何核可的下載連結 |
+| 移動平台操作 | `/#mt5` | 沒有這份操作指南 |
+| EA程序化支持 | `/#mt5` | **紅線**：FACTS「Trading platforms」明列不得聲稱跟單／量化等未確認平台能力 |
+| 操作常見指南 | `/#mt5` | 沒有這份指南（`/platforms` 的 FAQ 最接近，但當時沒有錨點可連） |
+
+四個連結指向同一個首頁 teaser 區段，等於整欄都是佔位。**根因**＝第十一輪建 footer 時依 Figma 填的
+標籤從未對照站上真實內容，之後每次新頁上線也沒回頭修這張表。
+
+### 二、落地
+
+- **i18n 鍵改名**：`home.footerV2.cols.mt5` → **`cols.platforms`**（三語同步；`Footer.tsx` 的
+  `COLS` tuple ＋ `FOOTER_LINKS` key 一起改）。鍵數不變＝**665 鍵**。
+- **新標籤／連結**：
+
+  | 標籤（繁／簡／英） | 連結 |
+  |---|---|
+  | 平台總覽／平台总览／Platform overview | `/platforms` |
+  | MetaTrader 5 | `/platforms#platform-types` |
+  | 行動與網頁交易端／移动与网页交易端／Mobile & web terminal | `/platforms#platform-types` |
+  | 平台常見問題／平台常见问题／Platform FAQ | `/platforms#platform-faq` |
+
+  欄標題三語＝交易平台／交易平台／Trading platforms（與 `nav.platforms` 同字；footer cols 的
+  title 一向是自己的鍵，`cols.academy.title` 與 `nav.goldAcademy` 也是如此，未改這個結構）。
+- **新錨點**：`PlatformFaq` 區段補 `id="platform-faq"` ＋ `scroll-mt-20`（比照 `PlatformTypes` 的
+  `#platform-types`）。header 是 sticky h-80，`scroll-mt-20`＝80px 剛好。
+- 兩個連結共用 `#platform-types` 是刻意的：三個平台在該區段是 **client state 分頁**，沒有可深連的
+  per-tab URL。要做 per-tab 深連得把分頁狀態放進 URL（`?platform=mt5` 之類），屬獨立工作。
+  交易服務欄的 l3/l4 也早有同一個目的地，有前例。
+
+### 三、驗證
+
+- `lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／`i18n:check` 三語
+  **665 鍵**／`migrate:check` 無漂移（未動 schema）／`rm -rf .next` 後 `build` 綠、頁面維持 ● SSG。
+- 三語 `/platforms` 的 footer HTML 逐一比對連結與標籤；**全站掃過已無任何 `/#mt5` 連結**
+  （首頁 `MT5Showcase` 的 `id="mt5"` 區段本身還在，那是第 (c) 項待業主的事）。
+- 三語 × 桌機 1440／平板 834／手機 390 的 footer 截圖逐一看過：桌機四欄並排、平板標題換兩行
+  （英文較長，既有行為）、手機堆疊，無溢出或壓字。
+- 兩個錨點以 CDP 實測：`#platform-types` 與 `#platform-faq` 都停在 header 下方（`headerBottom` 80，
+  `sectionTop` 160），未被 sticky header 遮住。
+- ⚠ **截圖工具筆記**：IDE 內建瀏覽器的 `Emulation.setDeviceMetricsOverride` 與它的截圖管線對不上
+  （版面吃到 1440，截出來卻是面板原寬，`captureBeyondViewport` 會拼出錯位的重複畫面）。改用獨立的
+  headless Chrome（port 9444）＋**先把目標捲到視窗頂端、再用 viewport-relative clip ＋
+  `captureBeyondViewport:false`**，一次就對。Chrome 必須用**背景 Shell 任務**啟動，指令內 `&` 起的
+  會被收掉。另外 `npm run build` 與 `next dev` 共用 `.next`，驗證前先停 dev、build 完再重啟。
+
+### 四、同時發現、本輪刻意沒動（下一棒候選）
+
+footer 其餘三欄有同一個根因（Figma 佔位標籤沒對照真實內容），但各自是獨立的內容決策，沒有擅自改：
+
+- **交易服務欄缺人民幣公斤條**：只有倫敦黃金交易／倫敦白銀交易，與 FACTS 的三個 CFD 標的不符
+  （同一類問題第四十五輪在 `/trading`、第五十二輪在 `platforms.detail.bullets` 都修過）。
+  該欄只有 4 格，要補第三個產品就得拿掉一個現有連結或讓該欄變 5 格 —— 屬版面決策。
+- **黃金學院欄**四個標籤（基礎課程／進階分析／巨集觀基本面／技術指標解讀）對不上
+  `academy.categories` 的真實六分類，且全部指 `/academy`；分類篩選是 client state、無 URL 參數，
+  想深連要先讓 `AcademyExplorer` 支援查詢字串。
+- **關於我們欄** l1–l3 都指 `/about` 沒有錨點（About 有 `#milestones`／`#credentials`／`#office`
+  可用）。
+- **`metadata.platforms.description`（三語）仍寫「平台視覺為示意／actual screens follow the official
+  release」** —— 第五十一／五十二輪換成真實截圖與供應商官方畫面後，這句已不實，且該描述只提黃金白銀，
+  一樣缺人民幣公斤條。
+- **`platforms.types.items.mt5.desc` 與 `platforms.faq`** 提到 MT5「支援自動化（EA）交易」。這是
+  MetaTrader 5 平台本身的特性（不是 HATC 的服務承諾），所以沒有比照 footer 一併刪 —— 但 FACTS 的
+  平台紅線把「跟單／量化功能」列為不得聲稱，**邊界由業主裁定**。
+
 ## 🟢 第五十二輪（實作，2026-10-11）：開戶連結進 CMS ＋ 平台視覺改走首頁視覺概念
 
 ### 業主決策
@@ -578,9 +676,9 @@
 - **HATC MT5 伺服器測試帳號** → 把供應商示範畫面換成**HATC 自家 MT5 的真實截圖**（只放三個核可產品的
   Market Watch），屆時 `vendorNote` 即可退役、`vendor` kind 可改回 `browser`/`phone` 之外的 desktop 截圖。
 - 生產遊客交易組配好產品後，**改用生產環境重截**交易端截圖（現素材來自 UAT；畫面本身不含網域）。
-- 第五十／五十一輪留下的候選仍在：Footer「MT5平台」欄是否改名／改指 `/platforms`、`/trading` 合作夥伴
-  標誌佔位、`--trd-gold #c9a84c` 是否統一成 `#d4af37`、`/products/all` 的最低手數／手續費／執行方式、
-  上線前檢查 CMS global `home-page` 是否存有舊文案。
+- 第五十／五十一輪留下的候選仍在：~~Footer「MT5平台」欄是否改名／改指 `/platforms`~~（第五十三輪已做）、
+  `/trading` 合作夥伴標誌佔位、`--trd-gold #c9a84c` 是否統一成 `#d4af37`、`/products/all` 的最低手數／
+  手續費／執行方式、上線前檢查 CMS global `home-page` 是否存有舊文案。
 
 ## 🟢 第五十一輪（實作，2026-10-11）：平台視覺統一（真實截圖三語 ＋ 官方 MT5 標誌 ＋ 裝置外框）
 
