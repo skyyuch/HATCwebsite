@@ -6,7 +6,7 @@ import {getFundingMarketing} from '@/lib/fundingMarketing';
 import {
   demoAccountHref,
   getSiteSettings,
-  primaryContactHref
+  openAccountHref
 } from '@/lib/siteSettings';
 import type {Locale} from '@/i18n/routing';
 
@@ -20,7 +20,7 @@ export default async function FundingCta() {
   const t = await getTranslations('funding.cta');
   const marketing = await getFundingMarketing(locale);
   const settings = await getSiteSettings();
-  const openAccountHref = primaryContactHref(settings);
+  const openHref = openAccountHref(settings);
   const demoHref = demoAccountHref(settings);
   const ctaImage = marketing.images?.cta ?? '/figma/funding/cta.png';
 
@@ -51,9 +51,9 @@ export default async function FundingCta() {
           {marketing.cta.body}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4">
-          {openAccountHref ? (
+          {openHref ? (
             <a
-              href={openAccountHref}
+              href={openHref}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}

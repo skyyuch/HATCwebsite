@@ -17,6 +17,8 @@ export type SiteSettings = {
   phone?: string;
   email?: string;
   liveChatUrl?: string;
+  /** Online registration entry point for the "Open account" CTAs. */
+  openAccountUrl?: string;
   /** Demo-account application entry point; unset = hide the demo CTAs. */
   demoAccountUrl?: string;
 };
@@ -27,6 +29,7 @@ function envFallback(): SiteSettings {
     phone: process.env.NEXT_PUBLIC_CONTACT_PHONE || undefined,
     email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || undefined,
     liveChatUrl: process.env.NEXT_PUBLIC_CONTACT_LIVECHAT || undefined,
+    openAccountUrl: process.env.NEXT_PUBLIC_OPEN_ACCOUNT_URL || undefined,
     demoAccountUrl: process.env.NEXT_PUBLIC_DEMO_ACCOUNT_URL || undefined
   };
 }
@@ -41,6 +44,7 @@ async function fetchSiteSettingsFromDb(): Promise<SiteSettings> {
       phone: (settings?.phone as string) || undefined,
       email: (settings?.email as string) || undefined,
       liveChatUrl: (settings?.liveChatUrl as string) || undefined,
+      openAccountUrl: (settings?.openAccountUrl as string) || undefined,
       demoAccountUrl: (settings?.demoAccountUrl as string) || undefined
     };
   } catch {
@@ -78,4 +82,13 @@ export function primaryContactHref(s: SiteSettings): string | null {
   if (s.email) return `mailto:${s.email}`;
   if (s.phone) return `tel:${s.phone}`;
   return null;
+}
+
+/**
+ * Destination for every "Open account" CTA: the configured registration URL,
+ * otherwise the customer-service link so the button still reaches a human.
+ * Callers keep their own `/register` stub as the last resort.
+ */
+export function openAccountHref(s: SiteSettings): string | null {
+  return s.openAccountUrl?.trim() || primaryContactHref(s);
 }

@@ -2,7 +2,7 @@ import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
-import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
+import {getSiteSettings, openAccountHref} from '@/lib/siteSettings';
 import LocaleSwitcher from '../LocaleSwitcher/LocaleSwitcher';
 import BrandLogo from '../BrandLogo';
 import HeaderNav, {type MegaData, type NavLink} from './HeaderNav';
@@ -40,7 +40,7 @@ export default async function Header() {
   const nav = await getTranslations('nav');
   const settings = await getSiteSettings();
   // Open-account is an operational link → resolve via CMS, never hard-coded.
-  const openAccountHref = primaryContactHref(settings);
+  const openHref = openAccountHref(settings);
 
   const links: NavLink[] = NAV.map((item) => ({...item, label: nav(item.key)}));
 
@@ -62,8 +62,8 @@ export default async function Header() {
     banner: {
       title: nav('mega.banner.title'),
       desc: nav('mega.banner.desc'),
-      href: openAccountHref ?? '/register',
-      external: Boolean(openAccountHref)
+      href: openHref ?? '/register',
+      external: Boolean(openHref)
     }
   };
 
@@ -88,9 +88,9 @@ export default async function Header() {
           >
             {nav('login')}
           </Link>
-          {openAccountHref ? (
+          {openHref ? (
             <a
-              href={openAccountHref}
+              href={openHref}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(buttonVariants({size: 'fig'}), 'bg-[#1a3366] text-white hover:bg-[#12264d]')}
@@ -112,7 +112,7 @@ export default async function Header() {
           mega={mega}
           loginLabel={nav('login')}
           openAccountLabel={nav('openAccount')}
-          openAccountHref={openAccountHref}
+          openAccountHref={openHref}
           menuLabel={t('openMenu')}
           closeLabel={t('closeMenu')}
         />

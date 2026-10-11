@@ -29,6 +29,9 @@
     `components/platforms/{platformVisuals.ts,PlatformVisualPanel.tsx}`：
     CMS 上傳 → HATC 交易端真實截圖（三語，第五十一輪）→ 官方 MetaTrader 5 標誌 → 自家品牌面板。
     通用範本裝置圖已退役；**永不放假截圖**。MT5 的真實截圖待業主提供測試帳號。
+  - 截圖素材（第五十二輪重截）＝**一個手機螢幕**（430×932 @2x，860×1744），分別為金／銀／人民幣
+    公斤條的日K 畫面，由 `scripts/capture-terminal.mjs` 產生（截圖紅線寫在該檔與
+    `platformVisuals.ts` 檔頭）。呈現＝深藍景深＋金色細線幾何＋手機外框切出面板下緣。
 - 最新消息 ✅（`/[locale]/news`，Payload `home-activities`；無內容時中性空狀態）
 - 黃金學院 ✅（`/[locale]/academy` 列表〔Figma `98:4`：navy/gold hero＋分類篩選 sidebar
   ＋排序＋分頁＋電子報誠實佔位〕＋`/[locale]/academy/[slug]` 詳情；Payload `academy-articles`
@@ -137,8 +140,12 @@
 
 - **Header 與 Footer 為全域共用**：在 `[locale]/layout.tsx` 只渲染一次，
   各頁面不得各自實作；頁面只負責兩者之間的內容。
-- **註冊 / 用戶中心入口**：Header 先放入口按鈕（第一階段僅入口，功能與頁面後續再做）；
-  連結目標與行為【待確認】（可先導向 placeholder 或標示「即將推出」）。
+- **開戶入口**：全站「立即開戶」按鈕讀 CMS `SiteSettings → 開戶（註冊）連結`
+  （業主 2026-10-11 提供線上註冊頁，見 `HATC_FACTS.md`）；未設定時退回客服連結，
+  兩者皆無才退到 `/register`「即將推出」佔位頁。解析器＝`openAccountHref()`。
+- **模擬帳戶入口**：仍待業主提供；CMS 未設定即**不渲染**模擬按鈕（不做死連結）。
+- **用戶中心（登入）入口**：Header 的「登入」仍指向 `/account`「即將推出」佔位頁；
+  若要改指交易端登入頁，需業主提供連結並比照開戶走 CMS 設定【待確認】。
 - 全站導覽項目：【待確認】
 - 頁尾內容（公司名稱、會員編號等，依 `HATC_FACTS.md`）：【待確認】
 - 客服 / 聯絡連結：由 CMS 配置讀取，不得寫死於程式碼

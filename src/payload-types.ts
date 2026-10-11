@@ -893,6 +893,10 @@ export interface SiteSetting {
   email?: string | null;
   liveChatUrl?: string | null;
   /**
+   * Destination of every "Open account" button. Leave empty to fall back to the customer-service link.
+   */
+  openAccountUrl?: string | null;
+  /**
    * Leave empty to hide the demo-account buttons across the site.
    */
   demoAccountUrl?: string | null;
@@ -1410,6 +1414,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   phone?: T;
   email?: T;
   liveChatUrl?: T;
+  openAccountUrl?: T;
   demoAccountUrl?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -2,7 +2,7 @@ import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
-import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
+import {getSiteSettings, openAccountHref} from '@/lib/siteSettings';
 
 /**
  * Closing conversion band (Figma 62:327). Dark section, single gold CTA.
@@ -13,7 +13,7 @@ export default async function AccountsCta() {
   const t = await getTranslations('accounts.cta');
   const hero = await getTranslations('accounts.hero');
   const settings = await getSiteSettings();
-  const openAccountHref = primaryContactHref(settings);
+  const openHref = openAccountHref(settings);
 
   return (
     <section className="bg-[var(--fig-ink)]">
@@ -24,9 +24,9 @@ export default async function AccountsCta() {
         <p className="max-w-[42rem] text-base leading-[1.6] text-[var(--fig-text-dim)]">
           {t('body')}
         </p>
-        {openAccountHref ? (
+        {openHref ? (
           <a
-            href={openAccountHref}
+            href={openHref}
             target="_blank"
             rel="noopener noreferrer"
             className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}

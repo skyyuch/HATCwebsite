@@ -591,6 +591,36 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  - **待業主**：(a) HATC MT5 伺服器測試帳號 → 把官方 logo 換成真實 MT5 截圖；(b) 交易端若日後支援
  繁中／英文，重截對應語系；(c) 英文站目前顯示簡體介面截圖＝業主已知並同意。
 
+- **2026-10-11 (第五十二輪): 開戶連結進 CMS ＋ 平台視覺改走首頁視覺概念（真實截圖重截為手機螢幕）。**
+ 業主本輪兩項指示：① 「開戶連結應該在 CMS 配置」並提供 `https://h5.hatcmarket.com/#/pages/auth/register/index`；
+ ② 「目前換的交易平台圖都很醜，不如你用首頁那張圖的概念」。
+ - **開戶連結＝`SiteSettings.openAccountUrl` 新欄位**（＋`NEXT_PUBLIC_OPEN_ACCOUNT_URL` fallback）＋
+ `openAccountHref(s)`＝`openAccountUrl → primaryContactHref(s) → null`（呼叫端仍自備 `/register` 佔位）。
+ **修正既有語意錯誤**：全站十幾處「立即開戶」原本直接呼叫 `primaryContactHref()`＝把開戶按鈕指到客服連結；
+ 現已改為 `openAccountHref()`。**同頁同時有「開戶」與「聯絡我們」者（`/products`、`/trading` 的 CTA band）
+ 必須兩個解析器各算一次**，不可共用。URL 已記入 `HATC_FACTS.md`「Official contact & website」（僅作紀錄，
+ UI 一律讀 CMS）。⚠ 新欄位＝schema 變更 → migration `20261011_091538_add_open_account_url`。
+ - **順修**：首頁 `FinalCta` 的「免費模擬帳戶」原本硬編 `/register`，**未套用第四十四輪「模擬連結未設定
+ 即不渲染」規則** → 已改讀 `demoAccountHref()`，未設定即不渲染（與 `/accounts`、`/platforms`、`/funding` 一致）。
+ 本機 DB 的 `demo_account_url` 先前被填成**註冊頁**（測試殘留，非業主提供）→ 已清空；**模擬帳戶入口仍待業主提供**。
+ - **平台視覺（沿用第五十一輪的 `resolvePlatformVisual()` ＋ `PlatformVisualPanel`，只改素材與呈現）**：
+ ① **素材重截**＝`scripts/capture-terminal.mjs`（CDP 驅動，必須先點「日K」分頁才有數據；依「賣出」列上緣裁掉
+ 買賣價列）以**手機視窗 430×932 @2x** 重截，每檔＝**一個手機螢幕**（860×1744，1:2.03）→ 解決原本 860×830／
+ 860×1430 長截圖導致外框變成矮胖方塊的根因。三檔對應**三個核可產品**：金 `terminal-gold-chart`／銀
+ `terminal-silver-chart`／公斤條 `terminal-kilobar-chart`（hero 用公斤條，避免同頁重複同一張）。
+ **退役 `terminal-home.png`**——遊客首頁下半是第三方財經資訊流（A 股公告／國際新聞），與 HATC 產品無關。
+ ② **呈現**＝深藍景深漸層＋金色細線幾何（**不用**浮動 3D 金塊／發光金體，設計紅線）＋手機外框**依素材比例、
+ 由面板寬度決定大小、刻意切出面板下緣**（device peeking；因素材已在買賣價列上方裁切，切下緣不隱藏任何東西）。
+ ③ **`/platforms` hero／分頁與 `/accounts` 卡片三處共用同一元件**，MT5 仍為官方標誌。
+ - **文案順修**：`platforms.detail.bullets[0]`「專注黃金 / 白銀 CFD」→「**專注貴金屬 CFD**」並補**人民幣公斤條**
+ （三語；對齊 FACTS 的三個 CFD 品種，與第四十五輪 `/trading` 的修正同理）。i18n 仍 **664 鍵**。
+ - **仍未採用業主給的「首頁那張圖」本體**：`public/figma/raw/raw_3.png` 是 Figma AI 算圖（假 MT5 畫面＋浮動金塊），
+ 放到平台頁等於復活第五十一輪剛退役的假截圖。**只借其呈現概念。** ⚠ 該圖目前仍在**首頁** `MT5Showcase`
+ （Figma 核可佔位），與「站上不放假平台截圖」的紅線相衝 → **已列待業主決定是否也換成真實截圖**。
+ - **截圖紅線（重截必照做，已寫進 `platformVisuals.ts` 與 `scripts/capture-terminal.mjs` 檔頭）**：裁掉買賣價列、
+ 不入瀏覽器外框／UAT 網域、只截 **日K**（預設「分時」常無數據且開高低與現價互相矛盾）、不截遊客「交易」分頁、
+ 不截遊客首頁資訊流、**只截三個核可產品**（閘道遊客白名單含 26 個外匯/指數代號，不得入鏡）。
+
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾
  顯示退役的黃金 27／白銀 30 且缺公斤條。已改為條件欄位全部由 `tradingConditions.ts` 產生、

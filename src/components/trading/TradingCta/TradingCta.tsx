@@ -4,7 +4,11 @@ import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
 import {getTradingMarketing} from '@/lib/tradingMarketing';
 import type {Locale} from '@/i18n/routing';
-import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
+import {
+  getSiteSettings,
+  openAccountHref,
+  primaryContactHref
+} from '@/lib/siteSettings';
 
 /**
  * Closing CTA band (Figma 44:281). Marketing copy = CMS with i18n fallback;
@@ -16,6 +20,7 @@ export default async function TradingCta() {
   const nav = await getTranslations('nav');
   const common = await getTranslations('common');
   const settings = await getSiteSettings();
+  const openHref = openAccountHref(settings);
   const contactHref = primaryContactHref(settings);
 
   return (
@@ -31,9 +36,9 @@ export default async function TradingCta() {
         </div>
 
         <div className="flex flex-wrap justify-center gap-5 max-sm:w-full">
-          {contactHref ? (
+          {openHref ? (
             <a
-              href={contactHref}
+              href={openHref}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(

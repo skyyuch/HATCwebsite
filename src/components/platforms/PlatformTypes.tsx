@@ -1,7 +1,7 @@
 import {getLocale, getTranslations} from 'next-intl/server';
 import SectionTitle from '@/components/home/SectionTitle';
 import {getTradingPlatforms} from '@/lib/tradingPlatforms';
-import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
+import {getSiteSettings, openAccountHref} from '@/lib/siteSettings';
 import type {Locale} from '@/i18n/routing';
 import PlatformTabsClient from './PlatformTabsClient';
 import {resolvePlatformVisual} from './platformVisuals';
@@ -28,7 +28,7 @@ export default async function PlatformTypes() {
   const bullets = detail.raw('bullets') as Bullet[];
 
   const settings = await getSiteSettings();
-  const openAccountHref = primaryContactHref(settings);
+  const openHref = openAccountHref(settings);
 
   const visuals = platforms.map((platform) => resolvePlatformVisual(platform));
 
@@ -46,8 +46,8 @@ export default async function PlatformTypes() {
           bullets={bullets}
           screenshotNote={t('screenshotNote')}
           ctaLabel={nav('openAccount')}
-          ctaHref={openAccountHref ?? '/register'}
-          ctaExternal={Boolean(openAccountHref)}
+          ctaHref={openHref ?? '/register'}
+          ctaExternal={Boolean(openHref)}
         />
       </div>
     </section>

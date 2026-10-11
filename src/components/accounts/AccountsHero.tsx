@@ -5,7 +5,7 @@ import {buttonVariants} from '@/components/ui/button';
 import {
   demoAccountHref,
   getSiteSettings,
-  primaryContactHref
+  openAccountHref
 } from '@/lib/siteSettings';
 
 /**
@@ -18,7 +18,7 @@ export default async function AccountsHero() {
   const t = await getTranslations('accounts.hero');
   const nav = await getTranslations('nav');
   const settings = await getSiteSettings();
-  const openAccountHref = primaryContactHref(settings);
+  const openHref = openAccountHref(settings);
   const demoHref = demoAccountHref(settings);
 
   return (
@@ -64,9 +64,9 @@ export default async function AccountsHero() {
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-4">
-          {openAccountHref ? (
+          {openHref ? (
             <a
-              href={openAccountHref}
+              href={openHref}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}

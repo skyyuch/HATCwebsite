@@ -6,20 +6,31 @@
  * rules below can never drift between pages.
  *
  * ── Terminal captures ───────────────────────────────────────────────────────
- * Real screenshots of HATC's own terminal, captured 2026-10-11 from the
- * uni-app x H5 build (the same codebase that powers the mobile app).
+ * Real screenshots of HATC's own terminal, recaptured 2026-10-11 from the
+ * uni-app x H5 build (the same codebase that powers the mobile app) at a phone
+ * viewport (430×932 CSS @2x) so each file is one phone screen and the device
+ * frame gets believable proportions. `scripts/capture-terminal.mjs` reproduces
+ * them; it drives the page over CDP because the daily-candle tab has to be
+ * clicked before the chart has data.
  *
  * ⚠️ Governance rules that produced these files — keep them if you recapture:
- * 1. The sell/buy action bar is cropped out. The terminal's guest spread does
- *    not match the approved per-tier spreads in HATC_FACTS.md, so it must never
- *    be legible on the site.
+ * 1. The sell/buy action bar is cropped out (the script clips above it). The
+ *    terminal's guest spread does not match the approved per-tier spreads in
+ *    HATC_FACTS.md, so it must never be legible on the site.
  * 2. No browser chrome, so the capture environment's host name never appears.
- * 3. Only screens whose figures are internally consistent were used — some
- *    terminal screens showed an open/high/low that contradicted the last price.
+ * 3. Only screens whose figures are internally consistent were used: the daily
+ *    (日K) view is captured because the default 分时 view reports an open/high/low
+ *    that contradicts the last price, and it often has no chart data at all.
  * 4. The guest "trade" tab was rejected outright: it advertises a sign-up bonus,
  *    a 30-minute funding time and a "zero risk" claim, none of which are
- *    approved facts and all of which the site is forbidden from repeating.
- * 5. Quotes inside an image are a point in time, hence the caption on the panel
+ *    approved facts and all of which the site is forbidden from repeating. The
+ *    guest home screen is no longer used either — the lower half is a
+ *    third-party news feed (A-share filings, world news) that has nothing to do
+ *    with HATC's products.
+ * 5. Only the three approved CFD products (gold / silver / RMB kilobar) are
+ *    captured. The gateway's guest whitelist also carries forex and index
+ *    symbols, and those must never be depicted as HATC products.
+ * 6. Quotes inside an image are a point in time, hence the caption on the panel
  *    (platforms.types.screenshotNote) — these are NOT live prices.
  *
  * The terminal ships in Simplified Chinese only (the uni-app project has no
@@ -36,10 +47,12 @@
  * as HATC products.
  */
 
+const PHONE_SCREEN = {width: 860, height: 1744} as const;
+
 /** Keyed by the non-localized `panelLabel` of the `trading-platforms` entry. */
 const TERMINAL_SCREENSHOTS: Readonly<Record<string, ImageAsset>> = {
-  'HATC App': {src: '/platforms/terminal-gold-chart.png', width: 860, height: 1430},
-  'Web Trading': {src: '/platforms/terminal-silver-chart.png', width: 860, height: 1430}
+  'HATC App': {src: '/platforms/terminal-gold-chart.png', ...PHONE_SCREEN},
+  'Web Trading': {src: '/platforms/terminal-silver-chart.png', ...PHONE_SCREEN}
 };
 
 /**
@@ -53,10 +66,13 @@ const BRAND_MARKS: Readonly<Record<string, ImageAsset>> = {
   MT5: {src: '/platforms/metatrader5-logo-white.png', width: 1024, height: 176}
 };
 
+/**
+ * Hero picture for `/platforms`: the RMB kilobar chart, so the page's three
+ * pictures show the three approved products instead of repeating one screen.
+ */
 export const TERMINAL_HERO: ImageAsset = {
-  src: '/platforms/terminal-home.png',
-  width: 860,
-  height: 830
+  src: '/platforms/terminal-kilobar-chart.png',
+  ...PHONE_SCREEN
 };
 
 export type ImageAsset = {src: string; width: number; height: number};

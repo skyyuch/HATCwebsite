@@ -3,7 +3,7 @@ import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
 import {getFundingMarketing} from '@/lib/fundingMarketing';
-import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
+import {getSiteSettings, openAccountHref} from '@/lib/siteSettings';
 import type {Locale} from '@/i18n/routing';
 
 /**
@@ -20,7 +20,7 @@ export default async function FundingHero() {
   const nav = await getTranslations('nav');
   const marketing = await getFundingMarketing(locale);
   const settings = await getSiteSettings();
-  const openAccountHref = primaryContactHref(settings);
+  const openHref = openAccountHref(settings);
   const heroImage = marketing.images?.hero ?? '/figma/funding/hero.png';
 
   return (
@@ -81,9 +81,9 @@ export default async function FundingHero() {
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
-          {openAccountHref ? (
+          {openHref ? (
             <a
-              href={openAccountHref}
+              href={openHref}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}

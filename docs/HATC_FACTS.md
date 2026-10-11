@@ -25,6 +25,11 @@
 - 客戶服務電話：`(852) 2322 2888`
 - 電郵：`info@hatchk.com`
 - 香港地址：香港九龍觀塘偉業街 223 號宏利金融中心 B 座 8 樓 808A 室
+- 線上開戶（註冊）入口：`https://h5.hatcmarket.com/#/pages/auth/register/index`
+  （來源：業主提供 2026-10-11 第五十二輪。官網所有「立即開戶」按鈕一律讀
+  CMS `SiteSettings → 開戶（註冊）連結`，本條僅為已核可事實的紀錄。
+  **模擬帳戶入口仍待業主提供**，不得以此註冊連結替代——見「Account types &
+  trading conditions」。）
 
 ## Exchange membership
 

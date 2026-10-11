@@ -5,17 +5,24 @@ import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
 import {getHomeMarketing} from '@/lib/homeMarketing';
 import type {Locale} from '@/i18n/routing';
-import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
+import {
+  demoAccountHref,
+  getSiteSettings,
+  openAccountHref
+} from '@/lib/siteSettings';
 
 /**
  * final-cta-band (Figma 4:288): dark full-bleed conversion band above the footer.
- * Marketing copy = CMS with i18n fallback; open-account via SiteSettings.
+ * Marketing copy = CMS with i18n fallback; open-account via SiteSettings. The
+ * demo button follows the site-wide rule: no configured demo URL = no button,
+ * since no demo flow is open yet (docs/HATC_FACTS.md).
  */
 export default async function FinalCta() {
   const locale = (await getLocale()) as Locale;
   const copy = (await getHomeMarketing(locale)).finalCta;
   const settings = await getSiteSettings();
-  const openAccountHref = primaryContactHref(settings);
+  const openHref = openAccountHref(settings);
+  const demoHref = demoAccountHref(settings);
 
   return (
     <section className="relative overflow-hidden bg-[var(--fig-ink)]">
@@ -41,9 +48,9 @@ export default async function FinalCta() {
           {copy.body}
         </p>
         <div className="flex flex-wrap justify-center gap-4">
-          {openAccountHref ? (
+          {openHref ? (
             <a
-              href={openAccountHref}
+              href={openHref}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}
@@ -58,12 +65,16 @@ export default async function FinalCta() {
               {copy.ctaPrimary}
             </Link>
           )}
-          <Link
-            href="/register"
-            className={cn(buttonVariants({variant: 'onDark', size: 'fig'}))}
-          >
-            {copy.ctaSecondary}
-          </Link>
+          {demoHref ? (
+            <a
+              href={demoHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(buttonVariants({variant: 'onDark', size: 'fig'}))}
+            >
+              {copy.ctaSecondary}
+            </a>
+          ) : null}
         </div>
       </div>
     </section>

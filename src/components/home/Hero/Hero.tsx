@@ -4,7 +4,7 @@ import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
 import {getHomeMarketing} from '@/lib/homeMarketing';
 import type {Locale} from '@/i18n/routing';
-import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
+import {getSiteSettings, openAccountHref} from '@/lib/siteSettings';
 import HeroPriceCard from './HeroPriceCard';
 import MarketTicker from './MarketTicker';
 
@@ -22,7 +22,7 @@ export default async function Hero() {
   const copy = (await getHomeMarketing(locale)).hero;
   const common = await getTranslations('common');
   const settings = await getSiteSettings();
-  const openAccountHref = primaryContactHref(settings);
+  const openHref = openAccountHref(settings);
 
   return (
     <section className="relative overflow-hidden bg-[var(--fig-ink)] text-white">
@@ -60,9 +60,9 @@ export default async function Hero() {
           </p>
 
           <div className="mt-2 flex flex-wrap gap-4">
-            {openAccountHref ? (
+            {openHref ? (
               <a
-                href={openAccountHref}
+                href={openHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(

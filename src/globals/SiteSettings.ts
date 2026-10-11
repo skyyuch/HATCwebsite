@@ -47,6 +47,22 @@ export const SiteSettings: GlobalConfig = {
       label: adminLabel('Accounts', '帳戶入口', '账户入口'),
       fields: [
         {
+          name: 'openAccountUrl',
+          type: 'text',
+          label: adminLabel(
+            'Open-account (registration) URL',
+            '開戶（註冊）連結 (URL)',
+            '开户（注册）链接 (URL)'
+          ),
+          admin: {
+            description: adminLabel(
+              'Destination of every "Open account" button. Leave empty to fall back to the customer-service link.',
+              '全站「立即開戶」按鈕的目的地。留空＝退回使用上方的客服連結。',
+              '全站「立即开户」按钮的目的地。留空＝退回使用上方的客服链接。'
+            )
+          }
+        },
+        {
           name: 'demoAccountUrl',
           type: 'text',
           label: adminLabel(

@@ -3,7 +3,7 @@ import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
 import {getFundingMarketing} from '@/lib/fundingMarketing';
-import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
+import {getSiteSettings, openAccountHref} from '@/lib/siteSettings';
 import type {Locale} from '@/i18n/routing';
 
 /**
@@ -25,7 +25,7 @@ export default async function FundingIntro({variant}: {variant: Variant}) {
   const copy = marketing[variant];
   const steps = tSteps.raw('steps') as Step[];
   const settings = await getSiteSettings();
-  const openAccountHref = primaryContactHref(settings);
+  const openHref = openAccountHref(settings);
   const image = marketing.images?.[variant] ?? `/figma/funding/${variant}.png`;
 
   // Alternate media side so deposit (image right) and withdraw (image left) read
@@ -58,9 +58,9 @@ export default async function FundingIntro({variant}: {variant: Variant}) {
           </ol>
 
           <div>
-            {openAccountHref ? (
+            {openHref ? (
               <a
-                href={openAccountHref}
+                href={openHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}

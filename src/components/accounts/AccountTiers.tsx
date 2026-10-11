@@ -2,7 +2,7 @@ import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
-import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
+import {getSiteSettings, openAccountHref} from '@/lib/siteSettings';
 import {
   ACCOUNT_TIERS,
   CFD_PRODUCTS
@@ -23,7 +23,7 @@ export default async function AccountTiers() {
   const nav = await getTranslations('nav');
   const conditions = await getTranslations('products.conditions');
   const settings = await getSiteSettings();
-  const openAccountHref = primaryContactHref(settings);
+  const openHref = openAccountHref(settings);
 
   return (
     <section id="tiers" className="scroll-mt-20 bg-[var(--fig-light)]">
@@ -127,9 +127,9 @@ export default async function AccountTiers() {
                 </dl>
               </div>
 
-              {openAccountHref ? (
+              {openHref ? (
                 <a
-                  href={openAccountHref}
+                  href={openHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cn(

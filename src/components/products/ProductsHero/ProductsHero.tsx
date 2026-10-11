@@ -5,7 +5,7 @@ import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
 import {getProductsMarketing} from '@/lib/productsMarketing';
 import type {Locale} from '@/i18n/routing';
-import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
+import {getSiteSettings, openAccountHref} from '@/lib/siteSettings';
 
 /**
  * Products hero. Marketing copy = CMS with i18n fallback. Approved AA/008 badge
@@ -19,7 +19,7 @@ export default async function ProductsHero() {
   const common = await getTranslations('common');
   const heroV2 = await getTranslations('home.heroV2');
   const settings = await getSiteSettings();
-  const contactHref = primaryContactHref(settings);
+  const openHref = openAccountHref(settings);
 
   return (
     <section className="relative overflow-hidden bg-[var(--fig-ink)] text-white">
@@ -66,9 +66,9 @@ export default async function ProductsHero() {
         </p>
 
         <div className="mt-2 flex flex-wrap gap-4">
-          {contactHref ? (
+          {openHref ? (
             <a
-              href={contactHref}
+              href={openHref}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(

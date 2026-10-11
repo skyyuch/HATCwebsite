@@ -5,7 +5,11 @@ import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
 import {getProductsMarketing} from '@/lib/productsMarketing';
 import type {Locale} from '@/i18n/routing';
-import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
+import {
+  getSiteSettings,
+  openAccountHref,
+  primaryContactHref
+} from '@/lib/siteSettings';
 
 /**
  * Closing conversion band. Marketing copy = CMS with i18n fallback; CTAs via
@@ -17,6 +21,7 @@ export default async function ProductsCta() {
   const nav = await getTranslations('nav');
   const common = await getTranslations('common');
   const settings = await getSiteSettings();
+  const openHref = openAccountHref(settings);
   const contactHref = primaryContactHref(settings);
 
   return (
@@ -43,9 +48,9 @@ export default async function ProductsCta() {
           {copy.body}
         </p>
         <div className="flex flex-wrap justify-center gap-4">
-          {contactHref ? (
+          {openHref ? (
             <a
-              href={contactHref}
+              href={openHref}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}

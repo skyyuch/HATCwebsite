@@ -3,7 +3,7 @@ import {ArrowRight} from 'lucide-react';
 import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
-import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
+import {getSiteSettings, openAccountHref} from '@/lib/siteSettings';
 
 /** Three-step account opening (Figma 62:255). Dark section. */
 
@@ -14,7 +14,7 @@ export default async function AccountSteps() {
   const hero = await getTranslations('accounts.hero');
   const items = t.raw('items') as Step[];
   const settings = await getSiteSettings();
-  const openAccountHref = primaryContactHref(settings);
+  const openHref = openAccountHref(settings);
 
   return (
     <section className="bg-[var(--fig-ink)]">
@@ -28,9 +28,9 @@ export default async function AccountSteps() {
               {t('heading')}
             </h2>
           </div>
-          {openAccountHref ? (
+          {openHref ? (
             <a
-              href={openAccountHref}
+              href={openHref}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}

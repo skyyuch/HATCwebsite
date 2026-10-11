@@ -1,10 +1,43 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-11（第五十一輪：平台視覺統一 — 真實截圖三語上線、官方 MT5 標誌、裝置外框）
+> 最後更新：2026-10-11（第五十二輪：開戶連結進 CMS ＋ 平台視覺改走首頁視覺概念、交易端截圖重截為手機螢幕）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
 ## ▶ 下一步（下一位 agent）
+
+> **✅ 第五十二輪（2026-10-11）完成：① 開戶連結正式進 CMS（並修掉「開戶按鈕指到客服連結」的語意錯誤）；
+> ② 平台視覺照業主指示改走首頁那張圖的「概念」，交易端截圖全部重截成真正的手機螢幕。**
+>
+> 業主本輪兩句指示：「目前換的交易平台圖都很醜，不如你用首頁那張圖的概念」＋「開戶連結應該在 CMS 配置，
+> 我可以先給你一條：`https://h5.hatcmarket.com/#/pages/auth/register/index`」。
+> - **開戶連結**：新增 `SiteSettings.openAccountUrl`（Accounts 區塊）＋`openAccountHref(s)`＝
+>   `openAccountUrl → primaryContactHref → null`。**原本全站十幾處「立即開戶」都呼叫 `primaryContactHref()`**
+>   ＝開戶按鈕其實指向客服連結，現已全部改掉；`/products`、`/trading` 的 CTA band 同時有「開戶」與
+>   「聯絡我們」兩顆，**兩個解析器各算一次**。URL 記入 FACTS（僅紀錄，UI 讀 CMS）。
+>   ⚠ schema 變更 → migration `20261011_091538_add_open_account_url`（已 commit）。
+> - **順修（第四十四輪漏掉的同類問題）**：首頁 `FinalCta` 的「免費模擬帳戶」硬編 `/register`，沒套用
+>   「模擬連結未設定即不渲染」規則 → 已改讀 `demoAccountHref()`。另外本機 DB 的 `demo_account_url`
+>   先前被填成**註冊頁**（測試殘留，不是業主提供的模擬入口）→ **已清空**；模擬入口仍待業主。
+> - **平台視覺＝只換素材與呈現，架構沿用第五十一輪**（`resolvePlatformVisual()` ＋ `PlatformVisualPanel`）：
+>   - **根因是素材形狀**：舊截圖是長截圖（860×830 近正方／860×1430），外框依素材比例算 → 長成矮胖方塊。
+>     新腳本 **`scripts/capture-terminal.mjs`**（CDP；**必須先點「日K」**才有數據、依「賣出」列上緣裁掉
+>     買賣價列）以**手機視窗 430×932 @2x** 重截 → 每檔＝一個手機螢幕（**860×1744，1:2.03**）。
+>   - 三檔對應**三個核可產品**（金／銀／人民幣公斤條），hero 用公斤條避免同頁重複。
+>     **`terminal-home.png` 退役**：遊客首頁下半是第三方財經資訊流（A 股公告／國際新聞）。
+>   - **呈現**：深藍景深漸層＋金色細線幾何（**不用**浮動 3D 金塊／發光金體——設計紅線）＋手機外框
+>     由面板寬度決定大小、**刻意切出面板下緣**（素材已在買賣價列上方裁過，切下緣不隱藏任何東西）。
+> - **🚩 沒有照抄業主給的「首頁那張圖」本體**：`public/figma/raw/raw_3.png` 是 Figma 的 AI 算圖
+>   （假 MT5 畫面＋浮動金塊），搬到平台頁等於復活第五十一輪剛退役的假截圖。只借呈現概念。
+>   ⚠ **該圖目前仍在首頁 `MT5Showcase`**（Figma 核可佔位）→ 與「站上不放假平台截圖」相衝，**待業主決定**
+>   是否也換成真實截圖（詳見下方「待業主」）。
+> - **文案順修**：`platforms.detail.bullets[0]`「專注黃金 / 白銀 CFD」→「專注貴金屬 CFD」並補人民幣公斤條
+>   （三語，對齊 FACTS 三個 CFD 品種）。i18n 仍 **664 鍵**。
+> - **驗收**：`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／`i18n:check` 664 鍵／
+>   `migrate:check` 無漂移／`build` 綠且頁面維持 ● SSG。`npm start` 實測三語 `/platforms`、`/accounts`、
+>   `/funding`、`/products`、`/trading` 皆 200；MT5 分頁以 CDP 點擊驗過；桌機 1440／平板 834／手機 390 截圖檢查；
+>   另以 `DATABASE_URI=` 空值重建驗過降級路徑（0 個 h5 連結、8 個 `/register` fallback、模擬按鈕不渲染）。
+> - 細節見下方「🟢 第五十二輪」。
 
 > **✅ 第五十一輪（2026-10-11）完成：平台視覺全面統一 —— `/platforms` 與 `/accounts` 的平台圖現在
 > 三語都有圖，且全部是「誠實可用」的素材（自家真實交易端截圖 ／ 官方 MT5 標誌），通用範本裝置圖全數退役。**
@@ -390,6 +423,103 @@
 2. **第十八輪 `/trading` 暫緩 UI／驗收項**（多數需業主拍板）：淺色系是否推廣、帳戶分級真偽、
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
+
+## 🟢 第五十二輪（實作，2026-10-11）：開戶連結進 CMS ＋ 平台視覺改走首頁視覺概念
+
+### 業主決策
+
+- 「目前換的交易平台圖都很醜，不如你用首頁那張圖的概念。」
+- 「開戶連結應該在 CMS 配置，我可以先給你一條：`https://h5.hatcmarket.com/#/pages/auth/register/index`」。
+
+### 一、開戶連結（operational link 治理補完）
+
+**發現的既有錯誤**：全站十幾處「立即開戶」CTA 都呼叫 `primaryContactHref()`，也就是**開戶按鈕實際指向
+客服連結**（WhatsApp／線上客服／Email／電話），都沒設定時才退到 `/register` 佔位頁。業主給的註冊頁正好
+補上這個缺口。
+
+- `SiteSettings` → Accounts 區塊新增 **`openAccountUrl`**（`NEXT_PUBLIC_OPEN_ACCOUNT_URL` 為 env fallback）。
+- `lib/siteSettings.ts` 新增 **`openAccountHref(s)`** ＝ `openAccountUrl → primaryContactHref(s) → null`
+  （保留舊行為當 fallback，呼叫端仍自備 `/register`）。
+- 改用 `openAccountHref()` 的 11 個元件：`Header`（按鈕＋mega banner）／`home/Hero`／`home/FinalCta`／
+  `accounts/{AccountsHero,AccountTiers,AccountSteps,AccountsCta}`／`funding/{FundingHero,FundingIntro,FundingCta}`／
+  `platforms/PlatformTypes`；`products/ProductsHero` 的唯一 CTA 亦是開戶。
+- **同頁兩顆按鈕的頁面必須兩個解析器各算一次**：`products/ProductsCta`、`trading/TradingCta` 的「開戶」用
+  `openAccountHref`、「聯絡我們」維持 `primaryContactHref`。純客服的 `ClientSupport`／`TradingHero`／
+  `AboutCta` 不動。
+- URL 寫入 `HATC_FACTS.md`「Official contact & website」，並註明**僅為紀錄、UI 一律讀 CMS**，且
+  **不得拿註冊連結充當模擬帳戶入口**。
+- ⚠ **schema 變更** → `npm run generate:types` ＋ migration **`20261011_091538_add_open_account_url`**
+  （`.ts`＋`.json`＋`index.ts` 已一起 commit）。本機 DB 的 `open_account_url` 已用 psql 設好；
+  **正式站要在 `/admin` 填一次**。
+
+### 二、模擬帳戶按鈕的兩個漏洞（順修）
+
+- `home/FinalCta` 的次要 CTA「免費模擬帳戶」**硬編 `/register`**，完全沒套用第四十四輪的
+  「`demoAccountUrl` 未設定就不渲染」規則 → 已改讀 `demoAccountHref()`，未設定即不渲染
+  （與 `/accounts`、`/platforms`、`/funding` 一致）。
+- 本機 DB 的 `site_settings.demo_account_url` 先前被填成**註冊頁**（第五十一輪測試殘留，非業主提供）
+  → **已清空**。否則「申請模擬帳戶」會把人送到開戶註冊頁，而 FACTS 明載模擬入口待業主提供。
+
+### 三、平台視覺（素材 ＋ 呈現；架構沿用第五十一輪）
+
+**「醜」的三個根因**（實機截圖比對後確認）：
+
+| 根因 | 說明 |
+|---|---|
+| 素材形狀 | 舊檔是**長截圖**（`terminal-home` 860×830 近正方、chart 860×1430 ＝1:1.66），而外框**依素材比例**算 → 長成矮胖方塊，像平板不像手機 |
+| 面板空洞 | 裝置置中且小，四周是大片深色＋細格線，構圖沒有重心 |
+| 明暗衝突 | 交易端是**淺色 navy/白底**（業主 2026-09-22 拍板的交易端品牌色），塞進深色金色面板裡對比突兀 |
+
+**落地**
+
+- **`scripts/capture-terminal.mjs`（新增，進倉庫）**：CDP 驅動重截，重點三件事——
+  (a) **必須先點「日K」**：預設「分時」常常「暂无图表数据」，而且開高低與現價互相矛盾
+  （實測 今開 4616.50 對現價 4194.49）；切到日K後數字自洽。
+  (b) **依「賣出」列上緣裁切**（找不到就直接拋錯，拒絕輸出未裁切的檔）——遊客點差 32 與核可分級點差不符。
+  (c) **hash-only 導覽不會重掛 uni-app router** → 每張之間先 `about:blank`，否則三張都會是第一個品種；
+  另外路由參數是 **`symbolCode`＋`symbolName`**（`symbol=` 只有黃金會動，因為它是預設值，很容易誤判成功）。
+- **素材**：手機視窗 **430×932 @2x** → 每檔＝一個手機螢幕 **860×1744（1:2.03）**。
+  `terminal-gold-chart`（XAUUSD 4194.49）／`terminal-silver-chart`（XAGUSD 60.800）／
+  **`terminal-kilobar-chart`（RKGCNH 902.14，新增）**。hero 改用公斤條，使 `/platforms` 三張圖＝三個核可產品。
+  **`terminal-home.png` 退役**：遊客首頁下半是第三方財經資訊流（A 股公告速遞／國際新聞），與 HATC 產品無關。
+- **`PlatformVisualPanel` 改版**（三處共用，`/platforms` hero＋分頁、`/accounts` 卡片）：
+  深藍景深漸層（gold wash ＋ navy radial）＋**金色細線幾何**（旋轉方框 outline，低透明度）＋細格線降到 0.07；
+  手機外框**由面板寬度決定大小**（`w-[70%] sm:w-[64%] max-w-[340px]`）、`top-[7%]`、**刻意切出面板下緣**。
+  素材已在買賣價列上方裁過，所以切下緣**不隱藏任何東西**，純粹是 product-shot 構圖。
+- **刻意沒做的事**：業主給的「首頁那張圖」＝`public/figma/raw/raw_3.png` 是 **Figma AI 算圖**
+  （螢幕裡是假的 MT5 介面與假報價，畫面上還有**浮動金色立體塊**＝DESIGN_DIRECTION 避免清單）。
+  搬到平台頁等於復活第五十一輪剛退役的假截圖 → **只借呈現概念**（深藍景深＋金色幾何＋立體裝置）。
+- **沒做多裝置（laptop＋tablet＋phone）**：交易端 H5 在 WEB 鎖 `max-width:500px`，**不存在桌機版 UI**，
+  筆電外框裡沒有誠實的內容可放。真要多裝置得等 MT5 桌機版真實截圖（需業主測試帳號）。
+
+### 四、文案順修
+
+- `platforms.detail.bullets[0]`「專注黃金 / 白銀 CFD」→「**專注貴金屬 CFD**」，desc 補**人民幣公斤條**
+  （三語）。理由同第四十五輪 `/trading`：FACTS 的 CFD 標的是三個品種，列兩個屬資訊不全。
+
+### 驗證
+
+- `lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning；新腳本的 `no-unused-expressions` 已修）／
+  `tsc --noEmit` 乾淨／`i18n:check` 三語 **664 鍵**（只改值）／`migrate:check` 無漂移／`build` 綠、頁面 ● SSG。
+- `npm start`（port 3120）：三語 `/platforms`、`/accounts`、`/funding`、`/products`、`/trading` 全 200；
+  三語 `/accounts` 皆含開戶連結；**MT5 分頁以 CDP 點擊驗過**（`[role=tab]` → `aria-selected` ＋ `img src`
+  依序為 gold／silver／MT5 logo）。⚠ 用 CDP 截區塊時要先 `scrollIntoView`，`clip` 超出 viewport 會截到白底。
+- 桌機 1440／平板 834／手機 390 × 三語截圖逐一看過。
+- **降級路徑**：`DATABASE_URI=` 空值重建 → `/accounts` HTML **0 個 h5 連結、8 個 `/register` fallback、
+  模擬按鈕不渲染**（「申請模擬帳戶」只出現在 FAQ 文案與 RSC payload，不是按鈕）。
+
+### 待業主 / 下一棒
+
+- **模擬帳戶申請入口**：給了才會出現模擬按鈕（目前三頁都不渲染，首頁收尾 CTA 也因此只剩一顆按鈕）。
+- **登入連結**：Header「登入」仍指 `/account`「即將推出」佔位頁。交易端有登入頁
+  （`#/pages/auth/login/index`），但這屬 operational 連結＝**業主提供後**比照開戶加 CMS 欄位，不自行推導。
+- **首頁 `MT5Showcase` 的 `raw_3.png`**：AI 算圖假 MT5 畫面＋浮動金塊，與「站上不放假平台截圖」紅線相衝。
+  要換成真實截圖嗎？（換法：改用 `PlatformVisualPanel`，但首頁該卡是橫式 584×380，版型要調。）
+- **HATC MT5 伺服器測試帳號** → 把官方標誌換成真實 MT5 截圖（第五十一輪起的待辦）。
+- 生產遊客交易組配好產品後，**改用生產環境重截**交易端截圖（現素材來自 UAT；畫面本身不含網域）。
+- 第五十／五十一輪留下的候選仍在：Footer「MT5平台」欄是否改名／改指 `/platforms`、`/trading` 合作夥伴
+  標誌佔位、`--trd-gold #c9a84c` 是否統一成 `#d4af37`、`/products/all` 的最低手數／手續費／執行方式、
+  上線前檢查 CMS global `home-page` 是否存有舊文案。
 
 ## 🟢 第五十一輪（實作，2026-10-11）：平台視覺統一（真實截圖三語 ＋ 官方 MT5 標誌 ＋ 裝置外框）
 
