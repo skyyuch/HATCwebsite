@@ -7,7 +7,7 @@ import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
 import type {TradingPlatform} from '@/lib/tradingPlatforms';
 import PlatformVisualPanel from './PlatformVisualPanel';
-import type {PlatformVisual} from './platformVisuals';
+import {visualNote, type PlatformVisual, type VisualNote} from './platformVisuals';
 
 type Bullet = {title: string; desc: string};
 
@@ -21,7 +21,7 @@ export default function PlatformTabsClient({
   platforms,
   visuals,
   bullets,
-  screenshotNote,
+  notes,
   ctaLabel,
   ctaHref,
   ctaExternal
@@ -29,7 +29,7 @@ export default function PlatformTabsClient({
   platforms: TradingPlatform[];
   visuals: (PlatformVisual | null)[];
   bullets: Bullet[];
-  screenshotNote: string;
+  notes: Record<Exclude<VisualNote, null>, string>;
   ctaLabel: string;
   ctaHref: string;
   ctaExternal: boolean;
@@ -40,7 +40,8 @@ export default function PlatformTabsClient({
 
   if (!current) return null;
 
-  const isPortrait = visual?.kind === 'screenshot';
+  const isPortrait = visual?.kind === 'phone';
+  const noteKey = visualNote(visual);
 
   return (
     <div className="flex flex-col gap-12">
@@ -80,14 +81,14 @@ export default function PlatformTabsClient({
             alt={current.name}
             className={cn(
               'rounded-[16px] border border-[var(--fig-border)]',
-              // Terminal captures are phone-shaped, so they need a taller frame
-              // to stay readable; a logo panel does not.
+              // A phone capture is portrait, so it needs a taller panel to stay
+              // readable; browser and monitor frames are landscape.
               isPortrait ? 'h-[460px] sm:h-[620px]' : 'h-[360px] sm:h-[440px]'
             )}
           />
-          {isPortrait ? (
+          {noteKey ? (
             <p className="text-xs leading-[1.6] text-[var(--fig-text-muted)]">
-              {screenshotNote}
+              {notes[noteKey]}
             </p>
           ) : null}
         </div>

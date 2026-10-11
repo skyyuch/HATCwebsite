@@ -5,16 +5,20 @@ import {buttonVariants} from '@/components/ui/button';
 import {getPlatformsMarketing} from '@/lib/platformsMarketing';
 import {demoAccountHref, getSiteSettings} from '@/lib/siteSettings';
 import PlatformVisualPanel from './PlatformVisualPanel';
-import {TERMINAL_HERO, type PlatformVisual} from './platformVisuals';
+import {
+  TERMINAL_HERO,
+  visualNote,
+  type PlatformVisual
+} from './platformVisuals';
 
 /**
  * Dark hero for `/platforms` (Figma 92:4). Shares the homepage dark/gold system;
  * the Figma orange accent is mapped to HATC gold.
  *
  * The hero picture follows the same precedence as the rest of the site: an
- * owner upload from the CMS, otherwise the real terminal home screen. The
- * primary CTA scrolls to platform-types; the demo CTA only renders once the
- * owner configures a demo-account URL in the CMS.
+ * owner upload from the CMS, otherwise real captures of the web terminal and
+ * the app together. The primary CTA scrolls to platform-types; the demo CTA
+ * only renders once the owner configures a demo-account URL in the CMS.
  */
 export default async function PlatformsHero() {
   const t = await getTranslations('platforms.hero');
@@ -25,7 +29,8 @@ export default async function PlatformsHero() {
   const {heroImage} = await getPlatformsMarketing();
   const visual: PlatformVisual = heroImage
     ? {kind: 'upload', src: heroImage}
-    : {kind: 'screenshot', asset: TERMINAL_HERO};
+    : {kind: 'combo', ...TERMINAL_HERO};
+  const note = visualNote(visual);
 
   return (
     <section className="relative overflow-hidden bg-[var(--fig-ink)] text-white">
@@ -96,11 +101,11 @@ export default async function PlatformsHero() {
             label={t('breadcrumb')}
             alt={t('breadcrumb')}
             priority
-            className="h-[380px] rounded-[16px] border border-[var(--fig-border)] sm:h-[460px]"
+            className="h-[300px] rounded-[16px] border border-[var(--fig-border)] sm:h-[380px] lg:h-[420px]"
           />
-          {visual.kind === 'screenshot' ? (
+          {note ? (
             <p className="text-xs leading-[1.6] text-[var(--fig-text-dim)]">
-              {terminal('screenshotNote')}
+              {terminal(note)}
             </p>
           ) : null}
         </div>

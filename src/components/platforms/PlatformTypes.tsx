@@ -15,8 +15,9 @@ type Bullet = {title: string; desc: string};
  * converged to gold/silver and softened per governance. The detail CTA is an
  * operational open-account link resolved via CMS (falls back to /register).
  *
- * Panel images follow the shared precedence in `platformVisuals.ts`; the
- * point-in-time caption only shows for real terminal captures.
+ * Panel images follow the shared precedence in `platformVisuals.ts`, which also
+ * decides which caption the picture needs (a point-in-time note for HATC's own
+ * captures, a "this is the vendor's demo screen" note for MetaTrader 5).
  */
 export default async function PlatformTypes() {
   const locale = (await getLocale()) as Locale;
@@ -44,7 +45,10 @@ export default async function PlatformTypes() {
           platforms={platforms}
           visuals={visuals}
           bullets={bullets}
-          screenshotNote={t('screenshotNote')}
+          notes={{
+            screenshotNote: t('screenshotNote'),
+            vendorNote: t('vendorNote')
+          }}
           ctaLabel={nav('openAccount')}
           ctaHref={openHref ?? '/register'}
           ctaExternal={Boolean(openHref)}

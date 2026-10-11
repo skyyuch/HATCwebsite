@@ -1,7 +1,11 @@
 import {getLocale, getTranslations} from 'next-intl/server';
 import SectionTitle from '@/components/home/SectionTitle';
 import PlatformVisualPanel from '@/components/platforms/PlatformVisualPanel';
-import {resolvePlatformVisual} from '@/components/platforms/platformVisuals';
+import {
+  resolvePlatformVisual,
+  visualNote,
+  type VisualNote
+} from '@/components/platforms/platformVisuals';
 import {getTradingPlatforms} from '@/lib/tradingPlatforms';
 import type {Locale} from '@/i18n/routing';
 
@@ -13,11 +17,10 @@ import type {Locale} from '@/i18n/routing';
  * (HATC does not offer it, owner 2026-10-11).
  *
  * The card visual follows the shared precedence in `resolvePlatformVisual`:
- * CMS upload → real terminal capture → official brand mark → branded panel.
- * Generic stock device renders are deliberately never used, so a card either
- * shows HATC's own terminal, the platform's own logo, or no image at all; the
- * point-in-time caption (platforms.types.screenshotNote) appears once when any
- * capture is on screen.
+ * CMS upload → real capture of HATC's terminal → the platform vendor's own
+ * screen → branded panel. Generic stock device renders are deliberately never
+ * used. Captions are driven by `visualNote`, and each one is printed at most
+ * once below the grid.
  */
 
 export default async function AccountPlatforms() {
@@ -30,7 +33,9 @@ export default async function AccountPlatforms() {
     platform,
     visual: resolvePlatformVisual(platform)
   }));
-  const hasCapture = cards.some(({visual}) => visual?.kind === 'screenshot');
+  const noteKeys = ['screenshotNote', 'vendorNote'].filter((key) =>
+    cards.some(({visual}) => visualNote(visual) === key)
+  ) as Exclude<VisualNote, null>[];
 
   return (
     <section className="bg-white">
@@ -62,7 +67,9 @@ export default async function AccountPlatforms() {
         </div>
 
         <div className="flex flex-col gap-2 text-xs leading-[1.7] text-[var(--fig-text-muted)]">
-          {hasCapture ? <p>{terminal('screenshotNote')}</p> : null}
+          {noteKeys.map((key) => (
+            <p key={key}>{terminal(key)}</p>
+          ))}
           <p>{t('note')}</p>
         </div>
       </div>

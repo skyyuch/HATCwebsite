@@ -6,8 +6,12 @@
  * assets in `src/components/platforms/platformVisuals.ts` — read them before
  * changing anything here. In short:
  *
- * - one phone screen per file (430×932 CSS @2x), so the device frame on the
- *   site gets believable proportions;
+ * - phone jobs are one whole phone screen (430×932 CSS @2x) and desktop jobs
+ *   are one browser viewport (1000×820), so the phone and browser frames on the
+ *   site both get believable proportions. The H5 build is capped at 500px, so a
+ *   desktop capture is the app column centred on the page — that is genuinely
+ *   what the web terminal looks like, and it is the only honest way to tell the
+ *   web terminal and the app apart in a picture;
  * - the buy/sell action bar is clipped away, because the terminal's guest
  *   spread contradicts the approved per-tier spreads in docs/HATC_FACTS.md;
  * - the daily-candle (日K) tab is selected first: the default 分时 view often
@@ -33,8 +37,9 @@ import {writeFileSync} from 'node:fs';
 const TERMINAL_URL = process.env.TERMINAL_URL;
 const PORT = process.env.CDP_PORT || '9333';
 const OUT_DIR = process.env.OUT_DIR || 'public/platforms';
-const VIEW_W = 430;
-const VIEW_H = 932;
+
+const PHONE = {width: 430, height: 932, mobile: true};
+const DESKTOP = {width: 1000, height: 820, mobile: false};
 
 if (!TERMINAL_URL) {
   console.error('TERMINAL_URL is required (host of the terminal H5 build).');
@@ -43,9 +48,20 @@ if (!TERMINAL_URL) {
 
 /** Only the approved CFD products — see the file header. */
 const JOBS = [
-  {symbol: 'XAUUSD', name: '现货黄金', out: 'terminal-gold-chart.png'},
-  {symbol: 'XAGUSD', name: '现货白银', out: 'terminal-silver-chart.png'},
-  {symbol: 'RKGCNH', name: '人民币公斤条', out: 'terminal-kilobar-chart.png'}
+  {symbol: 'XAUUSD', name: '现货黄金', out: 'terminal-gold-chart.png', view: PHONE},
+  {
+    symbol: 'RKGCNH',
+    name: '人民币公斤条',
+    out: 'terminal-kilobar-chart.png',
+    view: PHONE
+  },
+  {symbol: 'XAUUSD', name: '现货黄金', out: 'terminal-web-gold.png', view: DESKTOP},
+  {
+    symbol: 'XAGUSD',
+    name: '现货白银',
+    out: 'terminal-web-silver.png',
+    view: DESKTOP
+  }
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -96,7 +112,14 @@ const evaluate = (cdp, expression) =>
     .send('Runtime.evaluate', {expression, returnByValue: true, awaitPromise: true})
     .then((r) => r.result?.value);
 
-async function capture(cdp, {symbol, name, out}) {
+async function capture(cdp, {symbol, name, out, view}) {
+  await cdp.send('Emulation.setDeviceMetricsOverride', {
+    width: view.width,
+    height: view.height,
+    deviceScaleFactor: 2,
+    mobile: view.mobile
+  });
+
   const url = `${TERMINAL_URL.replace(/\/$/, '')}/#/pages/market/detail/index?symbolCode=${symbol}&symbolName=${encodeURIComponent(name)}`;
 
   // Hash-only navigation does not remount the uni-app router, so force a full
@@ -142,24 +165,20 @@ async function capture(cdp, {symbol, name, out}) {
   const {data} = await cdp.send('Page.captureScreenshot', {
     format: 'png',
     captureBeyondViewport: false,
-    clip: {x: 0, y: 0, width: VIEW_W, height: barTop - 8, scale: 1}
+    clip: {x: 0, y: 0, width: view.width, height: barTop - 8, scale: 1}
   });
 
   const path = `${OUT_DIR}/${out}`;
   writeFileSync(path, Buffer.from(data, 'base64'));
-  console.log(`${path}: ${VIEW_W}×${barTop - 8} CSS @2x (bar clipped at ${barTop})`);
+  console.log(
+    `${path}: ${view.width}×${barTop - 8} CSS @2x (bar clipped at ${barTop})`
+  );
 }
 
 const cdp = connect(await debuggerUrl());
 await cdp.ready;
 await cdp.send('Page.enable');
 await cdp.send('Runtime.enable');
-await cdp.send('Emulation.setDeviceMetricsOverride', {
-  width: VIEW_W,
-  height: VIEW_H,
-  deviceScaleFactor: 2,
-  mobile: true
-});
 
 for (const job of JOBS) await capture(cdp, job);
 

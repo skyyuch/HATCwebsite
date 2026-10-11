@@ -27,11 +27,15 @@
   業主確認之平台，Payload `trading-platforms`＋faqs `platforms`）
   - 平台圖（`/platforms` hero＋分頁、`/accounts` 卡片）一律經
     `components/platforms/{platformVisuals.ts,PlatformVisualPanel.tsx}`：
-    CMS 上傳 → HATC 交易端真實截圖（三語，第五十一輪）→ 官方 MetaTrader 5 標誌 → 自家品牌面板。
-    通用範本裝置圖已退役；**永不放假截圖**。MT5 的真實截圖待業主提供測試帳號。
-  - 截圖素材（第五十二輪重截）＝**一個手機螢幕**（430×932 @2x，860×1744），分別為金／銀／人民幣
-    公斤條的日K 畫面，由 `scripts/capture-terminal.mjs` 產生（截圖紅線寫在該檔與
-    `platformVisuals.ts` 檔頭）。呈現＝深藍景深＋金色細線幾何＋手機外框切出面板下緣。
+    CMS 上傳 → HATC 交易端真實截圖（三語，第五十一輪）→ 平台供應商官方畫面（僅 MetaTrader 5，
+    第五十二輪業主決定）→ 自家品牌面板。通用範本裝置圖與 AI 算圖**永不使用**。
+  - 截圖素材由 `scripts/capture-terminal.mjs` 產生（截圖紅線寫在該檔與 `platformVisuals.ts` 檔頭）：
+    手機檔＝一個手機螢幕（430×932 @2x），桌機檔＝一個瀏覽器視窗（1000×820 @2x，交易端無桌機版版面，
+    所以就是 500px 欄置中的實況）。
+  - 外框依來源決定：`phone`→手機、`browser`→瀏覽器視窗（位址列印核可網域 `h5.hatcmarket.com`）、
+    `combo`→hero 的瀏覽器＋手機交疊、`vendor`→螢幕薄邊。呈現＝深藍景深＋金色細線幾何＋切出面板下緣。
+  - 註記由 `visualNote()` 決定：自家截圖印 `platforms.types.screenshotNote`，供應商示範畫面印
+    `platforms.types.vendorNote`（說明是示範帳戶、並點明 HATC 只提供黃金／白銀／人民幣公斤條）。
 - 最新消息 ✅（`/[locale]/news`，Payload `home-activities`；無內容時中性空狀態）
 - 黃金學院 ✅（`/[locale]/academy` 列表〔Figma `98:4`：navy/gold hero＋分類篩選 sidebar
   ＋排序＋分頁＋電子報誠實佔位〕＋`/[locale]/academy/[slug]` 詳情；Payload `academy-articles`

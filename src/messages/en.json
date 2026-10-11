@@ -689,6 +689,7 @@
       "heading": "Full control — choose your trading platform",
       "subheading": "A multi-platform ecosystem tailored to traders of every experience level and strategy.",
       "screenshotNote": "An actual screen from the HATC terminal; the quotes shown were the market prices at the time of capture and are for reference only.",
+      "vendorNote": "MetaTrader 5 is a third-party platform; the picture is the vendor’s own demo screen (a demo account that also shows other markets the software supports). HATC’s tradable products are gold, silver and the RMB kilobar.",
       "items": [
         {
           "name": "HATC trading app",

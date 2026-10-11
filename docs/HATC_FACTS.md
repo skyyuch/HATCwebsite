@@ -30,6 +30,8 @@
   CMS `SiteSettings → 開戶（註冊）連結`，本條僅為已核可事實的紀錄。
   **模擬帳戶入口仍待業主提供**，不得以此註冊連結替代——見「Account types &
   trading conditions」。）
+- 網頁交易端網域：`h5.hatcmarket.com`（同上來源。`/platforms`、`/accounts` 的
+  瀏覽器外框示意圖以此網域作為位址列文字；**不得顯示測試／UAT 網域**。）
 
 ## Exchange membership
 

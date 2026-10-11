@@ -22,11 +22,14 @@
 > - **平台視覺＝只換素材與呈現，架構沿用第五十一輪**（`resolvePlatformVisual()` ＋ `PlatformVisualPanel`）：
 >   - **根因是素材形狀**：舊截圖是長截圖（860×830 近正方／860×1430），外框依素材比例算 → 長成矮胖方塊。
 >     新腳本 **`scripts/capture-terminal.mjs`**（CDP；**必須先點「日K」**才有數據、依「賣出」列上緣裁掉
->     買賣價列）以**手機視窗 430×932 @2x** 重截 → 每檔＝一個手機螢幕（**860×1744，1:2.03**）。
->   - 三檔對應**三個核可產品**（金／銀／人民幣公斤條），hero 用公斤條避免同頁重複。
+>     買賣價列）重截 → 手機檔＝一個手機螢幕（**860×1744，1:2.03**）。
 >     **`terminal-home.png` 退役**：遊客首頁下半是第三方財經資訊流（A 股公告／國際新聞）。
->   - **呈現**：深藍景深漸層＋金色細線幾何（**不用**浮動 3D 金塊／發光金體——設計紅線）＋手機外框
+>   - **呈現**：深藍景深漸層＋金色細線幾何（**不用**浮動 3D 金塊／發光金體——設計紅線）＋裝置外框
 >     由面板寬度決定大小、**刻意切出面板下緣**（素材已在買賣價列上方裁過，切下緣不隱藏任何東西）。
+> - **同輪追加（業主再指示）**：「MT5 圖用這張」＋「不要全部用同一張圖，網頁端跟 app 有點差異化」
+>   → **三種裝置外框**（手機／瀏覽器視窗／螢幕）＋ **MT5 改用供應商官方畫面**，業主**明示放寬**
+>   「不得呈現外匯/美股」**僅限該第三方示範圖**，並以新的 `platforms.types.vendorNote` 交代。
+>   詳見下方「🟢 第五十二輪」第三、五節。
 > - **🚩 沒有照抄業主給的「首頁那張圖」本體**：`public/figma/raw/raw_3.png` 是 Figma 的 AI 算圖
 >   （假 MT5 畫面＋浮動金塊），搬到平台頁等於復活第五十一輪剛退役的假截圖。只借呈現概念。
 >   ⚠ **該圖目前仍在首頁 `MT5Showcase`**（Figma 核可佔位）→ 與「站上不放假平台截圖」相衝，**待業主決定**
@@ -478,13 +481,12 @@
   (b) **依「賣出」列上緣裁切**（找不到就直接拋錯，拒絕輸出未裁切的檔）——遊客點差 32 與核可分級點差不符。
   (c) **hash-only 導覽不會重掛 uni-app router** → 每張之間先 `about:blank`，否則三張都會是第一個品種；
   另外路由參數是 **`symbolCode`＋`symbolName`**（`symbol=` 只有黃金會動，因為它是預設值，很容易誤判成功）。
-- **素材**：手機視窗 **430×932 @2x** → 每檔＝一個手機螢幕 **860×1744（1:2.03）**。
-  `terminal-gold-chart`（XAUUSD 4194.49）／`terminal-silver-chart`（XAGUSD 60.800）／
-  **`terminal-kilobar-chart`（RKGCNH 902.14，新增）**。hero 改用公斤條，使 `/platforms` 三張圖＝三個核可產品。
+- **素材**：手機視窗 **430×932 @2x** → 手機檔＝一個手機螢幕 **860×1744（1:2.03）**；桌機視窗
+  **1000×820 @2x** → 瀏覽器檔 **2000×1520**（見第五節）。
   **`terminal-home.png` 退役**：遊客首頁下半是第三方財經資訊流（A 股公告速遞／國際新聞），與 HATC 產品無關。
 - **`PlatformVisualPanel` 改版**（三處共用，`/platforms` hero＋分頁、`/accounts` 卡片）：
   深藍景深漸層（gold wash ＋ navy radial）＋**金色細線幾何**（旋轉方框 outline，低透明度）＋細格線降到 0.07；
-  手機外框**由面板寬度決定大小**（`w-[70%] sm:w-[64%] max-w-[340px]`）、`top-[7%]`、**刻意切出面板下緣**。
+  裝置外框**由面板寬度決定大小**、**刻意切出面板下緣**。
   素材已在買賣價列上方裁過，所以切下緣**不隱藏任何東西**，純粹是 product-shot 構圖。
 - **刻意沒做的事**：業主給的「首頁那張圖」＝`public/figma/raw/raw_3.png` 是 **Figma AI 算圖**
   （螢幕裡是假的 MT5 介面與假報價，畫面上還有**浮動金色立體塊**＝DESIGN_DIRECTION 避免清單）。
@@ -497,14 +499,72 @@
 - `platforms.detail.bullets[0]`「專注黃金 / 白銀 CFD」→「**專注貴金屬 CFD**」，desc 補**人民幣公斤條**
   （三語）。理由同第四十五輪 `/trading`：FACTS 的 CFD 標的是三個品種，列兩個屬資訊不全。
 
+### 五、同輪追加：三種裝置外框 ＋ MT5 改用供應商官方畫面
+
+業主看過上面的成果後再給兩句指示：「MT5 圖用 `~/Downloads/MT5.png`」＋「不要全部用同一張圖，你做一做
+圖吧，網頁端跟 app 有點差異化」。
+
+**① MT5：業主明示放寬一條紅線，範圍限定**
+
+那張圖是 MetaQuotes 官網（metatrader5.com）的 MT5 桌機截圖，左側 Market Watch 與三個圖表視窗是**供應商
+示範帳戶的外匯與美股**（EURUSD／GBPUSD／USDCHF／USDJPY／USDCNH／MSFT／AMD／INTC／NVDA／EURJPY），
+下方成交紀錄也是外匯。這正是第五十一輪不採用 MetaQuotes 截圖的原因。
+
+處理方式：**先把問題講清楚並附上「只留 XAUUSD 黃金視窗」的裁切版**（918×518，畫面乾淨）讓業主二選一，
+**業主選用完整畫面**，即明示同意**就這張第三方平台示範圖**放寬「不得呈現外匯/美股」。
+
+- **放寬只適用這張圖**。產品清單、條件表、跑馬燈、文案一律仍只有黃金／白銀／人民幣公斤條。
+- **凡顯示該圖的版面必須印 `platforms.types.vendorNote`**（新鍵，三語）：說明這是平台供應商的示範帳戶
+  畫面、並點明 HATC 提供的三個產品。該圖黃金價 **5086** 與現價 4194 差近 900 點，也靠這段說明交代。
+
+**② 差異化＝不同裝置外框，不是不同濾鏡**
+
+交易端 H5 鎖 `max-width:500px`，**沒有桌機版版面**（實測 1440 寬＝500px 欄置中、兩側全白），所以
+「網頁端」唯一誠實的拍法就是把**桌機瀏覽器視窗的實況**截下來，再用**我們自己的瀏覽器外框**包起來
+（紅綠燈點＋位址列印 `h5.hatcmarket.com`＝FACTS 已核可網域；**截圖本身不含任何網域**，所以來源網域
+不可能外洩）。三種 kind 對三種外框：
+
+| kind | 素材 | 外框 | 註記 |
+|---|---|---|---|
+| `phone` | `terminal-gold-chart.png`（手機・金） | 手機外框 | `screenshotNote` |
+| `browser` | `terminal-web-silver.png`（桌機・銀） | 瀏覽器視窗 | `screenshotNote` |
+| `combo`（hero） | `terminal-web-gold.png` ＋ `terminal-kilobar-chart.png` | 瀏覽器＋手機交疊 | `screenshotNote` |
+| `vendor` | `mt5-desktop.png`（業主提供） | 螢幕薄邊（MT5 自帶視窗列，不加第二層標題列） | `vendorNote` |
+| `upload` | CMS 上傳 | 無外框（比例未知） | 無 |
+
+每個檔案在站上**只出現一次**，三個核可產品都露臉。**退役 `terminal-silver-chart.png`**（手機・銀，
+已無使用者）與 **`metatrader5-logo-white.png`**（MT5 有截圖後 `brand` kind 成死碼，一併移除）。
+
+**③ 程式變更**
+
+- `platformVisuals.ts`：kind 由 `screenshot/brand/upload` 改為 **`phone`/`browser`/`combo`/`vendor`/`upload`**；
+  新增 `PLATFORM_SCREENS`（per `panelLabel`，分 phone/desktop）、`VENDOR_SCREENS`、`TERMINAL_HERO`
+  （`{desktop, phone}`）、**`visualNote()`**（決定印哪段註記）、`WEB_TERMINAL_HOST`。
+- `PlatformVisualPanel.tsx`：抽出 `Screen`／`PhoneFrame`／`BrowserFrame`／`MonitorFrame`。
+- `PlatformTabsClient` 收 `notes` 物件（兩段註記）而非單一字串；`AccountPlatforms` 依 `visualNote`
+  收斂註記，**每段最多印一次**。
+- `scripts/capture-terminal.mjs`：JOBS 帶 `view`（PHONE／DESKTOP），每張自己設 device metrics。
+- i18n 新增 `platforms.types.vendorNote` → 三語 **665 鍵**。
+
+**④ 被我否決的素材（下一棒別再試）**
+
+- 遊客**「自選／行情」清單**：剛好只有黃金/白銀、沒有外匯，看起來很適合，但**點差 38／32 直接印在
+  欄位裡**，與核可的分級點差衝突，且無法只裁掉中間那一欄。
+- 遊客**「合約屬性」分頁**：手數 0.01-20、最小掛單距離 200點、交易時段 06:05-24:00、隔夜利息——
+  **都不是核可事實**（FACTS 的時段是 06:00–次日 04:45，手數仍「將另行公佈」）。
+- **公斤條的桌機 K 線**只有 7 根蠟燭（資料稀疏），當 hero 主圖太空，所以 hero 瀏覽器用黃金。
+
 ### 驗證
 
 - `lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning；新腳本的 `no-unused-expressions` 已修）／
-  `tsc --noEmit` 乾淨／`i18n:check` 三語 **664 鍵**（只改值）／`migrate:check` 無漂移／`build` 綠、頁面 ● SSG。
+  `tsc --noEmit` 乾淨／`i18n:check` 三語 **665 鍵**／`migrate:check` 無漂移／`build` 綠、頁面 ● SSG。
 - `npm start`（port 3120）：三語 `/platforms`、`/accounts`、`/funding`、`/products`、`/trading` 全 200；
   三語 `/accounts` 皆含開戶連結；**MT5 分頁以 CDP 點擊驗過**（`[role=tab]` → `aria-selected` ＋ `img src`
   依序為 gold／silver／MT5 logo）。⚠ 用 CDP 截區塊時要先 `scrollIntoView`，`clip` 超出 viewport 會截到白底。
-- 桌機 1440／平板 834／手機 390 × 三語截圖逐一看過。
+- 桌機 1440／平板 834／手機 390 × 三語截圖逐一看過；三個分頁（App／網頁端／MT5）各自的外框與註記
+  都以 CDP 點擊驗過（`aria-selected` ＋ `img src` 逐一比對）。
+  ⚠ 截元素區塊請用**文件絕對座標 ＋ `captureBeyondViewport:true`**；「scrollIntoView ＋ viewport clip」
+  會截到錯位的空白畫面。
 - **降級路徑**：`DATABASE_URI=` 空值重建 → `/accounts` HTML **0 個 h5 連結、8 個 `/register` fallback、
   模擬按鈕不渲染**（「申請模擬帳戶」只出現在 FAQ 文案與 RSC payload，不是按鈕）。
 
@@ -515,7 +575,8 @@
   （`#/pages/auth/login/index`），但這屬 operational 連結＝**業主提供後**比照開戶加 CMS 欄位，不自行推導。
 - **首頁 `MT5Showcase` 的 `raw_3.png`**：AI 算圖假 MT5 畫面＋浮動金塊，與「站上不放假平台截圖」紅線相衝。
   要換成真實截圖嗎？（換法：改用 `PlatformVisualPanel`，但首頁該卡是橫式 584×380，版型要調。）
-- **HATC MT5 伺服器測試帳號** → 把官方標誌換成真實 MT5 截圖（第五十一輪起的待辦）。
+- **HATC MT5 伺服器測試帳號** → 把供應商示範畫面換成**HATC 自家 MT5 的真實截圖**（只放三個核可產品的
+  Market Watch），屆時 `vendorNote` 即可退役、`vendor` kind 可改回 `browser`/`phone` 之外的 desktop 截圖。
 - 生產遊客交易組配好產品後，**改用生產環境重截**交易端截圖（現素材來自 UAT；畫面本身不含網域）。
 - 第五十／五十一輪留下的候選仍在：Footer「MT5平台」欄是否改名／改指 `/platforms`、`/trading` 合作夥伴
   標誌佔位、`--trd-gold #c9a84c` 是否統一成 `#d4af37`、`/products/all` 的最低手數／手續費／執行方式、

@@ -606,12 +606,12 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  - **平台視覺（沿用第五十一輪的 `resolvePlatformVisual()` ＋ `PlatformVisualPanel`，只改素材與呈現）**：
  ① **素材重截**＝`scripts/capture-terminal.mjs`（CDP 驅動，必須先點「日K」分頁才有數據；依「賣出」列上緣裁掉
  買賣價列）以**手機視窗 430×932 @2x** 重截，每檔＝**一個手機螢幕**（860×1744，1:2.03）→ 解決原本 860×830／
- 860×1430 長截圖導致外框變成矮胖方塊的根因。三檔對應**三個核可產品**：金 `terminal-gold-chart`／銀
- `terminal-silver-chart`／公斤條 `terminal-kilobar-chart`（hero 用公斤條，避免同頁重複同一張）。
+ 860×1430 長截圖導致外框變成矮胖方塊的根因。
  **退役 `terminal-home.png`**——遊客首頁下半是第三方財經資訊流（A 股公告／國際新聞），與 HATC 產品無關。
- ② **呈現**＝深藍景深漸層＋金色細線幾何（**不用**浮動 3D 金塊／發光金體，設計紅線）＋手機外框**依素材比例、
+ ② **呈現**＝深藍景深漸層＋金色細線幾何（**不用**浮動 3D 金塊／發光金體，設計紅線）＋裝置外框**依素材比例、
  由面板寬度決定大小、刻意切出面板下緣**（device peeking；因素材已在買賣價列上方裁切，切下緣不隱藏任何東西）。
- ③ **`/platforms` hero／分頁與 `/accounts` 卡片三處共用同一元件**，MT5 仍為官方標誌。
+ ③ **`/platforms` hero／分頁與 `/accounts` 卡片三處共用同一元件**。
+ ④ **同輪追加（業主：「不要全部用同一張圖，網頁端跟 app 有點差異化」）＝見下方第五十二輪補充**。
  - **文案順修**：`platforms.detail.bullets[0]`「專注黃金 / 白銀 CFD」→「**專注貴金屬 CFD**」並補**人民幣公斤條**
  （三語；對齊 FACTS 的三個 CFD 品種，與第四十五輪 `/trading` 的修正同理）。i18n 仍 **664 鍵**。
  - **仍未採用業主給的「首頁那張圖」本體**：`public/figma/raw/raw_3.png` 是 Figma AI 算圖（假 MT5 畫面＋浮動金塊），
@@ -620,6 +620,39 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  - **截圖紅線（重截必照做，已寫進 `platformVisuals.ts` 與 `scripts/capture-terminal.mjs` 檔頭）**：裁掉買賣價列、
  不入瀏覽器外框／UAT 網域、只截 **日K**（預設「分時」常無數據且開高低與現價互相矛盾）、不截遊客「交易」分頁、
  不截遊客首頁資訊流、**只截三個核可產品**（閘道遊客白名單含 26 個外匯/指數代號，不得入鏡）。
+ **追加禁用畫面**：遊客「自選／行情」清單（點差 38／32 直接印在欄位裡）與「合約屬性」分頁
+ （手數 0.01-20、最小掛單距離 200點、時段 06:05-24:00 皆非核可事實）。
+
+- **2026-10-11 (第五十二輪 補充): 三種裝置外框 ＋ MT5 改用供應商官方畫面。
+ SUPERSEDES 第五十一輪的「MT5＝官方標誌」與本輪前半「三檔手機截圖」的素材安排。**
+ 業主兩句指示：「MT5 圖用（MetaQuotes 官網那張）」＋「不要全部用同一張圖，你做一做圖吧，網頁端跟 app
+ 有點差異化」。
+ - **🚩 業主明示放寬一條紅線（範圍限定）**：MT5 那張是 MetaQuotes 官網的平台截圖，Market Watch 與圖表
+ 視窗是**供應商示範帳戶的外匯與美股**（EURUSD／GBPUSD／USDJPY／MSFT／NVDA／INTC…）。我先把問題與
+ 「只留黃金視窗」的裁切版並列給業主選，**業主選用完整畫面並同意就此供應商畫面放寬**「不得呈現外匯/
+ 美股」。**此放寬只適用這張第三方平台示範圖**：產品清單、表格、跑馬燈、文案一律仍只有黃金／白銀／
+ 人民幣公斤條。為避免誤讀，**凡顯示該圖的版面必須印 `platforms.types.vendorNote`**（說明是供應商示範
+ 帳戶畫面、並點明 HATC 的三個產品）——該圖黃金價 5086 與現價差近 900 點，也靠這段說明交代。
+ - **差異化＝不同裝置外框，不是不同濾鏡**。交易端 H5 鎖 `max-width:500px`，**沒有桌機版版面**，所以
+ 「網頁端」的誠實拍法＝把**桌機瀏覽器視窗（1000×820 @2x）**的實況截下來（app 欄置中、兩側留白），
+ 再用**自家的瀏覽器外框**（紅綠燈點＋位址列印 `h5.hatcmarket.com`＝FACTS 已核可網域，**不是截圖來源
+ 網域**）。於是三種 kind 對三種外框：`phone`→手機外框、`browser`→瀏覽器視窗、`vendor`→螢幕外框
+ （MT5 截圖本身已含應用程式視窗列，故外框只有薄邊，不再加第二層標題列）。
+ - **`platformVisuals.ts` 改版**：`PLATFORM_SCREENS`（per `panelLabel`，分 `phone`/`desktop`）＋
+ `VENDOR_SCREENS`＋`TERMINAL_HERO`（`{desktop, phone}` 組圖）＋新導出 **`visualNote()`**（決定該印
+ `screenshotNote` 還是 `vendorNote`；`upload` 不印）＋`WEB_TERMINAL_HOST`。kind 由
+ `screenshot/brand/upload` 改為 **`phone`/`browser`/`combo`/`vendor`/`upload`**；`brand` kind 與
+ `public/platforms/metatrader5-logo-white.png` **退役**（MT5 有截圖後成死碼）。
+ - **素材（`scripts/capture-terminal.mjs` 的 JOBS，手機／桌機兩種 viewport）**：
+ `terminal-gold-chart.png`（手機・金）→ HATC App；`terminal-web-silver.png`（桌機・銀）→ 網頁交易端；
+ `terminal-web-gold.png`＋`terminal-kilobar-chart.png` → `/platforms` hero 的**瀏覽器＋手機交疊組圖**；
+ `mt5-desktop.png`（業主提供）→ MT5。**退役 `terminal-silver-chart.png`**（手機・銀，已無使用者）。
+ 每個檔案在站上只出現一次，三個核可產品都露臉。
+ - **i18n**：新增 `platforms.types.vendorNote`（三語）→ **665 鍵**。`AccountPlatforms` 改成依
+ `visualNote` 收斂出現的註記（最多各印一次）；`PlatformTabsClient` 收 `notes` 物件而非單一字串。
+ - ⚠ **實作雷**：Tailwind 的百分比高度在 auto 高度 flex 項目上會算成 auto（第五十一輪舊傷），所以
+ 每個外框的螢幕都用 `style={{aspectRatio}}` ＋ `fill` 影像。另外 **CDP 截區塊**別用「scrollIntoView
+ ＋viewport clip」（會截到錯位的空白），改用**文件絕對座標＋`captureBeyondViewport:true`**。
 
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾
