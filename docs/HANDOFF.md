@@ -23,6 +23,22 @@
 > 連同 `sampleTradingData.ts` 一併退役**（事實不該能被後台改到）。`LiveQuotesProvider` 搬到
 > `src/components/market/` 供首頁與 `/trading` 共用。詳見下方「🟢 第四十五輪」。
 >
+> **🛠 第四十六輪（2026-10-11）環境修復：`/admin` 無限 hang 已排除。**
+> 症狀＝前台三語全 200、`/api/market/quotes` 正常，但 `/admin` 與所有 Payload REST
+> （`/api/users/me`、`/api/instruments`）**永不回應**（非 500），dev 程序 CPU 0%。
+> 成因＝退役 `sample-trading-conditions` 後，曾用**未清 `.next`** 的 dev 啟動（舊編譯的
+> `payload.config` 仍引用已刪的 `SampleTradingConditions`，log 有 `ReferenceError`），drizzle push
+> 把 4 張 `sample_trading_conditions*` 表與 `roles.can_sample_trading_conditions_update`
+> **重建回 DB**；之後乾淨程式碼的 dev 偵測到這些幽靈物件要 DROP → 停在**互動式 DATA LOSS `y/N`**
+> → Payload init 永不完成 → admin/REST 全 hang（前台靠 `unstable_cache`／fallback 仍 200，
+> 所以「頁面 200」不代表 CMS 正常）。
+> 處置：手動 `ALTER TABLE roles DROP COLUMN IF EXISTS can_sample_trading_conditions_update`
+> ＋ `DROP TABLE IF EXISTS sample_trading_conditions* CASCADE`（四張表皆 **0 列**，無資料損失；
+> 備份 `/tmp/hatc-sample-trading-backup.sql`）→ `rm -rf .next` → `npm run dev`。
+> 驗證：schema pull 一次過、`/admin` 200（2.9s）、`/api/users/me` 200、三語 6 頁全 200。
+> **慣例**：退役集合/global 後「清 `.next`」與「手動清 DB 殘留表/欄」**必須兩件一起做**；
+> 懷疑 CMS 掛掉時先打帶 timeout 的 `/api/users/me`（hang＝卡在 push 提問），別只看前台狀態碼。
+>
 > **📦 第四十五輪已 commit＋push**（`3aaeaea`，origin/main，2026-10-11 第四十六輪推送）＝工作區乾淨、
 > 與遠端同步，**無未 commit 清單**。第四十四輪（`f1f682b`）亦已在遠端。
 > ⚠ 仍待辦：**正式站 DB migration**（第四十四輪的刪表/刪欄 ＋ 第四十五輪 drop `sample_trading_conditions`

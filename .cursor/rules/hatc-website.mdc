@@ -395,6 +395,21 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  - **⚠ 驗證陷阱**：`next dev` ＋ 無頭瀏覽器會出現 client chunk `ERR_ABORTED`、effect 不執行 →
  即時報價永遠不出現（首頁亦然）。要驗即時行為請用 `npm run build && npm start`。
 
+- **2026-10-11 (第四十六輪): 退役集合後的「stale `.next` → 幽靈表 → `/admin` 永久卡住」陷阱（已排除）。**
+ 症狀：**前台三語全 200、`/api/market/quotes` 正常，但 `/admin` 與所有 Payload REST (`/api/users/me`、
+ `/api/instruments`) 無限 hang**（不是 500，是永不回應），dev 程序 CPU 0%。**成因鏈**：退役 global/collection
+ 後若用**沒清 `.next`** 的 dev 啟動，舊編譯的 `payload.config` 仍含已刪的 `SampleTradingConditions`
+ （log 會出現 `ReferenceError: SampleTradingConditions is not defined`），drizzle push 把 4 張
+ `sample_trading_conditions*` 表與 `roles.can_sample_trading_conditions_update` **重新建回 DB**；
+ 之後用乾淨程式碼啟 dev，push 偵測到這些幽靈物件要 DROP → 停在**互動式 DATA LOSS `y/N`**
+ → **Payload init 永不完成** → admin/REST 全 hang，而前台因 `unstable_cache`／i18n fallback 照常 200
+ （所以「頁面 200」不等於 CMS 正常）。**處置（本輪已執行）**：`docker exec hatc-postgres psql -U hatc -d hatc`
+ 手動 `ALTER TABLE roles DROP COLUMN IF EXISTS ...` ＋ `DROP TABLE IF EXISTS sample_trading_conditions*
+ CASCADE`（四張表皆 0 列，無資料損失；備份 `/tmp/hatc-sample-trading-backup.sql`）→ `rm -rf .next`
+ → `npm run dev`。驗證：schema pull 一次過、`/admin` 200（2.9s）、`/api/users/me` 200、三語六頁全 200。
+ **慣例**：退役集合/global 後**必須**「清 `.next` ＋ 手動清 DB 殘留物件」兩件一起做；日後懷疑 CMS 掛掉，
+ 先打 `/api/users/me` 帶 timeout（hang＝卡在 push 提問），別只看前台狀態碼。
+
 ## Visual system
 
 - **Logo (2026-08-10 第十六輪; header updated 第十七輪)**: use the real wordmark `public/brand/hatc-logo.png`
