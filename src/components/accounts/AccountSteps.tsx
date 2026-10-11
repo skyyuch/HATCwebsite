@@ -31,8 +31,6 @@ export default async function AccountSteps() {
           {openHref ? (
             <a
               href={openHref}
-              target="_blank"
-              rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}
             >
               {hero('ctaOpen')}

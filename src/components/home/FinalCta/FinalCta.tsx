@@ -51,8 +51,6 @@ export default async function FinalCta() {
           {openHref ? (
             <a
               href={openHref}
-              target="_blank"
-              rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}
             >
               {copy.ctaPrimary}
@@ -68,8 +66,6 @@ export default async function FinalCta() {
           {demoHref ? (
             <a
               href={demoHref}
-              target="_blank"
-              rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'onDark', size: 'fig'}))}
             >
               {copy.ctaSecondary}

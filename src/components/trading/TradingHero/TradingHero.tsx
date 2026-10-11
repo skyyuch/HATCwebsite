@@ -50,8 +50,6 @@ export default async function TradingHero() {
             {contactHref ? (
               <a
                 href={contactHref}
-                target="_blank"
-                rel="noopener noreferrer"
                 className={cn(
                   buttonVariants({size: 'fig'}),
                   'border-[1.5px] border-[var(--trd-navy)] bg-transparent text-[var(--trd-navy)] hover:bg-[var(--trd-navy)]/5 max-sm:flex-1'

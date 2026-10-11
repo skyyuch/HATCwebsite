@@ -107,8 +107,6 @@ export default function HeaderMobileMenu({
               {openAccountHref ? (
                 <a
                   href={openAccountHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   onClick={close}
                   className={cn(
                     buttonVariants({size: 'fig'}),

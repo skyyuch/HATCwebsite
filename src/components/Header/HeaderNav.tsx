@@ -182,8 +182,6 @@ export default function HeaderNav({
                   {mega.banner.external ? (
                     <a
                       href={mega.banner.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       onClick={closeNow}
                       className="flex items-center justify-between gap-2 border-t border-[#f2e6d1] bg-[#fffbf2] px-6 py-4 transition-colors hover:bg-[#fdf4e3]"
                     >

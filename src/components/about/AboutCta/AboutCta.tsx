@@ -45,8 +45,6 @@ export default async function AboutCta() {
           {contactHref ? (
             <a
               href={contactHref}
-              target="_blank"
-              rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}
             >
               {common('contactUs')}

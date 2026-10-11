@@ -61,8 +61,6 @@ export default async function FundingIntro({variant}: {variant: Variant}) {
             {openHref ? (
               <a
                 href={openHref}
-                target="_blank"
-                rel="noopener noreferrer"
                 className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}
               >
                 {t('cta')}

@@ -127,8 +127,6 @@ export default function PlatformTabsClient({
             {ctaExternal ? (
               <a
                 href={ctaHref}
-                target="_blank"
-                rel="noopener noreferrer"
                 className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}
               >
                 {ctaLabel}

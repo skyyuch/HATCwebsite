@@ -813,6 +813,11 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
 - Never hard-code customer-service / contact links (or other operational links).
   They must be configurable in the CMS.
 - Cite company facts only from `docs/HATC_FACTS.md`.
+- **External links open in the SAME tab (owner 2026-10-11 第五十六輪).** Do not add
+  `target="_blank"` / `rel="noopener noreferrer"` to any outbound link — open-account,
+  demo-account, customer-service, header mega banner, platform CTAs and external news
+  cards were all converted. The owner asked for the open-account jump specifically and
+  then chose to apply it site-wide, so new CTAs must follow suit.
 
 ### CMS-first content architecture (owner decision 2026-08-10)
 

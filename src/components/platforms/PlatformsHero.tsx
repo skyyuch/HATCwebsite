@@ -85,8 +85,6 @@ export default async function PlatformsHero() {
             {demoHref ? (
               <a
                 href={demoHref}
-                target="_blank"
-                rel="noopener noreferrer"
                 className={cn(buttonVariants({variant: 'onDark', size: 'fig'}))}
               >
                 {t('ctaDemo')}

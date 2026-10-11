@@ -91,8 +91,6 @@ export default async function Header() {
           {openHref ? (
             <a
               href={openHref}
-              target="_blank"
-              rel="noopener noreferrer"
               className={cn(buttonVariants({size: 'fig'}), 'bg-[#1a3366] text-white hover:bg-[#12264d]')}
             >
               {nav('openAccount')}

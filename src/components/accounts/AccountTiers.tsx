@@ -130,8 +130,6 @@ export default async function AccountTiers() {
               {openHref ? (
                 <a
                   href={openHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className={cn(
                     buttonVariants({variant: 'gold', size: 'fig'}),
                     'mt-auto w-full'

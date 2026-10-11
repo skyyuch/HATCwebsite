@@ -67,8 +67,6 @@ export default async function AccountsHero() {
           {openHref ? (
             <a
               href={openHref}
-              target="_blank"
-              rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}
             >
               {t('ctaOpen')}
@@ -84,8 +82,6 @@ export default async function AccountsHero() {
           {demoHref ? (
             <a
               href={demoHref}
-              target="_blank"
-              rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'onDark', size: 'fig'}))}
             >
               {t('ctaDemo')}

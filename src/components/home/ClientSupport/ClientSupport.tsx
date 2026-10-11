@@ -54,8 +54,6 @@ export default async function ClientSupport() {
           {contactHref ? (
             <a
               href={contactHref}
-              target="_blank"
-              rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}
             >
               {copy.cta}

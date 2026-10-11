@@ -132,8 +132,6 @@ export default function ActivityCard({
     return (
       <a
         href={item.href}
-        target="_blank"
-        rel="noopener noreferrer"
         className={cn(shellClass, 'transition-opacity hover:opacity-95')}
       >
         {body}

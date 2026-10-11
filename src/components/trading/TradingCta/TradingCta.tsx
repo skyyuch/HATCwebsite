@@ -39,8 +39,6 @@ export default async function TradingCta() {
           {openHref ? (
             <a
               href={openHref}
-              target="_blank"
-              rel="noopener noreferrer"
               className={cn(
                 buttonVariants({size: 'fig'}),
                 'bg-[var(--trd-gold)] text-[var(--trd-navy)] hover:brightness-95 max-sm:flex-1'
@@ -62,8 +60,6 @@ export default async function TradingCta() {
           {contactHref ? (
             <a
               href={contactHref}
-              target="_blank"
-              rel="noopener noreferrer"
               className={cn(
                 buttonVariants({size: 'fig'}),
                 'border-[1.5px] border-white bg-transparent text-white hover:bg-white/10 max-sm:flex-1'

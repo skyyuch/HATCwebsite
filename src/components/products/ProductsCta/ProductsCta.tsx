@@ -51,8 +51,6 @@ export default async function ProductsCta() {
           {openHref ? (
             <a
               href={openHref}
-              target="_blank"
-              rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'gold', size: 'fig'}))}
             >
               {nav('openAccount')}
@@ -68,8 +66,6 @@ export default async function ProductsCta() {
           {contactHref ? (
             <a
               href={contactHref}
-              target="_blank"
-              rel="noopener noreferrer"
               className={cn(buttonVariants({variant: 'onDark', size: 'fig'}))}
             >
               {common('contactUs')}
