@@ -410,6 +410,27 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  **慣例**：退役集合/global 後**必須**「清 `.next` ＋ 手動清 DB 殘留物件」兩件一起做；日後懷疑 CMS 掛掉，
  先打 `/api/users/me` 帶 timeout（hang＝卡在 push 提問），別只看前台狀態碼。
 
+- **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（尚未實作）。**
+ - **🚨 P0**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 前台**正在顯示退役的
+ 黃金 27／白銀 30**，且缺公斤條。**退役值復活＝紅線違規，下一棒最優先修**。修法擇一（須業主定）：
+ 把 `instruments` 改成只放「非事實」欄位（合約規模/時段）而點差槓桿改讀 `tradingConditions.ts`，
+ 或整張表改由 code 產生、`instruments` 僅供未來新增品種。
+ - **合約規模／交易時段／最小手數可從自家閘道取得**：`POST /v1/context/resolve` 回應的
+ `result.products[]` 內含 `contractSize`／`digits`／`volumeMin|Max|Step`／`stopsLevel`／
+ `currencyProfit`／`swapLong|Short`／`sessions`（後端已換算 GMT+8）。官網 `src/lib/marketQuotes.ts`
+ 已在呼叫這支 API，但只取 `contextToken`＋`allowedSymbols`。UAT 實測：金 contractSize 100／銀 **1000**
+ （≠ 官網示意的 5000）、volumeMin 0.01、時段 週一至週五 **06:05–次日 04:55**；**`RKGCNH` 不在 products[]**。
+ **紅線**：閘道 `spreadPoints`＝0，**點差永遠只能來自 `tradingConditions.ts`**；閘道值雖屬公司自家 MT5
+ 設定，仍須**業主確認後**才能寫入 FACTS（比照交易組設定表），不得自行當事實上站。
+ - **`/v1/market/bars` 可用，先前「回空」是 resolution 寫錯**：`resolution=1D` 回 200＋日 K；
+ `5`／`60` 才回 0。合法值＝`1/5/15/30/60/240/1D/1W`，必帶 `priceType=bid`＋`contextToken`。
+ - **交易端截圖來源**：`~/Desktop/mt5-web/mt5-uniappx`（uni-app x；H5 build ＝「網頁交易端」，
+ `front-ui-platform/system-platform` 是後台 admin，不可當交易端截圖）。生產 `h5.hatcmarket.com`
+ 遊客行情是「暂无产品」；UAT `h5.666678910.com` 遊客可見真行情與 K 線詳情頁。**截圖紅線**：UAT 網域
+ 不得入鏡、UAT 數據會自相矛盾、介面點差數字（實測 32）與核可分級點差不符不可辨讀、介面僅簡體中文、
+ App 外殼在 WEB 鎖 `max-width:500px`（**沒有桌機版交易端 UI**，`/platforms` 多裝置 mockup 需調整）、
+ 交易/持倉/資金頁需業主提供測試帳號。
+
 ## Visual system
 
 - **Logo (2026-08-10 第十六輪; header updated 第十七輪)**: use the real wordmark `public/brand/hatc-logo.png`

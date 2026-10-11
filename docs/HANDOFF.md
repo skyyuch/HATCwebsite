@@ -23,6 +23,44 @@
 > 連同 `sampleTradingData.ts` 一併退役**（事實不該能被後台改到）。`LiveQuotesProvider` 搬到
 > `src/components/market/` 供首頁與 `/trading` 共用。詳見下方「🟢 第四十五輪」。
 >
+> **🔎 第四十六輪（2026-10-11）調查：交易產品頁 ＋ 交易端截圖的前置勘查（未改任何產品碼）。**
+> 業主指定下一輪處理「交易產品頁」與「交易端截圖」，本輪先把兩邊現況查清楚：
+>
+> **🚨 P0 紅線違規（現正上線中）**：`/products/all` 的表格讀 CMS `instruments`，而 DB 裡那兩列
+> 仍是第三十輪種的舊資料 → 前台現在顯示 **黃金點差 `27`／白銀 `30`**（第四十四輪已明令
+> **退役**的舊平均值），且**缺人民幣公斤條**、合約規模寫 `100 oz / 5000 oz`、點差欄沒有單位。
+> 第四十四／四十五輪只改了程式端事實，**沒回頭清這張 CMS 表**。下一棒請優先處理。
+>
+> **💡 合約規模／交易時段／最小手數「其實拿得到」**：交易端 App 的「合約屬性」分頁證實，
+> 這些值來自 **`POST /v1/context/resolve` 回應的 `result.products[]`**——**官網已經在呼叫同一支 API**
+> （`src/lib/marketQuotes.ts`），只是目前只取 `contextToken` 與 `allowedSymbols`，把 `products[]` 丟掉。
+> UAT 實測（`node --env-file=.env /tmp/probe-context.mjs`）：
+> `XAUUSD` contractSize **100**／digits 2；`XAGUSD` contractSize **1000**（⚠ 不是官網示意的 5000）／digits 3；
+> 兩者 volumeMin **0.01**、volumeMax 20、volumeStep 0.01、stopsLevel 200、currencyProfit USD、含 swapLong/Short；
+> `sessions` = 週一至週五 `openMinute 365`／`closeMinute 1735` → **06:05–次日 04:55（GMT+8，後端已換算）**。
+> ⚠ **`RKGCNH` 不在 UAT guest context 的 `products[]`**（只有 2 檔），公斤條規格仍缺。
+> ⚠ guest context 的 `spreadPoints` = **0**，與核可點差不符 → **點差一律沿用 `tradingConditions.ts`，不得取閘道值**。
+> ⚠ 治理：閘道值＝公司自家 MT5 設定（權威），但**仍須業主確認後才能寫入 FACTS**，比照交易組設定表。
+>
+> **💡 `/v1/market/bars` 不是壞的，是 resolution 的問題**（修正第四十三／四十四輪的「回空」結論）：
+> UAT 實測 `resolution=1D` → **status 200、9 根日 K**（`{time,open,high,low,close,tickVolume,spread}`）；
+> `60`／`5` 才回 0 根。App 的對照表＝分時/1分`1`、5分`5`、15分`15`、30分`30`、1小時`60`、4小時`240`、
+> 日K`1D`、週K`1W`，且必帶 `priceType=bid`＋`contextToken`。→ 首頁 `Services` 的 K 線**有機會接真日 K**
+> （但只有 9 根、且生產遊客組仍未配產品）。
+>
+> **📸 交易端截圖來源勘查**（來源倉 `~/Desktop/mt5-web`）：
+> - `mt5-uniappx`＝HATC App（uni-app x），其 **H5 build 就是「網頁交易端」**；
+>   `front-ui-platform/system-platform`＝後台 Vue admin（**非**對外交易端，不要拿它截圖）。
+> - **生產 `https://h5.hatcmarket.com`**：遊客可進，但行情頁是**「暂无产品」**（＝同一個生產遊客組沒配產品的阻塞）。
+> - **UAT `https://h5.666678910.com`**：遊客**看得到真實行情**（黃金/白銀）與 **K 線詳情頁**
+>   （`#/pages/market/detail/index?symbolCode=XAUUSD`，含 分時/5分/…/週K ＋ MA/BOLL/MACD/KDJ 等指標、
+>   今開/昨收/最高/最低、買賣價）。路由表見 `mt5-uniappx/pages.json`。
+> - 需登入才看得到：交易下單、持倉、我的／資金頁 → **要業主提供測試帳號**。
+> - ⚠ 截圖紅線：UAT 網域 `666678910.com` 不得入鏡；UAT 數據會自相矛盾（曾見今開 4616 vs 現價 4194）；
+>   詳情頁的點差數字（實測顯示 32）**與核可分級點差不符**，不可讓它可辨讀；介面目前**只有簡體中文**
+>   （官網主語系繁中）；App 外殼在 WEB 被鎖 `max-width:500px`（見 `pages/market/detail/index.uvue` 註解）
+>   → **沒有真正的桌機版交易端 UI**，截圖會是手機比例，`/platforms` 現有多裝置 mockup 版面需據此調整。
+>
 > **🛠 第四十六輪（2026-10-11）環境修復：`/admin` 無限 hang 已排除。**
 > 症狀＝前台三語全 200、`/api/market/quotes` 正常，但 `/admin` 與所有 Payload REST
 > （`/api/users/me`、`/api/instruments`）**永不回應**（非 500），dev 程序 CPU 0%。
