@@ -7,6 +7,11 @@ Before planning, designing or changing code, read:
 3. `docs/WEBSITE_STRUCTURE.md`
 4. `docs/DESIGN_DIRECTION.md`
 
+For anything touching deployment, environment variables, migrations or the
+hand-off to the dev/ops team, read `docs/DEPLOYMENT.md` as well. The repo is
+delivered to the dev team via Gitee (`gitee` remote); GitHub `origin` is kept as
+a backup, so **push both**.
+
 ## Working rules
 
 - Do not invent company facts, licences, membership information,

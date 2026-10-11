@@ -937,6 +937,21 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
   以 sample/示範 標示、集中於元件常數易改，且**不得寫入 `HATC_FACTS.md`**。
 - 需要 shadcn CLI 產新元件時再補 `components.json`（目前手動維護 `ui/*` 未建此檔）。
 
+## Delivery / deployment (owner 2026-10-11)
+
+- 業主把程式碼**交給開發團隊部署到伺服器**。倉庫走 **Gitee**
+ `https://gitee.com/spingpeng/homeindex.git`（remote `gitee`）；GitHub `origin`
+ 保留為備份 → **兩個 remote 都要推**。
+- **部署交接文件＝`docs/DEPLOYMENT.md`**（繁中，給開發／維運）。動到部署、環境變數、
+ migration、或要交接給開發時**先讀它並同步更新**。`docs/HANDOFF.md` 是內容／設計決策史，
+ 不是部署手冊，兩者不要混寫。
+- 交接時必講的四件事：① 生產**只重播 `src/migrations/*`、不會 push schema** → 一定要跑
+ `npm run migrate`（且必須對空庫）；② **頁面文案類 global 保持留空**（填入即永久覆蓋內建
+ 三語文案，日後修正會看不見）；③ **按鈕沒有目的地就不渲染**（模擬帳戶、會員登入）＝設計
+ 行為，不是 bug，不得指去佔位頁；④ **交易條件刻意不開放後台編輯**（治理設計）。
+- 🚩 **閘道密鑰只放主機環境變數**，不得寫進本倉任何檔案（含 `docs/*`、`.env.example`、註解），
+ 也不得改名成 `NEXT_PUBLIC_*`。生產與 UAT 密鑰不同。
+
 ## Layout
 
 - Header and Footer are global. Render them once in the root/locale `layout.tsx`,

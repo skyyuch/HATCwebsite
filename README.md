@@ -93,6 +93,8 @@ migration 檔；**生產模式不 push，只會重播 `src/migrations/*`**。因
 - 部署流程：建立空資料庫 → 設好 `DATABASE_URI`／`PAYLOAD_SECRET` → `npm run migrate`
   → `npm run build` → `npm run start`。首次進入 `/admin` 時 `onInit` 會自動建立
   full-access 的 `Administrator` 角色。
+  **完整的伺服器部署交接說明（環境變數、後台必填清單、行情接線、已知陷阱）見
+  [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)。**
   若部署到無法跑 CLI 步驟的 serverless 平台（如 Vercel），把 `npm run migrate` 併進
   build command，或改用 Payload 的 `postgresAdapter({prodMigrations})`（本倉目前未啟用，
   避免執行期自動改 schema）。
