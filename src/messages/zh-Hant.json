@@ -2,7 +2,7 @@
   "metadata": {
     "home": {
       "title": "華安泰昌有限公司 HATC Group Limited",
-      "description": "華安泰昌有限公司（HATC Group Limited）以香港黃金交易所 AA 類行員（行員編號 008）為後盾，提供黃金、白銀貴金屬 CFD 交易。"
+      "description": "華安泰昌有限公司（HATC Group Limited）以香港黃金交易所 AA 類行員（行員編號 008）為後盾，提供黃金、白銀與人民幣公斤條貴金屬 CFD 交易。"
     },
     "about": {
       "title": "關於我們",
@@ -26,11 +26,11 @@
     },
     "platforms": {
       "title": "交易平台",
-      "description": "華安泰昌交易平台介紹：支援 MetaTrader 5、HATC 應用程式與網頁交易端，於桌面、網頁與行動裝置交易黃金、白銀。平台介面為示意，實際畫面以正式發佈為準。"
+      "description": "華安泰昌交易平台介紹：支援 MetaTrader 5、HATC 應用程式與網頁交易端，於桌面、網頁與行動裝置交易黃金、白銀與人民幣公斤條差價合約。"
     },
     "trading": {
       "title": "黃金交易服務概覽",
-      "description": "華安泰昌黃金交易服務概覽：以香港黃金交易所 AA 類行員（會員編號 008）為後盾，提供倫敦金與公斤條交易、MT5 平台、交易帳戶與全面客戶支援。"
+      "description": "華安泰昌黃金交易服務概覽：以香港黃金交易所 AA 類行員（會員編號 008）為後盾，提供黃金、白銀與人民幣公斤條差價合約、MT5 平台、交易帳戶與全面客戶支援。"
     },
     "news": {
       "title": "最新消息",

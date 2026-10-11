@@ -28,10 +28,11 @@ export async function generateMetadata({
  * Trading platforms page (Figma 89:4), rebuilt on the shared dark/gold system
  * (the Figma orange accent maps to HATC gold). Platform lineup is trimmed to the
  * owner-confirmed MT5 + HATC app + HATC web trader; product/feature claims are
- * converged to gold/silver and softened (no forex/oil/indices/1000+/copy-trading).
- * The global white Header + dark Footer frame the page (the Figma's own
- * nav/footer are dropped). Platform visuals are branded gradient placeholders —
- * the owner supplies real device screenshots later.
+ * converged to the three approved CFDs (gold / silver / RMB kilobar) and softened
+ * (no forex/oil/indices/1000+/copy-trading). The global white Header + dark Footer
+ * frame the page (the Figma's own nav/footer are dropped). Platform visuals come
+ * from `platformVisuals.ts` — real HATC terminal screenshots and, for MT5, the
+ * vendor's official demo screen; never mockups.
  */
 export default async function PlatformsPage({
   params

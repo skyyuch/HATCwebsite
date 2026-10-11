@@ -2,7 +2,7 @@
   "metadata": {
     "home": {
       "title": "HATC Group Limited",
-      "description": "HATC Group Limited offers precious-metals CFD trading — gold and silver — backed by its Hong Kong Gold Exchange AA membership (member no. 008)."
+      "description": "HATC Group Limited offers precious-metals CFD trading — gold, silver and the RMB kilobar — backed by its Hong Kong Gold Exchange AA membership (member no. 008)."
     },
     "about": {
       "title": "About",
@@ -26,11 +26,11 @@
     },
     "platforms": {
       "title": "Trading platforms",
-      "description": "HATC trading platforms: MetaTrader 5, the HATC app and web trader for trading gold and silver on desktop, web and mobile. Platform visuals are illustrative; actual screens follow the official release."
+      "description": "HATC trading platforms: MetaTrader 5, the HATC app and the web trader — trade gold, silver and RMB kilobar CFDs on desktop, web and mobile."
     },
     "trading": {
       "title": "Gold trading services overview",
-      "description": "An overview of HATC's gold trading services — Loco London gold and kilobar trading, the MT5 platform, trading accounts and full client support — backed by our Hong Kong Gold Exchange AA membership (member no. 008)."
+      "description": "An overview of HATC's gold trading services — CFDs on gold, silver and the RMB kilobar, the MT5 platform, trading accounts and full client support — backed by our Hong Kong Gold Exchange AA membership (member no. 008)."
     },
     "news": {
       "title": "Latest news",

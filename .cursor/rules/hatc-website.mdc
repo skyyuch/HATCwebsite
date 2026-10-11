@@ -673,8 +673,8 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  標籤去承諾未確認的功能（下載點、操作指南、EA／量化）。
  - **未處理但已記錄的同類問題（下一棒候選，見 HANDOFF 第五十三輪）**：交易服務欄只有倫敦金/銀、
  **缺人民幣公斤條**；~~學院欄四個標籤與 `academy.categories` 對不上且無法深連~~（第五十四輪已做）；
- 關於我們欄三個連結都指 `/about` 無錨點；`metadata.platforms.description`（三語）仍寫
- 「平台視覺為示意」——第五十一／五十二輪換成真實截圖後已不實。
+ 關於我們欄三個連結都指 `/about` 無錨點；~~`metadata.platforms.description`（三語）仍寫
+ 「平台視覺為示意」~~（第五十五輪已做）。
 
 - **2026-10-11 (第五十四輪): Footer「黃金學院」欄接上真實分類 ＋ `/academy` 支援 `?category=` 深連。**
  業主選定此項。原本四個標籤（基礎課程／進階分析／巨集觀基本面／技術指標解讀）**對不上
@@ -703,6 +703,25 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  `l1` 改為「全部文章／全部文章／All articles」→ 三語 **662 鍵**。`Footer.tsx` 的 `FOOTER_LINKS`
  改為只涵蓋另外三欄（`StaticCol`），學院欄由 `FOOTER_ACADEMY_CATEGORIES = [0,1,2]` 生成。
  - **業主決策**：該欄**維持 4 格**（全部文章＋三類），不擴成 6／7 格；其餘三類在 `/academy` 頁內篩選。
+
+- **2026-10-11 (第五十五輪): 三語 SEO 描述修正 —— 退役「平台視覺為示意」＋補齊三個 CFD 品種。**
+ 業主選定第五十三輪留下的候選 (b)。`metadata.platforms.description` 的「平台介面為示意，實際畫面
+ 以正式發佈為準」是第三十八輪平台圖還是 Figma mockup 時寫的，第五十一／五十二輪換成**真實交易端
+ 截圖＋MetaQuotes 官方示範畫面**後整句不實。順修同一區塊的同類缺漏：`metadata.home.description`
+ 只寫「黃金、白銀」、`metadata.trading.description` 只寫「倫敦金與公斤條」（**漏白銀**）。
+ 三語九句一次補齊成**黃金／白銀／人民幣公斤條**；英文沿用站上既有譯法 **`RMB kilobar`**。
+ **只改值、未增減鍵** → 仍 **662 鍵**；未動 schema。同時修掉 `platforms/page.tsx` JSDoc 的同批
+ 過時敘述（"converged to gold/silver"、"branded gradient placeholders"）。
+ - **慣例（寫入 `.cursor/rules/hatc-seo.mdc`）**：**`metadata.*.description` 與頁面內容受同一套
+ 事實紅線管轄**。① 提到產品必須列齊三個核可 CFD 品種，不得只列兩個；② **「示意／illustrative」
+ 只有在該頁現在真的放示意內容時才可保留**。目前仍為真：`metadata.funding.description`、
+ `home.mt5.screenshotAlt`（首頁 `raw_3.png` 仍是 AI 算圖）、`trading.hero.imageAlt`。
+ - **🚩 稽核出但刻意沒改（下一棒候選，見 HANDOFF 第五十五輪第三節）**：仍「只講金銀、漏公斤條」的
+ **行銷文案**＝`home.hero.subtitle`（⚠ 可被 CMS global `home-page` 覆寫）／`home.heroV2.subtitle`／
+ `home.footerV2.brandDesc`／`nav.mega.banner.desc`／`accounts.cta.body`／`funding.cta.body`／
+ `platforms.faq.items[4].a`（「倫敦金、倫敦銀**等**」還暗示未確認的其他產品；⚠ 正式內容在 CMS
+ `faqs(category=platforms)`，要連後台資料一起改）。`trading.services.items.londonGold` 不在清單內
+ （旁邊就是獨立的 `kilobar` 卡，兩張合起來＝三品種，刻意分法）。
 
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾

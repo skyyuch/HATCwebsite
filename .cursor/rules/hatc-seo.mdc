@@ -13,6 +13,16 @@ Build SEO in from the start, not as an afterthought.
 - Use the Next.js Metadata API per page (title, description, canonical, OpenGraph, Twitter).
 - Localise metadata via next-intl; every page provides all three locales.
 - Emit `hreflang` alternates for `zh-Hant` (default), `zh-Hans`, `en`, plus `x-default`.
+- **`metadata.*.description` is governed by the same fact red lines as page copy**
+  (第五十五輪). It is the first sentence the public sees in search results and is the
+  easiest thing to forget after a redesign, so when you touch a page, re-read its
+  description:
+  - When it names products it must list **all three approved CFDs** — gold, silver and
+    the RMB kilobar (`HATC_FACTS.md` → "CFD business") — never just two of them.
+  - Keep a「示意」/ "illustrative" caveat **only while that page really does show sample
+    content**. `/platforms` carried「平台介面為示意」long after 第五十一／五十二輪 replaced
+    the mockups with real terminal screenshots. Still true today: `metadata.funding`
+    (sample withdrawal channels), `home.mt5.screenshotAlt`, `trading.hero.imageAlt`.
 
 ## Crawlability & structure
 

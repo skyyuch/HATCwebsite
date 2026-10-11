@@ -1,10 +1,32 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-11（第五十四輪：Footer「黃金學院」欄接上真實分類＋`/academy` 支援 `?category=` 深連）
+> 最後更新：2026-10-11（第五十五輪：三語 SEO 描述修正 — 退役「平台視覺為示意」不實句，補齊三個 CFD 品種）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
 ## ▶ 下一步（下一位 agent）
+
+> **✅ 第五十五輪（2026-10-11）完成：三語 SEO 描述修正 —— `/platforms` 不再宣稱「平台介面為示意」
+> （第五十一／五十二輪換成真實截圖後該句已不實），並把首頁／`/trading`／`/platforms` 的產品清單
+> 補齊成已核可的三個 CFD 品種。**
+>
+> 業主從第五十四輪留下的候選清單選定 (b)。
+> - **根因**：`metadata.*.description` 是**搜尋結果上對外的第一句話**，但歷輪改頁面內容時沒人回頭
+>   對照它。`/platforms` 那句「平台介面為示意，實際畫面以正式發佈為準」是第三十八輪平台圖還是
+>   Figma mockup 時寫的，第五十一／五十二輪換成真實交易端截圖＋供應商官方畫面後就變成不實陳述。
+> - **順修同類缺漏**（同一個 `metadata` 區塊、同一種錯）：`metadata.home.description` 只寫
+>   「黃金、白銀」、`metadata.trading.description` 只寫「倫敦金與公斤條」（漏白銀）——FACTS 的 CFD
+>   標的自 2026-10-11 起是**黃金／白銀／人民幣公斤條**三項。三語九句一次補齊。
+> - 同時修掉 `platforms/page.tsx` 的 JSDoc：「Platform visuals are branded gradient placeholders」
+>   也是同一句過時敘述，會誤導下一位 agent。
+> - **🚩 本輪順手做了全站文案稽核**（列出所有「只講金銀、漏公斤條」的鍵），**刻意沒改**——那是行銷
+>   文案不是 metadata，且 `home.hero.subtitle` 可被 CMS 覆寫，屬獨立決策。清單見下方「🟢 第五十五輪」
+>   第三節，是現成的下一棒候選。
+> - **驗收**：`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／
+>   `i18n:check` 三語 **662 鍵**（只改值、未增減鍵）／`migrate:check` 無漂移（未動 schema）／
+>   `rm -rf .next` 後 `build` 綠且頁面維持 ● SSG；直接讀 `.next/server/app/**` 的靜態 HTML 確認
+>   九個 `<meta name="description">` 全部是新文案。無版面變更（只動 `<meta>` 與註解）。
+> - 細節見下方「🟢 第五十五輪」。
 
 > **✅ 第五十四輪（2026-10-11）完成：Footer「黃金學院」欄四個標籤改成真實分類，`/academy` 新增
 > `?category=` 深連（兩向同步），而且 `/academy` 仍是 ● SSG。**
@@ -469,6 +491,71 @@
 2. **第十八輪 `/trading` 暫緩 UI／驗收項**（多數需業主拍板）：淺色系是否推廣、帳戶分級真偽、
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
+
+## 🟢 第五十五輪（實作，2026-10-11）：三語 SEO 描述修正 —— 退役「平台視覺為示意」＋補齊三個 CFD 品種
+
+### 業主決策
+
+- 從第五十三／五十四輪留下的候選清單選定 **(b) `metadata.platforms.description` 已不實**。
+- 同意本輪成果與落後的 `37ebeaa` 一起 push。
+
+### 一、改了什麼
+
+| 鍵 | 原文（繁中） | 問題 | 新文 |
+|---|---|---|---|
+| `metadata.platforms.description` | …交易黃金、白銀。**平台介面為示意，實際畫面以正式發佈為準。** | 第三十八輪寫的，當時平台圖還是 Figma mockup；第五十一／五十二輪換成真實交易端截圖＋MetaQuotes 官方示範畫面後**整句不實**。另缺人民幣公斤條 | …於桌面、網頁與行動裝置交易**黃金、白銀與人民幣公斤條差價合約**。 |
+| `metadata.home.description` | …提供**黃金、白銀**貴金屬 CFD 交易。 | FACTS 的 CFD 標的自 2026-10-11 起是三項；第二十五輪清掉鉑金時只剩兩項，之後沒補 | …提供**黃金、白銀與人民幣公斤條**貴金屬 CFD 交易。 |
+| `metadata.trading.description` | …提供**倫敦金與公斤條**交易… | **漏白銀**，且與 `/trading` 頁面內文（第四十五輪已改成三品種）不一致 | …提供**黃金、白銀與人民幣公斤條差價合約**、MT5 平台、交易帳戶與全面客戶支援。 |
+
+三語九句同步。**只改值、沒有增減鍵** → `i18n:check` 仍 **662 鍵**。英文沿用站上既有譯法
+**`RMB kilobar`**（en 檔內 19 處都是這個寫法；`src/lib/mt/glossary.ts` 登記的是正式品名
+`RMB Kilo Gold`，兩者並存是既有狀態，本輪未動）。
+
+另修 `src/app/(frontend)/[locale]/platforms/page.tsx` 的 JSDoc：原寫
+「product/feature claims are converged to gold/silver」「Platform visuals are branded gradient
+placeholders — the owner supplies real device screenshots later」，兩句都是同一批過時敘述，
+已改成三品種＋指向 `platformVisuals.ts`（真實截圖／供應商官方畫面，never mockups）。
+
+### 二、慣例（新增）
+
+**`metadata.*.description` 與頁面內容受同一套事實紅線管轄。** 它是搜尋結果上對外的第一句話，
+卻最容易在改版後被遺忘。兩條檢查：
+
+1. 提到產品時**必須列齊三個核可 CFD 品種**（黃金／白銀／人民幣公斤條），不得只列其中兩個。
+2. 「示意／illustrative」字樣**只有在該頁現在真的放示意內容時**才可保留。目前仍為真的：
+   `metadata.funding.description`（出金渠道/時限/手續費確實仍是示意資料）、
+   `home.mt5.screenshotAlt`（首頁 `raw_3.png` 仍是 AI 算圖＝待業主項 (d)）、
+   `trading.hero.imageAlt`（`/trading` hero 仍是 Figma 佔位圖）。
+
+已寫進 `.cursor/rules/hatc-seo.mdc`。
+
+### 三、同時稽核出、本輪刻意沒改（下一棒候選）
+
+用腳本掃過三語訊息檔，找出「同時出現黃金與白銀、但沒有公斤條」的鍵。排除掉講**交易所名稱**
+（金銀業貿易場／Gold & Silver Exchange）與**交易所獲准權限**（`about.identity.p2`、
+`about.credentials.cards.c2`，原文有「及其他貴金屬」＝符合證書 7 項，正確）後，真正屬於
+「對外承諾產品清單卻只講兩個」的有：
+
+| 鍵 | 備註 |
+|---|---|
+| `home.hero.subtitle` | ⚠ 可被 CMS global `home-page` 覆寫，改 i18n 不一定生效 |
+| `home.heroV2.subtitle`／`home.footerV2.brandDesc` | 「Loco London gold and silver trading」 |
+| `nav.mega.banner.desc` | header mega 開戶橫幅 |
+| `accounts.cta.body`／`funding.cta.body` | 收尾 CTA |
+| `platforms.faq.items[4].a` | 「提供倫敦金、倫敦銀**等**貴金屬產品」——除了漏公斤條，「等」還暗示有未確認的其他產品。⚠ 這題的 i18n 只是種子，**正式內容在 CMS `faqs`(category=`platforms`)**，要連後台資料一起改 |
+
+`trading.services.items.londonGold`（倫敦金銀 XAU/XAG）**不在清單內**：它旁邊就是獨立的
+`kilobar` 卡，兩張卡合起來才是三品種，是刻意的分法。
+
+### 四、驗證
+
+- `lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／`i18n:check` 三語
+  **662 鍵**／`migrate:check` 無漂移（未動 schema）／`rm -rf .next` 後 `build` 綠、全部頁面維持 ● SSG。
+- 直接讀 `.next/server/app/{zh-Hant,zh-Hans,en}/{platforms,trading}.html` 與 `{locale}.html` 的
+  `<meta name="description">`，九句逐一比對無誤。
+- **沒有做響應式截圖**：本輪只改 `<meta>` 與程式註解，渲染輸出零變化。
+- 既有未處理項（非本輪造成）：`metadata.trading.description` 英文版 213 字元，超過 Google 約 155
+  字元的截斷長度（改之前是 218 字元，沒有變差）。要縮的話三語應一起重寫，屬獨立文案工作。
 
 ## 🟢 第五十四輪（實作，2026-10-11）：Footer「黃金學院」欄接上真實分類 ＋ `/academy` `?category=` 深連
 
