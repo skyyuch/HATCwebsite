@@ -2,22 +2,44 @@ import {getLocale, getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
-import {getSampleTradingTables} from '@/lib/sampleTradingConditions';
+import LiveQuotesProvider from '@/components/market/LiveQuotesProvider';
+import {CFD_PRODUCTS} from '@/components/products/tradingConditions';
 import {getTradingMarketing} from '@/lib/tradingMarketing';
 import type {Locale} from '@/i18n/routing';
 import SectionHeader from '../SectionHeader';
+import ConditionsTable, {type ConditionRow} from './ConditionsTable';
 
 /**
- * "即時查看具競爭力的交易條件" (Figma 44:200) — SAMPLE live-quote table
- * (labelled「示意數據」). Rows from CMS `sample-trading-conditions` with
- * sampleTradingData.ts fallback. Approved gold27/silver30 live on /products
- * only (tradingConditions.ts) — never from this CMS global.
+ * Product conditions with live MT5 prices (owner 2026-10-11).
+ *
+ * ✅ Spread / leverage / platform are APPROVED facts from
+ *    `tradingConditions.ts`; prices come from the same gateway BFF as the
+ *    homepage (`/api/market/quotes`) and are labelled 「即時報價」.
+ * ⚠️ The retired version of this section showed placeholder bid/ask rows
+ *    (2,342.80 …) including a non-existent XAU/HKD「公斤條港幣」line. Fake
+ *    quotes must not come back: when the feed is unavailable the table simply
+ *    drops its price columns and shows the approved conditions only.
+ *    Bid/ask are deliberately not displayed either — "ask − bid" would
+ *    contradict the per-account-type spreads above.
  */
 export default async function PricingConditions() {
   const locale = (await getLocale()) as Locale;
   const t = await getTranslations('trading.pricing');
+  const conditions = await getTranslations('products.conditions');
+  const products = await getTranslations('products.items');
+  const market = await getTranslations('home.market');
+  const table = await getTranslations('productsAll.table');
   const copy = (await getTradingMarketing(locale)).pricing;
-  const {pricingRows} = await getSampleTradingTables(locale);
+
+  const rows: ConditionRow[] = CFD_PRODUCTS.map((product) => ({
+    key: product.key,
+    name: products(`${product.key}.name`),
+    symbol: product.symbol,
+    gatewaySymbol: product.gatewaySymbol,
+    spread: conditions('spreadFrom', {points: product.spreadFrom}),
+    leverage: product.leverage,
+    platform: conditions('platformValue')
+  }));
 
   return (
     <section
@@ -31,78 +53,35 @@ export default async function PricingConditions() {
           subtitle={copy.subtitle}
         />
 
-        <div className="overflow-x-auto rounded-[12px] border border-[var(--trd-border)]">
-          <table className="w-full min-w-[820px] border-collapse text-left">
-            <caption className="sr-only">{copy.heading}</caption>
-            <thead>
-              <tr className="bg-[var(--trd-navy)] text-sm font-semibold text-white">
-                <th scope="col" className="px-5 py-4">
-                  {t('cols.instrument')}
-                </th>
-                <th scope="col" className="px-5 py-4 text-right">
-                  {t('cols.bid')}
-                </th>
-                <th scope="col" className="px-5 py-4 text-right">
-                  {t('cols.ask')}
-                </th>
-                <th scope="col" className="px-5 py-4 text-right">
-                  {t('cols.spread')}
-                </th>
-                <th scope="col" className="px-5 py-4 text-right">
-                  {t('cols.change')}
-                </th>
-                <th scope="col" className="px-5 py-4 text-right">
-                  {t('cols.session')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {pricingRows.map((row, i) => (
-                <tr
-                  key={`${row.symbol}-${i}`}
-                  className={cn(
-                    'border-t border-[var(--trd-border)]',
-                    i % 2 === 1 && 'bg-[var(--trd-row-alt)]'
-                  )}
-                >
-                  <th scope="row" className="px-5 py-4 text-left">
-                    <span className="block text-base font-bold text-[var(--trd-heading)]">
-                      {row.symbol}
-                    </span>
-                    <span className="block text-xs text-[var(--trd-body)]">
-                      {t(`names.${row.nameKey}`)}
-                    </span>
-                  </th>
-                  <td className="px-5 py-4 text-right text-base font-semibold text-[var(--trd-navy)]">
-                    {row.bid}
-                  </td>
-                  <td className="px-5 py-4 text-right text-base font-semibold text-[var(--trd-navy)]">
-                    {row.ask}
-                  </td>
-                  <td className="px-5 py-4 text-right text-base font-semibold text-[var(--trd-gold)]">
-                    {row.spread}
-                  </td>
-                  <td className="px-5 py-4 text-right text-sm font-semibold text-[var(--trd-up)]">
-                    {row.change}
-                  </td>
-                  <td className="px-5 py-4 text-right text-sm text-[var(--trd-body)]">
-                    {t('session')}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <p className="-mb-4 text-xs text-[var(--trd-muted)] lg:hidden">
+          {table('scrollHint')}
+        </p>
+
+        <LiveQuotesProvider>
+          <ConditionsTable
+            rows={rows}
+            labels={{
+              product: conditions('colProduct'),
+              price: t('cols.price'),
+              change: t('cols.change'),
+              spread: conditions('colSpread'),
+              leverage: conditions('colLeverage'),
+              platform: conditions('colPlatform'),
+              liveLabel: market('liveLabel'),
+              sourceNote: market('sourceNote')
+            }}
+          />
+        </LiveQuotesProvider>
 
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-          <p className="max-w-[600px] text-xs text-[var(--trd-muted)]">
-            {t('disclaimer')}
+          <p className="max-w-[640px] text-xs leading-[1.7] text-[var(--trd-muted)]">
+            {conditions('note')}
           </p>
           <Link
             href="/products#conditions"
             className={cn(
               buttonVariants({size: 'fig'}),
-              'border-[1.5px] border-[var(--trd-navy)] bg-transparent text-[var(--trd-navy)] hover:bg-[var(--trd-navy)]/5 max-sm:w-full'
+              'shrink-0 border-[1.5px] border-[var(--trd-navy)] bg-transparent text-[var(--trd-navy)] hover:bg-[var(--trd-navy)]/5 max-sm:w-full'
             )}
           >
             {copy.cta}

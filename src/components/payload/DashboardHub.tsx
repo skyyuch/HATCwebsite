@@ -129,16 +129,18 @@ const ENTRIES: Entry[] = [
     )
   },
   {
-    href: '/admin/globals/sample-trading-conditions',
+    href: '/admin/collections/instruments',
     labels: {
-      'zh-TW': {title: '示意交易條件表', desc: '版面示意數字（非事實）'},
-      zh: {title: '示意交易条件表', desc: '版面示意数字（非事实）'},
-      en: {title: 'Sample conditions', desc: 'Layout sample figures (not facts)'}
+      'zh-TW': {title: '交易產品列表', desc: '所有交易產品頁表格'},
+      zh: {title: '交易产品列表', desc: '所有交易产品页表格'},
+      en: {title: 'Instruments', desc: 'All-products page table'}
     },
     icon: icon(
       <>
-        <path d="M3 3v18h18" />
-        <path d="M7 15l3-3 3 2 4-5" />
+        <rect x="3" y="3" width="7" height="7" rx="1" />
+        <rect x="14" y="3" width="7" height="7" rx="1" />
+        <rect x="3" y="14" width="7" height="7" rx="1" />
+        <rect x="14" y="14" width="7" height="7" rx="1" />
       </>
     )
   }

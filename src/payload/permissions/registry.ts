@@ -164,12 +164,6 @@ export const PERM_RESOURCES: PermResource[] = [
     kind: 'global',
     label: adminLabel('Platforms page assets', '交易平台頁圖片', '交易平台页图片'),
     ops: ['update']
-  },
-  {
-    slug: 'sample-trading-conditions',
-    kind: 'global',
-    label: adminLabel('Sample trading tables', '示意交易條件表', '示意交易条件表'),
-    ops: ['update']
   }
 ];
 

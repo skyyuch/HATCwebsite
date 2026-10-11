@@ -27,7 +27,6 @@ import {AboutPage} from './globals/AboutPage';
 import {ProductsPage} from './globals/ProductsPage';
 import {FundingPage} from './globals/FundingPage';
 import {PlatformsPage} from './globals/PlatformsPage';
-import {SampleTradingConditions} from './globals/SampleTradingConditions';
 import {translateEndpoint} from './endpoints/translate';
 import {configHasLocalizedText} from './lib/mt/localizedFields';
 
@@ -145,8 +144,7 @@ export default buildConfig({
     AboutPage,
     ProductsPage,
     FundingPage,
-    PlatformsPage,
-    SampleTradingConditions
+    PlatformsPage
   ].map(withTranslateControlGlobal),
   endpoints: [translateEndpoint],
   editor: lexicalEditor(),

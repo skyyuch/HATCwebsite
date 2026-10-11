@@ -1,7 +1,7 @@
 'use client';
 
 import {formatChange, formatPrice} from '@/lib/marketQuoteTypes';
-import {useLiveQuotes} from '../LiveQuotes/LiveQuotesProvider';
+import {useLiveQuotes} from '@/components/market/LiveQuotesProvider';
 import {SAMPLE_TICKER} from '../sampleMarketData';
 
 /**

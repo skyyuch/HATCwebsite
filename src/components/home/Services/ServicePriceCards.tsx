@@ -6,7 +6,7 @@ import {
   MARKET_SYMBOLS,
   type LiveQuote
 } from '@/lib/marketQuoteTypes';
-import {useLiveQuote} from '../LiveQuotes/LiveQuotesProvider';
+import {useLiveQuote} from '@/components/market/LiveQuotesProvider';
 import {SAMPLE_PRICE_CARDS} from '../sampleMarketData';
 
 const [GOLD, SILVER] = MARKET_SYMBOLS;

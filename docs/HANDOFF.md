@@ -1,7 +1,6 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-11（第四十三輪：首頁行情接上 MT5 真實報價＝server BFF 代理＋示意降級；
-> 阻塞點＝生產遊客交易組未配產品，待業主推後端）
+> 最後更新：2026-10-11（第四十五輪：`/trading` 接上真實交易條件＋即時報價，示意帳戶/報價表退役）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
@@ -16,10 +15,19 @@
 > 來源＝`src/components/products/tradingConditions.ts`；據此**退役 3 個 CMS 集合**（帳戶/點差/平台
 > ——事實不該能被後台改到）。詳見下方「🟢 第四十四輪」。
 >
-> **⏭️ 下一棒（第四十五輪，已與業主說明：本輪是 A，下一輪是 B）＝把同一份事實擴散到 `/trading`：**
-> 其「帳戶比較」仍是**示意兩檔（標準/專業）**，與真實 Standard/Pro **同名但數值不同**，最易誤導；
-> 「即時點差」區也仍是**假 bid/ask**（`trading/sampleTradingData.ts`）。另 `/products/all` 的
-> **合約規模與交易時段**仍為示意（點差/槓桿已改真實）。
+> **✅ 第四十五輪（2026-10-11）完成：`/trading` 也吃同一份事實。**
+> 帳戶比較改成**真實四檔 Mini/Standard/Pro/VIP**（示意兩檔「標準/專業」與捏造的服務差異列已刪）；
+> 「即時點差」區改成**核可條件表 ＋ 可用時才出現的即時報價欄**（接首頁同一套 `/api/market/quotes`，
+> 拿不到就收回價格欄，不回退假數字，也不並列 bid/ask）；**CMS global `sample-trading-conditions`
+> 連同 `sampleTradingData.ts` 一併退役**（事實不該能被後台改到）。`LiveQuotesProvider` 搬到
+> `src/components/market/` 供首頁與 `/trading` 共用。詳見下方「🟢 第四十五輪」。
+>
+> **⏭️ 下一棒（第四十六輪）候選，皆非阻塞：**
+> - `/products/all` 的**合約規模與交易時段**仍是示意（點差/槓桿已真實），等業主給值。
+> - `/trading` 的**合作夥伴／認證標誌區**仍是佔位框（第十八輪遺留）。
+> - 全站**淺色 `--trd-gold #c9a84c` vs 深色 `#d4af37`** 是否統一，待業主定。
+> - 行情仍卡在後端：**生產遊客交易組沒配產品**（UAT 正常）；`/v1/market/bars` 連 UAT 都回空 →
+>   `Services` 的 K 線還是示意。碰行情前先 `curl` 複驗這兩項。
 
 > **✅ 第四十三輪（2026-10-11）完成：首頁行情已接上自家 MT5 行情閘道（真實報價），拿不到時自動退回示意數據。**
 > 架構＝**server 端 BFF**（`src/lib/marketQuotes.ts` ＋ `GET /api/market/quotes`）＋ client 共用輪詢
@@ -156,6 +164,61 @@
 2. **第十八輪 `/trading` 暫緩 UI／驗收項**（多數需業主拍板）：淺色系是否推廣、帳戶分級真偽、
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
+
+## 🟢 第四十五輪（實作，2026-10-11）：`/trading` 接上真實條件 ＋ 即時報價，示意表退役
+
+**起點**：第四十四輪（A）把真實交易條件寫進 FACTS 並改造 `/accounts`；本輪（B）＝把同一份事實
+擴散到 `/trading`。原狀況：帳戶比較是**示意兩檔「標準 Standard／專業 Professional」**（8 列中 4 列
+「待確認」，另有捏造的服務差異列），與真實 Standard／Pro **同名不同值**；「即時點差」區是**假 bid/ask**
+（`2,342.80`），其中一列還是**不存在的 XAU/HKD「公斤條港幣」**。
+
+### 業主拍板（AskQuestion）
+
+| 問題 | 決定 |
+|---|---|
+| 「即時點差」區方向 | **即時報價 ＋ 核可條件**：品種／即時價／漲跌幅／點差「X 點起」／槓桿／平台；接首頁同一套 `/api/market/quotes`，**拿不到就隱藏價格欄**（不退回假數字）。**不並列 bid/ask**——`ask − bid` 會與分級點差互相矛盾 |
+| 帳戶比較表 | **換成真實四檔 Mini／Standard／Pro／VIP**；刪捏造服務差異列（優先支援／教育資源／專屬客戶經理）與「推薦」徽章；同步**退役 CMS 覆蓋** |
+
+### 實作
+
+- **`AccountComparison`**（`trading/AccountComparison/`）＝四檔對照表，數值全來自
+  `products/tradingConditions.ts`（與 `/accounts` 同源）：最低入金／最高槓桿／交易平台 ＋
+  **點差（點）群組**（金/銀/公斤條 × 四檔）＋ 未確認條件列顯示「將另行公佈」。徽章只有**事實衍生**的
+  `入金門檻最低`／`點差最低`；highlight 落在 VIP（＝點差最低），不是行銷式「推薦」。CTA → `/accounts`。
+- **`PricingConditions` ＋ 新 client `ConditionsTable.tsx`**：server 永遠輸出「條件表」（SSG、無
+  hydration mismatch），client 取到報價才**長出「即時價格／漲跌幅」兩欄**並顯示「即時報價 ·
+  報價由 MT5 行情服務提供…」；報價中斷則欄位收回。點差欄固定是核可的「20／30／35 點起」。
+- **`LiveQuotesProvider` 搬到 `src/components/market/`**（首頁與 `/trading` 共用；首頁 4 個 importer 已更新）。
+- **退役 CMS global `sample-trading-conditions`**（＋`lib/sampleTradingConditions.ts`、
+  `components/trading/sampleTradingData.ts`、payload.config／registry／cacheTags／revalidate 條目）。
+  admin 儀表板那張「示意交易條件表」入口卡改指 **`instruments`**（`/products/all` 仍是唯一有示意值的表）。
+- **順手對齊 FACTS 的 `/trading` 文案**（三語）：hero 補上白銀與公斤條；服務卡
+  「倫敦金銀 (XAU/USD、XAG/USD)」「人民幣公斤條 (RKG/CNH)」（移除未確認的實物結算／提存／「保證」純度）；
+  FAQ q2 改成三個 CFD 產品、q6 不再把「近 24 小時」寫成 HATC 的交易時段（改「將另行公佈」）；
+  信任卡「實物黃金託管與存付」→ **客戶資金隔離存放**（＝FACTS「Client fund custody」核可句）。
+
+### ⚠ DB
+
+drop `sample_trading_conditions`／`_pricing_rows`／`_account_rows`／`_account_rows_locales` 四張表
+＋`roles.can_sample_trading_conditions_update`。本機已手動 `ALTER TABLE` / `DROP TABLE`（繞開
+drizzle push 對 roles 刪欄的互動確認）；**正式站須寫 migration**。
+
+### 驗證
+
+`lint` 0 error（唯 `seed-academy.ts` 1 個既有 warning）／`i18n:check` 三語 **680 鍵**齊／`build` 綠
+（`/trading` 三語 ● SSG、`/api/market/quotes` ƒ）。三語 `/trading` 200；退役值掃描（1:500／1:1000／
+RAW ECN／TradingView／MT4／27 點／示意數據／待確認／2,342／公斤條港幣）在可見 markup 全無
+（僅剩 footer 風險聲明中解釋「示意數據」標籤的那句）。即時欄位用 **production server ＋ headless CDP**
+實測：金 4,194.49／銀 60.800／公斤條 902.14 ＋ 漲跌幅，點差仍顯示 20／30／35 點起；首頁 ticker
+搬檔後照常顯示「即時報價」。桌機 1440／平板 834／手機 390 截圖通過（表格橫向捲動＋提示）。
+> ⚠ 驗證陷阱：**`next dev` ＋ 無頭瀏覽器**會有 client chunk `ERR_ABORTED`，client effect 不執行 →
+> 即時欄位永遠不出現（首頁亦然，與本輪改動無關）。要驗即時行為請用 `npm run build && npm start`。
+
+### 待業主
+
+(a) 最低手數／手續費／執行方式／交易時段／公斤條合約規模（頁面顯示「將另行公佈」）；
+(b) `/products/all` 的合約規模與交易時段仍為示意；(c) `/trading` 的合作夥伴標誌區仍是佔位框；
+(d) `--trd-gold #c9a84c` 與深色系 `#d4af37` 是否統一。
 
 ## 🟢 第四十四輪（實作，2026-10-11）：真實交易條件 ＋ MT4 下架 ＋ `/accounts` 轉為事實
 

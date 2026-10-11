@@ -5,7 +5,10 @@ import {
   formatPrice,
   MARKET_SYMBOLS
 } from '@/lib/marketQuoteTypes';
-import {useLiveQuote, useQuoteHistory} from '../LiveQuotes/LiveQuotesProvider';
+import {
+  useLiveQuote,
+  useQuoteHistory
+} from '@/components/market/LiveQuotesProvider';
 import {SAMPLE_HERO_PRICE, SAMPLE_SPARKLINE} from '../sampleMarketData';
 
 const GOLD = MARKET_SYMBOLS[0];

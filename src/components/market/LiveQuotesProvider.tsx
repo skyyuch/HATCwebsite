@@ -11,7 +11,8 @@ import {
 import type {LiveQuote} from '@/lib/marketQuoteTypes';
 
 /**
- * Shared live-quote stream for the homepage market widgets.
+ * Shared live-quote stream for the market widgets (homepage hero/ticker/service
+ * cards, /trading conditions table).
  *
  * The page stays statically rendered: the server markup always ships the
  * labelled sample data, and this provider swaps in real quotes only after it

@@ -3,7 +3,7 @@ import {setRequestLocale} from 'next-intl/server';
 import {getTranslations} from 'next-intl/server';
 import {siteUrl, localeAlternates} from '@/lib/seo';
 import Hero from '@/components/home/Hero/Hero';
-import LiveQuotesProvider from '@/components/home/LiveQuotes/LiveQuotesProvider';
+import LiveQuotesProvider from '@/components/market/LiveQuotesProvider';
 import TrustStrip from '@/components/home/TrustStrip/TrustStrip';
 import Services from '@/components/home/Services/Services';
 import MT5Showcase from '@/components/home/MT5Showcase/MT5Showcase';

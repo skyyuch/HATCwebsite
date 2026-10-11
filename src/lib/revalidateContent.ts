@@ -133,10 +133,3 @@ export function revalidateProductsMarketing(): void {
     safeRevalidatePath(`/${locale}/products`);
   }
 }
-
-export function revalidateSampleTradingConditions(): void {
-  safeRevalidateTag(CACHE_TAGS.sampleTradingConditions);
-  for (const locale of routing.locales) {
-    safeRevalidatePath(`/${locale}/trading`);
-  }
-}

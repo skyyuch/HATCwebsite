@@ -1012,21 +1012,21 @@
     "hero": {
       "titleLine1": "Trade gold securely",
       "titleLine2": "and efficiently with HATC",
-      "subtitle": "As an AA-class member of the Hong Kong Gold Exchange (member no. 008), HATC offers professional Loco London gold and kilobar trading, the MT5 platform and comprehensive client support — helping you navigate the gold market under solid oversight and clear conditions.",
+      "subtitle": "As an AA-class member of the Hong Kong Gold Exchange (member no. 008), HATC offers contracts for difference on gold, silver and the RMB kilobar, traded on MetaTrader 5 with comprehensive client support — so you can take part in the precious-metals market under clear conditions.",
       "imageAlt": "MT5 trading platform interface (illustrative)"
     },
     "services": {
       "badge": "Precision · Integrity",
       "heading": "Gold trading services & tools",
-      "subtitle": "With a top-tier technology platform and flexible physical and derivative trading models, we meet your varied gold allocation needs.",
+      "subtitle": "The MetaTrader 5 platform and clearly published trading conditions support your precious-metals allocation.",
       "items": {
         "londonGold": {
-          "title": "Loco London Gold (XAU/USD)",
-          "desc": "Connected to the international spot gold market, offering high liquidity and 24-hour gold quotes and trading."
+          "title": "Loco London gold & silver (XAU/USD, XAG/USD)",
+          "desc": "Contracts for difference on the international spot gold and silver markets, with two-way trading and flexible leverage."
         },
         "kilobar": {
-          "title": "Kilobar trading",
-          "desc": "Trading, settlement, deposit and withdrawal of physical gold kilobars, with assured purity and compliant delivery."
+          "title": "RMB kilobar (RKG/CNH)",
+          "desc": "A contract for difference on the RMB-denominated kilo gold bar, traded on MetaTrader 5 alongside gold and silver."
         },
         "mt5": {
           "title": "MT5 trading platform",
@@ -1041,27 +1041,9 @@
     "accounts": {
       "badge": "Flexible setup",
       "heading": "Trading account comparison",
-      "subtitle": "An account structure designed for different trading volumes and strategies, helping you configure your trading edge flexibly.",
-      "recommend": "Recommended",
-      "colSpec": "Account specs / features",
-      "standard": "Standard account",
-      "professional": "Professional account",
-      "rows": {
-        "minDeposit": "Minimum deposit",
-        "instruments": "Instruments",
-        "spread": "Spread",
-        "leverage": "Leverage",
-        "platform": "Platform",
-        "support": "Client support",
-        "education": "Education",
-        "manager": "Dedicated account manager"
-      },
-      "pending": "To be confirmed",
-      "instrumentsStandard": "Loco London Gold",
-      "instrumentsPro": "Loco London Gold, kilobar",
-      "platformValue": "MT5",
-      "priority": "✓ Priority",
-      "disclaimer": "The account details above are an illustrative format; actual conditions follow HATC's official announcements. Market trading can involve leverage risk — please make sure you understand the relevant terms."
+      "subtitle": "All four account types trade the same products at the same maximum leverage — they differ only in minimum deposit and spread. The full comparison is below.",
+      "colSpec": "Account specs",
+      "cta": "See trading account details"
     },
     "trust": {
       "cards": {
@@ -1079,9 +1061,9 @@
         },
         "custody": {
           "badge": "Fund safety",
-          "label": "Robust security system",
-          "title": "Physical gold custody & settlement",
-          "desc": "Standard kilobars held in a high-grade vault, with a transparent delivery and stock-taking process."
+          "label": "Fund safety",
+          "title": "Segregated client funds",
+          "desc": "Client funds are held in a designated custodial trust account, strictly segregated from the company's operating funds."
         }
       },
       "partner": {
@@ -1090,23 +1072,13 @@
       }
     },
     "pricing": {
-      "badge": "Live spreads",
-      "heading": "See competitive trading conditions in real time",
-      "subtitle": "Transparent live spreads and liquidity quotes with no hidden fees, for a sound trading-execution environment.",
+      "badge": "Trading conditions",
+      "heading": "Conditions for gold, silver and the RMB kilobar",
+      "subtitle": "Spreads, maximum leverage and platform are confirmed conditions; live MetaTrader 5 prices appear whenever the market feed is available.",
       "cols": {
-        "instrument": "Instrument",
-        "bid": "Bid",
-        "ask": "Ask",
-        "spread": "Spread",
-        "change": "Change",
-        "session": "Session"
+        "price": "Live price",
+        "change": "Change"
       },
-      "session": "Mon–Fri 24 hours",
-      "names": {
-        "londonGold": "Loco London Gold",
-        "kilobarHkd": "Kilobar (HKD)"
-      },
-      "disclaimer": "* Sample data for reference only. Actual quotes and liquidity follow the live trading screen on the MT5 platform.",
       "cta": "View full trading conditions"
     },
     "faq": {
@@ -1119,8 +1091,8 @@
           "a": "Opening an account is simple. Click “Open account” at the top right, fill in your basic details and upload identity and address documents as instructed; once verified, you'll receive an MT5 trading account. Our client-support team is happy to help if needed."
         },
         "q2": {
-          "q": "What gold trading products does HATC offer?",
-          "a": "We mainly offer internationally connected spot “Loco London Gold (XAU/USD)” trading, together with “kilobar” trading that meets Hong Kong physical standards — letting you flexibly allocate both physical and price-based gold assets."
+          "q": "Which products does HATC offer?",
+          "a": "We offer three precious-metals CFDs: gold (XAU/USD), silver (XAG/USD) and the RMB kilobar (RKG/CNH), all traded on the MetaTrader 5 platform."
         },
         "q3": {
           "q": "What is Loco London Gold (XAU/USD)?",
@@ -1136,7 +1108,7 @@
         },
         "q6": {
           "q": "What are HATC's trading hours?",
-          "a": "Loco London Gold generally trades near 24 hours from Monday to Friday (subject to daylight-saving adjustments), helping investors take part across major global market sessions. Actual sessions follow the trading platform's announcements."
+          "a": "The international spot gold market generally trades close to around the clock from Monday to Friday. HATC's actual trading sessions will be announced separately and follow the MetaTrader 5 platform's announcements."
         }
       }
     },

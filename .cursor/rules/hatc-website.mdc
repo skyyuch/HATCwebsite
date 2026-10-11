@@ -373,8 +373,27 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  `site_settings.demo_account_url`。**drizzle push 會對 `roles` 欄位刪除停在互動確認**（本機已先手動
  `ALTER TABLE roles DROP COLUMN ...` 再跑，正式站須寫 migration）。
  - **仍待業主**：(a) 最低手數／手續費／執行方式／交易時段／公斤條合約規模（前台顯示「將另行公佈」）；
- (b) 模擬帳戶申請連結；(c) **`/trading` 的示意兩檔帳戶表與假 bid/ask 報價表尚未對齊**（下一輪：
- 其 `標準/專業` 兩欄與真實 Standard/Pro 同名易混淆）；(d) `/products/all` 的合約規模與交易時段仍為示意。
+ (b) 模擬帳戶申請連結；(c) `/products/all` 的合約規模與交易時段仍為示意。
+
+- **2026-10-11 (第四十五輪): `/trading` 吃同一份事實 ＋ 即時報價；示意帳戶/報價表退役。**
+ 業主拍板：① 「即時點差」區＝**核可條件表 ＋ 可用時才出現的即時報價欄**；② 帳戶比較**換成真實四檔**。
+ - **`trading/AccountComparison`** 改讀 `products/tradingConditions.ts`（與 `/accounts` 同源）：
+ 最低入金／最高槓桿／平台 ＋ 點差（點）三品種 × 四檔 ＋「將另行公佈」列。**刪除**示意兩檔
+ （標準 Standard／專業 Professional，與真實 Standard/Pro 同名不同值）、捏造服務差異列
+ （優先支援／教育資源／專屬客戶經理）與「推薦」徽章；徽章只留事實衍生的 `lowestDeposit`／`lowestSpread`。
+ - **`trading/PricingConditions` ＋ client `ConditionsTable.tsx`**：server 永遠輸出條件表（維持 SSG），
+ client 取到報價才加「即時價格／漲跌幅」兩欄＋`home.market.{liveLabel,sourceNote}`；**拿不到就收回欄位，
+ 不回退假價格**。**刻意不顯示 bid/ask**（`ask − bid` 會與分級點差矛盾）。點差欄固定核可「X 點起」。
+ - **`LiveQuotesProvider` 移至 `src/components/market/`**（首頁＋`/trading` 共用，之後新頁沿用此路徑）。
+ - **退役 CMS global `sample-trading-conditions`** ＋ `lib/sampleTradingConditions.ts` ＋
+ `components/trading/sampleTradingData.ts`（＋payload.config／registry／cacheTags／revalidate）。
+ admin 儀表板該入口卡改指 `instruments`。⚠ DB：drop 4 張 `sample_trading_conditions*` 表＋
+ `roles.can_sample_trading_conditions_update`（本機手動 ALTER/DROP；正式站須 migration）。
+ - **`/trading` 文案對齊 FACTS（三語）**：hero／服務卡改金・銀・人民幣公斤條 CFD（移除未確認的實物
+ 結算/提存/「保證」純度）；FAQ 不再把「近 24 小時」當成 HATC 的交易時段；信任卡「實物黃金託管與存付」
+ → 「客戶資金隔離存放」（FACTS 核可句）。i18n 三語 **680 鍵**。
+ - **⚠ 驗證陷阱**：`next dev` ＋ 無頭瀏覽器會出現 client chunk `ERR_ABORTED`、effect 不執行 →
+ 即時報價永遠不出現（首頁亦然）。要驗即時行為請用 `npm run build && npm start`。
 
 ## Visual system
 

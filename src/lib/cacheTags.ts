@@ -14,6 +14,5 @@ export const CACHE_TAGS = {
   aboutMarketing: 'about-page',
   productsMarketing: 'products-page',
   fundingMarketing: 'funding-page',
-  platformsMarketing: 'platforms-page',
-  sampleTradingConditions: 'sample-trading-conditions'
+  platformsMarketing: 'platforms-page'
 } as const;

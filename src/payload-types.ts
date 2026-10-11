@@ -114,7 +114,6 @@ export interface Config {
     'products-page': ProductsPage;
     'funding-page': FundingPage;
     'platforms-page': PlatformsPage;
-    'sample-trading-conditions': SampleTradingCondition;
   };
   globalsSelect: {
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
@@ -124,7 +123,6 @@ export interface Config {
     'products-page': ProductsPageSelect<false> | ProductsPageSelect<true>;
     'funding-page': FundingPageSelect<false> | FundingPageSelect<true>;
     'platforms-page': PlatformsPageSelect<false> | PlatformsPageSelect<true>;
-    'sample-trading-conditions': SampleTradingConditionsSelect<false> | SampleTradingConditionsSelect<true>;
   };
   locale: 'zh-Hant' | 'zh-Hans' | 'en';
   widgets: {
@@ -276,7 +274,6 @@ export interface Role {
   can__products_page__update?: boolean | null;
   can__funding_page__update?: boolean | null;
   can__platforms_page__update?: boolean | null;
-  can__sample_trading_conditions__update?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -707,7 +704,6 @@ export interface RolesSelect<T extends boolean = true> {
   can__products_page__update?: T;
   can__funding_page__update?: T;
   can__platforms_page__update?: T;
-  can__sample_trading_conditions__update?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1411,59 +1407,6 @@ export interface PlatformsPage {
   createdAt?: string | null;
 }
 /**
- * ⚠️ SAMPLE data only (not approved facts). Front-end keeps the sample label. Approved spreads/leverage live on /products (tradingConditions.ts). Empty arrays = sampleTradingData seeds.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "sample-trading-conditions".
- */
-export interface SampleTradingCondition {
-  id: number;
-  /**
-   * bid／ask／spread／change 皆為示意數字，上線前由業主替換。
-   */
-  pricingRows?:
-    | {
-        symbol: string;
-        nameKey: 'londonGold' | 'kilobarHkd';
-        bid: string;
-        ask: string;
-        spread: string;
-        change: string;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * 雙帳戶比較為示意格式。rowKey 對應 i18n trading.accounts.rows.*；type=text 時填 value（localized）。
-   */
-  accountRows?:
-    | {
-        /**
-         * 必須對應 trading.accounts.rows.<key> 的 i18n 標籤鍵。
-         */
-        rowKey: string;
-        standard: {
-          type: 'pending' | 'text' | 'check' | 'priority' | 'dash';
-          /**
-           * 留空且 type=text 時，前台回退 i18n（若有對應鍵）。
-           */
-          value?: string | null;
-          /**
-           * 對應 trading.accounts.<textKey>；value 優先。
-           */
-          textKey?: string | null;
-        };
-        professional: {
-          type: 'pending' | 'text' | 'check' | 'priority' | 'dash';
-          value?: string | null;
-          textKey?: string | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-settings_select".
  */
@@ -1636,46 +1579,6 @@ export interface FundingPageSelect<T extends boolean = true> {
  */
 export interface PlatformsPageSelect<T extends boolean = true> {
   heroImage?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "sample-trading-conditions_select".
- */
-export interface SampleTradingConditionsSelect<T extends boolean = true> {
-  pricingRows?:
-    | T
-    | {
-        symbol?: T;
-        nameKey?: T;
-        bid?: T;
-        ask?: T;
-        spread?: T;
-        change?: T;
-        id?: T;
-      };
-  accountRows?:
-    | T
-    | {
-        rowKey?: T;
-        standard?:
-          | T
-          | {
-              type?: T;
-              value?: T;
-              textKey?: T;
-            };
-        professional?:
-          | T
-          | {
-              type?: T;
-              value?: T;
-              textKey?: T;
-            };
-        id?: T;
-      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
