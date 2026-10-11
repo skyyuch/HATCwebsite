@@ -74,10 +74,7 @@ export interface Config {
     faqs: Faq;
     'academy-articles': AcademyArticle;
     instruments: Instrument;
-    'account-tiers': AccountTier;
     'account-benefits': AccountBenefit;
-    'account-spreads': AccountSpread;
-    'account-platforms': AccountPlatform;
     'trading-platforms': TradingPlatform;
     'funding-methods': FundingMethod;
     testimonials: Testimonial;
@@ -95,10 +92,7 @@ export interface Config {
     faqs: FaqsSelect<false> | FaqsSelect<true>;
     'academy-articles': AcademyArticlesSelect<false> | AcademyArticlesSelect<true>;
     instruments: InstrumentsSelect<false> | InstrumentsSelect<true>;
-    'account-tiers': AccountTiersSelect<false> | AccountTiersSelect<true>;
     'account-benefits': AccountBenefitsSelect<false> | AccountBenefitsSelect<true>;
-    'account-spreads': AccountSpreadsSelect<false> | AccountSpreadsSelect<true>;
-    'account-platforms': AccountPlatformsSelect<false> | AccountPlatformsSelect<true>;
     'trading-platforms': TradingPlatformsSelect<false> | TradingPlatformsSelect<true>;
     'funding-methods': FundingMethodsSelect<false> | FundingMethodsSelect<true>;
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
@@ -236,13 +230,6 @@ export interface Role {
    * Also requires this resource’s Update permission.
    */
   fld__instruments__enabled__update?: boolean | null;
-  can__account_tiers__create?: boolean | null;
-  can__account_tiers__update?: boolean | null;
-  can__account_tiers__delete?: boolean | null;
-  /**
-   * Also requires this resource’s Update permission.
-   */
-  fld__account_tiers__enabled__update?: boolean | null;
   can__account_benefits__create?: boolean | null;
   can__account_benefits__update?: boolean | null;
   can__account_benefits__delete?: boolean | null;
@@ -250,20 +237,6 @@ export interface Role {
    * Also requires this resource’s Update permission.
    */
   fld__account_benefits__enabled__update?: boolean | null;
-  can__account_spreads__create?: boolean | null;
-  can__account_spreads__update?: boolean | null;
-  can__account_spreads__delete?: boolean | null;
-  /**
-   * Also requires this resource’s Update permission.
-   */
-  fld__account_spreads__enabled__update?: boolean | null;
-  can__account_platforms__create?: boolean | null;
-  can__account_platforms__update?: boolean | null;
-  can__account_platforms__delete?: boolean | null;
-  /**
-   * Also requires this resource’s Update permission.
-   */
-  fld__account_platforms__enabled__update?: boolean | null;
   can__trading_platforms__create?: boolean | null;
   can__trading_platforms__update?: boolean | null;
   can__trading_platforms__delete?: boolean | null;
@@ -457,36 +430,6 @@ export interface Instrument {
   createdAt: string;
 }
 /**
- * ⚠️ SAMPLE account cards for /accounts. Min deposit / spread / commission / leverage / execution / platform are illustrative (front-end keeps the sample label), NOT approved facts. Approved figures live in tradingConditions.ts. Empty / no DB = i18n seed fallback.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "account-tiers".
- */
-export interface AccountTier {
-  id: number;
-  name: string;
-  code: string;
-  badge?: string | null;
-  /**
-   * Highlighted with a gold border. Use on at most one tier.
-   */
-  popular?: boolean | null;
-  desc?: string | null;
-  minDeposit?: string | null;
-  spread?: string | null;
-  commission?: string | null;
-  leverage?: string | null;
-  execution?: string | null;
-  platform?: string | null;
-  /**
-   * Lower numbers appear first.
-   */
-  order?: number | null;
-  enabled?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Core benefit cards for /accounts. Empty / no DB = i18n seed fallback.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -497,48 +440,6 @@ export interface AccountBenefit {
   title: string;
   desc?: string | null;
   icon: 'percent' | 'zap' | 'creditCard' | 'monitor';
-  /**
-   * Lower numbers appear first.
-   */
-  order?: number | null;
-  enabled?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * ⚠️ SAMPLE spreads preview for /accounts. Bid / ask / spread are illustrative (front-end keeps the sample label), NOT a live feed or approved fact. Approved average spreads live in tradingConditions.ts. Empty / no DB = i18n seed fallback.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "account-spreads".
- */
-export interface AccountSpread {
-  id: number;
-  pair: string;
-  bid?: string | null;
-  ask?: string | null;
-  spread?: string | null;
-  /**
-   * Lower numbers appear first.
-   */
-  order?: number | null;
-  enabled?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Supported-platform cards for /accounts. Empty / no DB = i18n seed fallback.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "account-platforms".
- */
-export interface AccountPlatform {
-  id: number;
-  name: string;
-  desc?: string | null;
-  /**
-   * Short label drawn on the placeholder panel (not localised).
-   */
-  panelLabel?: string | null;
   /**
    * Lower numbers appear first.
    */
@@ -671,20 +572,8 @@ export interface PayloadLockedDocument {
         value: number | Instrument;
       } | null)
     | ({
-        relationTo: 'account-tiers';
-        value: number | AccountTier;
-      } | null)
-    | ({
         relationTo: 'account-benefits';
         value: number | AccountBenefit;
-      } | null)
-    | ({
-        relationTo: 'account-spreads';
-        value: number | AccountSpread;
-      } | null)
-    | ({
-        relationTo: 'account-platforms';
-        value: number | AccountPlatform;
       } | null)
     | ({
         relationTo: 'trading-platforms';
@@ -787,22 +676,10 @@ export interface RolesSelect<T extends boolean = true> {
   can__instruments__update?: T;
   can__instruments__delete?: T;
   fld__instruments__enabled__update?: T;
-  can__account_tiers__create?: T;
-  can__account_tiers__update?: T;
-  can__account_tiers__delete?: T;
-  fld__account_tiers__enabled__update?: T;
   can__account_benefits__create?: T;
   can__account_benefits__update?: T;
   can__account_benefits__delete?: T;
   fld__account_benefits__enabled__update?: T;
-  can__account_spreads__create?: T;
-  can__account_spreads__update?: T;
-  can__account_spreads__delete?: T;
-  fld__account_spreads__enabled__update?: T;
-  can__account_platforms__create?: T;
-  can__account_platforms__update?: T;
-  can__account_platforms__delete?: T;
-  fld__account_platforms__enabled__update?: T;
   can__trading_platforms__create?: T;
   can__trading_platforms__update?: T;
   can__trading_platforms__delete?: T;
@@ -917,60 +794,12 @@ export interface InstrumentsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "account-tiers_select".
- */
-export interface AccountTiersSelect<T extends boolean = true> {
-  name?: T;
-  code?: T;
-  badge?: T;
-  popular?: T;
-  desc?: T;
-  minDeposit?: T;
-  spread?: T;
-  commission?: T;
-  leverage?: T;
-  execution?: T;
-  platform?: T;
-  order?: T;
-  enabled?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "account-benefits_select".
  */
 export interface AccountBenefitsSelect<T extends boolean = true> {
   title?: T;
   desc?: T;
   icon?: T;
-  order?: T;
-  enabled?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "account-spreads_select".
- */
-export interface AccountSpreadsSelect<T extends boolean = true> {
-  pair?: T;
-  bid?: T;
-  ask?: T;
-  spread?: T;
-  order?: T;
-  enabled?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "account-platforms_select".
- */
-export interface AccountPlatformsSelect<T extends boolean = true> {
-  name?: T;
-  desc?: T;
-  panelLabel?: T;
   order?: T;
   enabled?: T;
   updatedAt?: T;
@@ -1072,6 +901,10 @@ export interface SiteSetting {
   phone?: string | null;
   email?: string | null;
   liveChatUrl?: string | null;
+  /**
+   * Leave empty to hide the demo-account buttons across the site.
+   */
+  demoAccountUrl?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1639,6 +1472,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   phone?: T;
   email?: T;
   liveChatUrl?: T;
+  demoAccountUrl?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

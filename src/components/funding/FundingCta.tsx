@@ -3,13 +3,17 @@ import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
 import {getFundingMarketing} from '@/lib/fundingMarketing';
-import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
+import {
+  demoAccountHref,
+  getSiteSettings,
+  primaryContactHref
+} from '@/lib/siteSettings';
 import type {Locale} from '@/i18n/routing';
 
 /**
  * Closing conversion band (Figma 75:324). Dark section. Copy is softened — no
- * fabricated "$100,000 virtual funds" / demo claims. Primary CTA opens a real
- * account (operational link via CMS); the secondary CTA points at /accounts.
+ * fabricated "$100,000 virtual funds" / demo claims. Both CTAs are operational
+ * links via CMS; the demo CTA stays hidden until a demo-account URL is set.
  */
 export default async function FundingCta() {
   const locale = (await getLocale()) as Locale;
@@ -17,6 +21,7 @@ export default async function FundingCta() {
   const marketing = await getFundingMarketing(locale);
   const settings = await getSiteSettings();
   const openAccountHref = primaryContactHref(settings);
+  const demoHref = demoAccountHref(settings);
   const ctaImage = marketing.images?.cta ?? '/figma/funding/cta.png';
 
   return (
@@ -63,12 +68,16 @@ export default async function FundingCta() {
               {t('ctaOpen')}
             </Link>
           )}
-          <Link
-            href="/accounts"
-            className={cn(buttonVariants({variant: 'onDark', size: 'fig'}))}
-          >
-            {t('ctaDemo')}
-          </Link>
+          {demoHref ? (
+            <a
+              href={demoHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(buttonVariants({variant: 'onDark', size: 'fig'}))}
+            >
+              {t('ctaDemo')}
+            </a>
+          ) : null}
         </div>
       </div>
     </section>

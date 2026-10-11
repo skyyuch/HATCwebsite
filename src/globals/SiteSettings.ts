@@ -41,6 +41,28 @@ export const SiteSettings: GlobalConfig = {
           label: adminLabel('Live chat URL', '線上客服連結 (URL)', '在线客服链接 (URL)')
         }
       ]
+    },
+    {
+      type: 'collapsible',
+      label: adminLabel('Accounts', '帳戶入口', '账户入口'),
+      fields: [
+        {
+          name: 'demoAccountUrl',
+          type: 'text',
+          label: adminLabel(
+            'Demo account application URL',
+            '模擬帳戶申請連結 (URL)',
+            '模拟账户申请链接 (URL)'
+          ),
+          admin: {
+            description: adminLabel(
+              'Leave empty to hide the demo-account buttons across the site.',
+              '留空＝全站隱藏「申請模擬帳戶」按鈕（不做死連結）。',
+              '留空＝全站隐藏「申请模拟账户」按钮（不做死链接）。'
+            )
+          }
+        }
+      ]
     }
   ]
 };

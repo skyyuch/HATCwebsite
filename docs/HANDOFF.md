@@ -7,6 +7,20 @@
 
 ## ▶ 下一步（下一位 agent）
 
+> **✅ 第四十四輪（2026-10-11）完成：真實交易條件上線（取代 27/30）＋ MT4 全站下架 ＋
+> `/accounts` 由示意改為已核可事實。**
+> 業主提供 **MT5 交易組設定表**（截圖）並拍板：新表取代 FACTS 舊的「黃金 27 點／白銀 30 點」、
+> 點差對外用**「點」**、`/accounts` 四帳戶改真實分級且**移除「示意數據」標籤**、**人民幣公斤條**
+> 加為第三個 CFD 產品、**公司不提供 MT4**、模擬帳戶按鈕改 **CMS 可設定（未填則隱藏）**。
+> 事實寫入 `HATC_FACTS.md`「Account types & trading conditions」／「Trading platforms」，程式端唯一
+> 來源＝`src/components/products/tradingConditions.ts`；據此**退役 3 個 CMS 集合**（帳戶/點差/平台
+> ——事實不該能被後台改到）。詳見下方「🟢 第四十四輪」。
+>
+> **⏭️ 下一棒（第四十五輪，已與業主說明：本輪是 A，下一輪是 B）＝把同一份事實擴散到 `/trading`：**
+> 其「帳戶比較」仍是**示意兩檔（標準/專業）**，與真實 Standard/Pro **同名但數值不同**，最易誤導；
+> 「即時點差」區也仍是**假 bid/ask**（`trading/sampleTradingData.ts`）。另 `/products/all` 的
+> **合約規模與交易時段**仍為示意（點差/槓桿已改真實）。
+
 > **✅ 第四十三輪（2026-10-11）完成：首頁行情已接上自家 MT5 行情閘道（真實報價），拿不到時自動退回示意數據。**
 > 架構＝**server 端 BFF**（`src/lib/marketQuotes.ts` ＋ `GET /api/market/quotes`）＋ client 共用輪詢
 > （`LiveQuotes/LiveQuotesProvider`），首頁維持 **SSG**。品種＝金／銀／人民幣公斤條
@@ -142,6 +156,98 @@
 2. **第十八輪 `/trading` 暫緩 UI／驗收項**（多數需業主拍板）：淺色系是否推廣、帳戶分級真偽、
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
+
+## 🟢 第四十四輪（實作，2026-10-11）：真實交易條件 ＋ MT4 下架 ＋ `/accounts` 轉為事實
+
+**起點**：業主「下一輪我想處理內容：① 目前公司不會提供 MT4；② 點差等內容」，並提供一張
+**MT5 交易組設定表**截圖（真實/模擬/遊客交易組 × DEFAULT/CN 區，含槓桿、入金門檻、三品種點差）。
+
+### 業主拍板（AskQuestion）
+
+| 問題 | 決定 |
+|---|---|
+| FACTS 舊的「金 27／銀 30 點」與新表不符 | **以新表為準，取代 27/30**（舊值全站停用） |
+| 點差單位 | **用「點」**（非價格單位） |
+| `/accounts` 四帳戶 | **換成真實分級，並當已核可事實呈現（移除「示意數據」）** |
+| 人民幣公斤條 | **加為第三個可交易產品** |
+| 不分帳戶頁面的單一點差欄 | **顯示最低值並標「起」**（＝VIP 條件） |
+| 模擬帳戶按鈕 | **CMS 可設定連結，未填則隱藏** |
+
+### 換算（寫入 FACTS 前已實測確認）
+
+閘道回報 digits：`XAUUSD` 2、`XAGUSD` 3、`RKGCNH` 2 → 1 點 ＝ 0.01／0.001／0.01。
+業主表以**價格單位**記錄（金 0.3 等），換算成「點」後：
+
+| 帳戶 | 最低入金 | 槓桿 | 金 | 銀 | 公斤條 |
+|---|---|---|---|---|---|
+| Mini | 100 USD | 1:100 | 33 | 44 | 42 |
+| Standard | 300 USD | 1:100 | 30 | 40 | 40 |
+| Pro | 1,000 USD | 1:100 | 28 | 38 | 40 |
+| VIP | 5,000 USD | 1:100 | 20 | 30 | 35 |
+
+> 已提醒業主：**對外數字會比原本「看起來差」**（金 27→Standard 30／VIP 20；銀 30→Standard 40），
+> 業主確認要公布真實值。CN 區交易組條件與預設組相同 → 屬地區路由，前台不區分。
+
+### 落地
+
+- **FACTS**（`docs/HATC_FACTS.md`）：`CFD business` 節改寫——標的＝金/銀/**公斤條**三項、平台＝MT5
+  且**不提供 MT4**、新增 **`### Account types & trading conditions`** 事實表（含「點」定義、
+  「最低值＋起」呈現規則、**無佣金欄位**、CN 組說明、模擬組說明）＋新增 **`### Trading platforms`**
+  （MT5／HATC App／網頁交易端；MT4 不提供）。
+- **程式端唯一事實來源**＝`src/components/products/tradingConditions.ts`：`CFD_PRODUCTS`
+  （key/symbol/gatewaySymbol/digits/`spreadFrom`/leverage）＋`ACCOUNT_TIERS`
+  （code/minDepositUsd/leverage/`spreads{gold,silver,kilobar}`/badge）＋`MAX_LEVERAGE`。
+  註解明列**退役值**（27/30、1:500、1:1000、每手佣金）不得復活。
+- **退役 3 個 CMS 集合**（事實不該能被後台改到）：`account-tiers`／`account-spreads`／
+  `account-platforms` ＋ `lib/account{Tiers,Spreads,Platforms}.ts`，並同步清
+  `payload.config`／`permissions/registry`／`cacheTags`／`revalidateContent`／`api/dev-revalidate`。
+  **保留** `account-benefits`（行銷文案）與 `faqs(accounts)`＝業主仍可編輯。
+- **`/accounts` 元件**：`AccountTiers` 改讀 code（四卡＋卡內「點差（點）」三品種小表；badge 只有
+  **事實衍生**的 `lowestDeposit`／`lowestSpread`，刻意不做「最受歡迎」這類捏造宣稱）；
+  **`AccountSpreads` 由假 bid/ask 報價表改為「產品 × 帳戶分級」點差對照表**（視覺改動已向業主說明：
+  Figma 62:200 的 bid/ask 在靜態頁只能是假數字，真 bid/ask 屬首頁即時報價元件）；
+  `AccountPlatforms` 改讀**共用 `trading-platforms`**（與 `/platforms` 同源，MT4 不會再從 DB 冒出來）。
+- **`/products`**：加入**人民幣公斤條**（卡片 3 欄）；點差改「X 點起」並新增連結
+  `/accounts#spreads`（`products.conditions.tiersLink`）；`/products/all` 種子列改真實點差/槓桿
+  ＋新增公斤條列，note 改寫為「點差與槓桿＝已確認條件；合約規模與交易時段＝示意」。
+- **模擬帳戶**：`SiteSettings.demoAccountUrl`（＋`NEXT_PUBLIC_DEMO_ACCOUNT_URL` fallback）
+  ＋`demoAccountHref()`；`/accounts`、`/platforms`、`/funding` 的 demo CTA **未設定即不渲染**
+  （原本指向 `/register`／`/accounts` ＝死連結體驗）。
+- **i18n**：`accounts.*` 全面重寫、刪 `accounts.{tiersSample,spreadsSample,platforms.items}`；
+  新增 `products.items.kilobar`／`products.conditions.{spreadFrom,tiersLink}`；三語 **704 鍵**齊
+  （原 743，淨減因刪除示意陣列）。`metadata.{products,productsAll,accounts}.description` 一併更新。
+- **種子腳本** `scripts/seed-accounts.ts` 改為 **replace（非 seed-once）**，只灌 benefits＋faqs(accounts)，
+  以清掉 DB 內退役的 MT4／佣金文案；本機已跑（benefits 4→4、faqs 5→5）。
+
+### ⚠ DB 遷移（本機已做，正式站須寫 migration）
+
+```
+DROP TABLE account_tiers(_locales), account_spreads(_locales), account_platforms(_locales) CASCADE;
+ALTER TABLE payload_locked_documents_rels DROP COLUMN account_{tiers,spreads,platforms}_id;
+ALTER TABLE roles DROP COLUMN can_account_{tiers,spreads,platforms}_{create,update,delete},
+                  DROP COLUMN fld_account_{tiers,spreads,platforms}_enabled_update;  -- 12 欄
+-- 新增：site_settings.demo_account_url（dev push 自動加）
+```
+
+**雷**：drizzle push 對 `roles` 的欄位刪除會停在 **互動式 DATA LOSS 確認**（`y/N`），CLI 腳本因此卡住
+且 `| tail` 會把提示吞掉看不到 → 先手動 `ALTER TABLE roles DROP COLUMN ...` 再跑腳本。
+刪除 collection 檔案後 **dev 需清 `.next` 重啟**，否則 payload.config 仍解析舊 import 而整頁 500。
+
+### 驗證
+
+`tsc --noEmit` 無錯／`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning；`seed-accounts.ts` 原本那個
+unused `LOCALES` warning 隨改寫消失）／`i18n:check` 三語 704 鍵齊／三語 `/accounts`、`/products`、
+`/products/all`、`/platforms`、`/funding` 皆 **200**；全站 HTML 掃描確認 **`1:500`／`1:1000`／`RAW ECN`／
+`TradingView` 已完全消失**，`MetaTrader 4` 只剩「不提供」的說明文案（next-intl 會把整包 messages 送到
+client，故字串會出現在每頁 payload，屬預期）。桌機 1440／手機 390 截圖檢視 `/accounts`、`/products` 通過。
+
+### 待業主
+
+- (a) **最低手數／手續費／執行方式／交易時段／公斤條合約規模**（前台顯示「將另行公佈」，不得虛構）。
+- (b) **模擬帳戶申請連結**（填入 `/admin` → 網站營運設定 → 帳戶入口即生效，三處按鈕自動出現）。
+- (c) `/trading` 的示意兩檔帳戶表與假 bid/ask 報價表**尚未對齊**（下一輪首要；其「標準/專業」與真實
+  Standard/Pro 同名但數值不同，最容易誤導）。
+- (d) `/products/all` 的合約規模與交易時段仍為示意。
 
 ## 🟢 第四十三輪（實作，2026-10-11）：首頁行情接上 MT5 真實報價（BFF 代理＋示意降級）
 

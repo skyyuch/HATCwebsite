@@ -16,10 +16,7 @@ import {Faqs} from './collections/Faqs';
 import {HomeActivities} from './collections/HomeActivities';
 import {AcademyArticles} from './collections/AcademyArticles';
 import {Instruments} from './collections/Instruments';
-import {AccountTiers} from './collections/AccountTiers';
 import {AccountBenefits} from './collections/AccountBenefits';
-import {AccountSpreads} from './collections/AccountSpreads';
-import {AccountPlatforms} from './collections/AccountPlatforms';
 import {TradingPlatforms} from './collections/TradingPlatforms';
 import {FundingMethods} from './collections/FundingMethods';
 import {Testimonials} from './collections/Testimonials';
@@ -136,10 +133,7 @@ export default buildConfig({
     Faqs,
     AcademyArticles,
     Instruments,
-    AccountTiers,
     AccountBenefits,
-    AccountSpreads,
-    AccountPlatforms,
     TradingPlatforms,
     FundingMethods,
     Testimonials

@@ -338,6 +338,44 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  → `Services` 的 K 線**仍是示意**並保留標籤，待後端修好才可接真 K 線；(d) `/products`、`/accounts`、
  `/trading`、`/products/all` 的示意點差/報價表本輪未動（層級不同＝交易條件，改接須業主決定）。
 
+- **2026-10-11 (第四十四輪): 真實交易條件上線 ＋ MT4 全站下架。SUPERSEDES 第三十一輪的
+ `/accounts` 示意決策。** 業主提供 MT5 交易組設定表（截圖），拍板：① 新表**取代 FACTS 的
+ 「黃金 27 點／白銀 30 點」**（27/30 **已停用，全站不得再出現**）；② 點差對外**以「點」呈現**；
+ ③ `/accounts` 四帳戶**換成真實分級並當已核可事實呈現（移除「示意數據」標籤）**；④ **人民幣公斤條
+ 加為第三個 CFD 產品**；⑤ **公司不提供 MT4**（TradingView 亦未確認，不得列出）；⑥ 模擬帳戶按鈕改
+ **CMS 可設定，未填則隱藏**。
+ - **已核可事實（見 `HATC_FACTS.md`「Account types & trading conditions」／「Trading platforms」）**：
+ Mini／Standard／Pro／VIP ＝入金 100／300／1,000／5,000 USD，**槓桿全檔全品種 1:100**，點差（點）
+ 金 33/30/28/20、銀 44/40/38/30、公斤條 42/40/40/35；**無佣金欄位**（不得寫佣金或「零佣金」）。
+ 「點」＝最小跳動（金 0.01／銀 0.001／公斤條 0.01，digits 經閘道實測 2/3/2）。不分帳戶的頁面顯示
+ **最低值＋「起」**（金 20／銀 30／公斤條 35 點起）。
+ - **事實留在程式、不進 CMS**：`src/components/products/tradingConditions.ts` ＝唯一程式端來源
+ （`CFD_PRODUCTS`＋`ACCOUNT_TIERS`＋`MAX_LEVERAGE`）。據此**退役三個集合**
+ `account-tiers`／`account-spreads`／`account-platforms`（＋對應 `lib/account{Tiers,Spreads,Platforms}.ts`、
+ registry／cacheTags／revalidate／payload.config 條目）——帳戶與點差已是事實，**不可讓後台改到事實**。
+ **保留** `account-benefits`（行銷文案）與 `faqs(accounts)`。`/accounts` 平台區改讀**共用
+ `trading-platforms`**（與 `/platforms` 同源，MT4 不會再從 DB 冒出來）。
+ - **元件**：`AccountTiers` 改讀 code（卡片含 `點差（點）` 三品種小表、badge 僅
+ `lowestDeposit`／`lowestSpread` ＝**事實衍生，不用「最受歡迎」這類捏造宣稱**）；
+ **`AccountSpreads` 由假 bid/ask 報價表改為「產品 × 帳戶分級」點差對照表**（Figma 62:200 的 bid/ask
+ 只能是假數字，真 bid/ask 屬首頁即時報價元件）；`/products` 三產品卡＋條件表顯示「X 點起」並連
+ `/accounts#spreads`。
+ - **模擬帳戶**：`SiteSettings.demoAccountUrl`（＋`NEXT_PUBLIC_DEMO_ACCOUNT_URL` fallback）＋
+ `demoAccountHref()`；`/accounts`、`/platforms`、`/funding` 三處 demo CTA **未設定即不渲染**
+ （原本都指向 `/register`／`/accounts` ＝死連結體驗）。
+ - **i18n**：`accounts.*` 重寫（`tiers.{badges,specLabels,minDepositValue,spreadsLabel,items,note}`、
+ `spreads`、`platforms.note`、benefits／steps／faq 全改），刪 `accounts.{tiersSample,spreadsSample,
+ platforms.items}`；`products.{items.kilobar,conditions.spreadFrom,conditions.tiersLink}` 新增；
+ 三語 **704 鍵**齊。種子腳本 `scripts/seed-accounts.ts` 改為**replace（非 seed-once）**，只灌
+ benefits＋faqs(accounts)，以清掉 DB 內退役的 MT4／佣金文案。
+ - **⚠ DB**：drop `account_tiers/_locales`、`account_spreads/_locales`、`account_platforms/_locales`
+ ＋`payload_locked_documents_rels` 三個 FK 欄 ＋`roles` 的 12 個權限欄（`can_*`／`fld_*`）；新增
+ `site_settings.demo_account_url`。**drizzle push 會對 `roles` 欄位刪除停在互動確認**（本機已先手動
+ `ALTER TABLE roles DROP COLUMN ...` 再跑，正式站須寫 migration）。
+ - **仍待業主**：(a) 最低手數／手續費／執行方式／交易時段／公斤條合約規模（前台顯示「將另行公佈」）；
+ (b) 模擬帳戶申請連結；(c) **`/trading` 的示意兩檔帳戶表與假 bid/ask 報價表尚未對齊**（下一輪：
+ 其 `標準/專業` 兩欄與真實 Standard/Pro 同名易混淆）；(d) `/products/all` 的合約規模與交易時段仍為示意。
+
 ## Visual system
 
 - **Logo (2026-08-10 第十六輪; header updated 第十七輪)**: use the real wordmark `public/brand/hatc-logo.png`

@@ -17,6 +17,8 @@ export type SiteSettings = {
   phone?: string;
   email?: string;
   liveChatUrl?: string;
+  /** Demo-account application entry point; unset = hide the demo CTAs. */
+  demoAccountUrl?: string;
 };
 
 function envFallback(): SiteSettings {
@@ -24,7 +26,8 @@ function envFallback(): SiteSettings {
     whatsapp: process.env.NEXT_PUBLIC_CONTACT_WHATSAPP || undefined,
     phone: process.env.NEXT_PUBLIC_CONTACT_PHONE || undefined,
     email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || undefined,
-    liveChatUrl: process.env.NEXT_PUBLIC_CONTACT_LIVECHAT || undefined
+    liveChatUrl: process.env.NEXT_PUBLIC_CONTACT_LIVECHAT || undefined,
+    demoAccountUrl: process.env.NEXT_PUBLIC_DEMO_ACCOUNT_URL || undefined
   };
 }
 
@@ -37,7 +40,8 @@ async function fetchSiteSettingsFromDb(): Promise<SiteSettings> {
       whatsapp: (settings?.whatsapp as string) || undefined,
       phone: (settings?.phone as string) || undefined,
       email: (settings?.email as string) || undefined,
-      liveChatUrl: (settings?.liveChatUrl as string) || undefined
+      liveChatUrl: (settings?.liveChatUrl as string) || undefined,
+      demoAccountUrl: (settings?.demoAccountUrl as string) || undefined
     };
   } catch {
     return envFallback();
@@ -56,6 +60,15 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   }
 
   return getSiteSettingsCached();
+}
+
+/**
+ * Demo-account application URL, or null when the owner has not supplied one.
+ * Callers must then hide their demo CTA: a demo account is not open yet
+ * (docs/HATC_FACTS.md), so linking it somewhere else would be a dead end.
+ */
+export function demoAccountHref(s: SiteSettings): string | null {
+  return s.demoAccountUrl?.trim() || null;
 }
 
 /** Resolve the best available contact URL, or null if none configured. */

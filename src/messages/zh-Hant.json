@@ -10,15 +10,15 @@
     },
     "products": {
       "title": "貴金屬 CFD 交易產品",
-      "description": "華安泰昌貴金屬差價合約（CFD）交易產品：黃金、白銀，以香港黃金交易所 AA 類行員（會員編號 008）資格為後盾，透過 MT5 平台交易。"
+      "description": "華安泰昌貴金屬差價合約（CFD）交易產品：黃金、白銀與人民幣公斤條，以香港黃金交易所 AA 類行員（會員編號 008）資格為後盾，透過 MT5 平台交易。"
     },
     "productsAll": {
       "title": "所有交易產品",
-      "description": "華安泰昌可交易產品一覽：貴金屬差價合約與交易規格說明。表列規格為示意數據，實際條件以官方公告與 MT5 平台即時報價為準。"
+      "description": "華安泰昌可交易產品一覽與交易規格說明。點差與槓桿為已確認交易條件；合約規模與交易時段為示意數據，實際以官方公告與 MT5 平台即時報價為準。"
     },
     "accounts": {
       "title": "交易帳戶",
-      "description": "華安泰昌交易帳戶類型與開戶流程說明。帳戶規格為示意數據，實際條件以官方公告與 MT5 平台為準。"
+      "description": "華安泰昌交易帳戶類型、交易條件與開戶流程說明：四種帳戶類型，最低入金 USD 100 起，最高槓桿一律 1:100。"
     },
     "funding": {
       "title": "入金與出金",
@@ -460,14 +460,14 @@
       "titleLead": "貴金屬 ",
       "titleAccent": "CFD",
       "titleTail": " 交易產品",
-      "subtitle": "以香港黃金交易所 AA 類行員（會員編號 008）資格為後盾，透過 MT5 平台交易黃金、白銀差價合約。",
+      "subtitle": "以香港黃金交易所 AA 類行員（會員編號 008）資格為後盾，透過 MT5 平台交易黃金、白銀與人民幣公斤條差價合約。",
       "bgAlt": "黃金市場走勢示意圖"
     },
     "list": {
       "kicker": "OUR PRODUCTS",
       "heading": "可交易產品",
-      "subheading": "目前提供黃金與白銀差價合約（CFD）。",
-      "spreadLabel": "平均點差",
+      "subheading": "目前提供黃金、白銀與人民幣公斤條差價合約（CFD）。",
+      "spreadLabel": "點差",
       "leverageLabel": "最高槓桿"
     },
     "items": {
@@ -478,6 +478,10 @@
       "silver": {
         "name": "白銀 CFD",
         "desc": "以倫敦銀（XAG/USD）為標的的差價合約，支援雙向交易與靈活槓桿。"
+      },
+      "kilobar": {
+        "name": "人民幣公斤條 CFD",
+        "desc": "以人民幣計價之公斤金條（RKG/CNH）為標的的差價合約，支援雙向交易與靈活槓桿。"
       }
     },
     "conditions": {
@@ -485,14 +489,16 @@
       "heading": "交易條件",
       "colProduct": "產品",
       "colSymbol": "商品代碼",
-      "colSpread": "平均點差",
+      "colSpread": "點差",
       "colLeverage": "最高槓桿",
       "colPlatform": "交易平台",
       "pointsUnit": "點",
       "platformValue": "MetaTrader 5",
       "pendingLabel": "其餘交易條件（最低手數、手續費、執行方式等）",
       "pending": "將另行公佈",
-      "note": "點差為平均參考值，實際成交點差以交易平台即時報價為準；槓桿交易可能同時放大盈利與虧損，請於交易前充分了解相關風險。"
+      "note": "點差依帳戶類型而異，表列為最低值（尊尚帳戶）；各帳戶類型的完整點差見交易帳戶頁。實際成交點差以 MT5 平台即時報價為準；槓桿交易可能同時放大盈利與虧損，請於交易前充分了解相關風險。",
+      "spreadFrom": "{points} 點起",
+      "tiersLink": "查看各帳戶類型點差"
     },
     "credibility": {
       "kicker": "WHY TRADE WITH HATC",
@@ -515,7 +521,7 @@
       "kicker": "ALL PRODUCTS",
       "heading": "可交易產品一覽",
       "sampleLabel": "示意數據",
-      "sampleNote": "下表之合約規模、點差、槓桿與交易時段為示意數據，實際交易條件以官方公告與 MT5 平台即時報價為準。",
+      "sampleNote": "點差與槓桿為華安泰昌已確認之交易條件（點差依帳戶類型而異，表列為最低值）；合約規模與交易時段為示意數據，實際以官方公告與 MT5 平台即時報價為準。",
       "colProduct": "產品",
       "colContractSize": "合約規模",
       "colSpread": "點差",
@@ -538,7 +544,7 @@
           "name": "倫敦金",
           "category": "metals",
           "contractSize": "100 盎司",
-          "spread": "27",
+          "spread": "20 點起",
           "leverage": "1:100",
           "tradingHours": "週一至週五 24 小時"
         },
@@ -547,7 +553,16 @@
           "name": "倫敦銀",
           "category": "metals",
           "contractSize": "5000 盎司",
-          "spread": "30",
+          "spread": "30 點起",
+          "leverage": "1:100",
+          "tradingHours": "週一至週五 24 小時"
+        },
+        {
+          "symbol": "RKG/CNH",
+          "name": "人民幣公斤條",
+          "category": "metals",
+          "contractSize": "將另行公佈",
+          "spread": "35 點起",
           "leverage": "1:100",
           "tradingHours": "週一至週五 24 小時"
         }
@@ -561,144 +576,78 @@
       "titleLead": "選擇最適合您的",
       "titleAccent": "貴金屬 CFD",
       "titleTail": "交易帳戶",
-      "subtitle": "我們提供多種帳戶類型，從零佣金的標準帳戶到超低點差的專業帳戶，貼合您的黃金、白銀交易策略與資金規模。",
+      "subtitle": "四種帳戶類型，最低入金 USD 100 起；最高槓桿一律 1:100，黃金、白銀與人民幣公斤條的點差隨帳戶類型遞減。",
       "ctaOpen": "立即開立帳戶",
-      "ctaDemo": "免費模擬體驗"
+      "ctaDemo": "申請模擬帳戶"
     },
     "tiers": {
       "kicker": "CHOOSE YOUR TIER",
-      "heading": "多種帳戶類型，全面對比",
-      "subtitle": "根據您的風險承受能力、資金與交易頻率，選擇最適合的帳戶模式。",
+      "heading": "四種帳戶類型，條件一覽",
+      "subtitle": "四檔的可交易產品與最高槓桿相同，差異在最低入金與點差。",
+      "badges": {
+        "lowestDeposit": "入金門檻最低",
+        "lowestSpread": "點差最低"
+      },
       "specLabels": {
-        "minDeposit": "最低入金金額",
-        "spread": "最小點差",
-        "commission": "每手佣金",
-        "leverage": "槓桿比例",
-        "execution": "執行方式",
-        "platform": "支援平台"
+        "minDeposit": "最低入金",
+        "leverage": "最高槓桿",
+        "platform": "交易平台"
       },
-      "note": "以上帳戶規格為示意數據，實際條件以華安泰昌正式公佈與 MT5 平台為準；槓桿交易可能同時放大盈利與虧損，請充分了解相關風險。"
+      "minDepositValue": "USD {amount, number}",
+      "spreadsLabel": "點差（點）",
+      "items": {
+        "mini": {
+          "name": "迷你帳戶",
+          "desc": "入金門檻最低的入門帳戶，可用較小資金在實盤環境熟悉交易流程；點差為四檔中最高。"
+        },
+        "standard": {
+          "name": "標準帳戶",
+          "desc": "入金門檻與點差較為平衡的常規選擇，適合穩定交易的客戶。"
+        },
+        "pro": {
+          "name": "專業帳戶",
+          "desc": "點差低於標準帳戶，適合交易較頻繁、對成本敏感的客戶。"
+        },
+        "vip": {
+          "name": "尊尚帳戶",
+          "desc": "四檔中點差最低的帳戶，適合資金規模較大的客戶。"
+        }
+      },
+      "note": "以上為華安泰昌已確認之帳戶條件。點差以「點」表示：黃金 1 點 = 0.01 美元、白銀 1 點 = 0.001 美元、人民幣公斤條 1 點 = 0.01；實際成交點差以 MT5 平台即時報價為準。最低手數、手續費與執行方式將另行公佈。槓桿交易可能同時放大盈利與虧損，請於交易前充分了解相關風險。"
     },
-    "tiersSample": [
-      {
-        "key": "standard",
-        "code": "Standard STP",
-        "badge": "最受歡迎",
-        "popular": true,
-        "name": "標準 STP 帳戶",
-        "desc": "最受歡迎的入門首選，無佣金負擔，交易成本簡單透明。",
-        "minDeposit": "USD 100",
-        "spread": "1.0 點起",
-        "commission": "零佣金",
-        "leverage": "最高 1:500",
-        "execution": "STP 直通式處理",
-        "platform": "MT4, MT5, TradingView"
-      },
-      {
-        "key": "raw",
-        "code": "Raw ECN",
-        "badge": "極致低點差",
-        "popular": false,
-        "name": "RAW ECN 帳戶",
-        "desc": "專為高頻與專業交易者打造，享受機構級的原始極致點差。",
-        "minDeposit": "USD 500",
-        "spread": "0.0 點起",
-        "commission": "每手 USD 3.00（單邊）",
-        "leverage": "最高 1:500",
-        "execution": "ECN 電子通訊網絡",
-        "platform": "MT4, MT5, TradingView"
-      },
-      {
-        "key": "vip",
-        "code": "Premium VIP",
-        "badge": "大宗交易專屬",
-        "popular": false,
-        "name": "尊尚 VIP 帳戶",
-        "desc": "專屬大資金客戶，提供最優惠的點差折扣與全天候專屬客服。",
-        "minDeposit": "USD 10,000",
-        "spread": "0.0 點起",
-        "commission": "每手 USD 1.50（單邊）",
-        "leverage": "最高 1:500",
-        "execution": "ECN 電子通訊網絡",
-        "platform": "MT4, MT5"
-      },
-      {
-        "key": "cent",
-        "code": "Cent Account",
-        "badge": "微小風險",
-        "popular": false,
-        "name": "微型美分帳戶",
-        "desc": "以美分結算，於極低風險環境中驗證您的自動化程序與交易策略。",
-        "minDeposit": "USD 10",
-        "spread": "1.2 點起",
-        "commission": "零佣金",
-        "leverage": "最高 1:1000",
-        "execution": "STP 直通式處理",
-        "platform": "MT4"
-      }
-    ],
     "benefits": {
       "kicker": "CORE BENEFITS",
       "heading": "為您量身定制的交易優勢",
       "items": [
         {
-          "title": "零佣金負擔（標準帳戶）",
-          "desc": "標準帳戶完全免佣金，交易成本已包含在具競爭力的點差中，適合中長線與波段交易者。"
+          "title": "全帳戶最高 1:100 槓桿",
+          "desc": "黃金、白銀與人民幣公斤條在四種帳戶類型下皆適用最高 1:100 槓桿，資金運用方式一致。"
         },
         {
-          "title": "RAW 原始極致點差",
-          "desc": "RAW ECN 提供直達流動性提供商的原始點差，低至 0.0 點起，適應高頻與程式化交易策略。"
+          "title": "點差隨帳戶類型遞減",
+          "desc": "由迷你帳戶至尊尚帳戶，黃金點差由 33 點降至 20 點，交易成本與帳戶類型清楚對應。"
         },
         {
-          "title": "超低起點，靈活入金",
-          "desc": "以美分帳戶低門檻參與實盤，提供靈活的入金方式，減輕您的資金壓力。"
+          "title": "USD 100 起即可開始",
+          "desc": "迷你帳戶最低入金 USD 100，可先以較小資金熟悉實盤環境，再依需求選擇其他帳戶類型。"
         },
         {
-          "title": "頂尖交易平台全面支援",
-          "desc": "帳戶適配 MT4、MT5 及 TradingView，體驗快速執行、深度圖表與智能交易（EA）。"
+          "title": "MetaTrader 5 平台",
+          "desc": "所有帳戶皆透過 MetaTrader 5 交易，並可搭配 HATC App 與網頁交易端；本公司不提供 MetaTrader 4。"
         }
       ]
     },
     "spreads": {
-      "kicker": "LIVE SPREADS PREVIEW",
-      "heading": "熱門產品點差預覽",
-      "note": "下表報價與點差為示意數據，非即時行情；實際成交以 MT5 平台即時報價為準。",
-      "colPair": "交易對",
-      "colBid": "買入價 (Bid)",
-      "colAsk": "賣出價 (Ask)",
-      "colSpread": "平均點差"
+      "kicker": "SPREADS BY ACCOUNT TYPE",
+      "heading": "各帳戶類型點差對照",
+      "subtitle": "單位為「點」，數字越小代表交易成本越低。",
+      "colProduct": "產品",
+      "note": "上表為華安泰昌已確認之帳戶點差條件，非即時行情；實際成交點差以 MT5 平台即時報價為準。"
     },
-    "spreadsSample": [
-      {
-        "pair": "XAU/USD（黃金）",
-        "bid": "2,342.30",
-        "ask": "2,342.80",
-        "spread": "0.5 點"
-      },
-      {
-        "pair": "XAG/USD（白銀）",
-        "bid": "27.83",
-        "ask": "27.85",
-        "spread": "0.8 點"
-      }
-    ],
     "platforms": {
-      "kicker": "WORLD-CLASS PLATFORMS",
-      "heading": "支援國際頂尖交易平台",
-      "items": [
-        {
-          "name": "MetaTrader 4 (MT4)",
-          "desc": "全球廣泛使用的交易平台，支援大量自定義指標與 EA 自動化策略。"
-        },
-        {
-          "name": "MetaTrader 5 (MT5)",
-          "desc": "新一代多資產交易終端，具備更快執行速度、更多時間週期與內建技術分析工具。"
-        },
-        {
-          "name": "TradingView 直連",
-          "desc": "在 TradingView 上分析並直連帳戶執行訂單，體驗流暢的圖表交易。"
-        }
-      ]
+      "kicker": "TRADING PLATFORMS",
+      "heading": "支援的交易平台",
+      "note": "華安泰昌目前不提供 MetaTrader 4。"
     },
     "steps": {
       "kicker": "EASY 3-STEP START",
@@ -710,11 +659,11 @@
         },
         {
           "title": "安全存入資金",
-          "desc": "支援多種主流入金方式；實際可用管道與到賬時間以官方公告為準。"
+          "desc": "依所選帳戶類型存入最低入金（USD 100 起）；可用入金管道與到賬時間以官方公告為準。"
         },
         {
           "title": "開啟交易",
-          "desc": "登入 MT4/MT5 或 TradingView，連接您選擇的帳戶類型，開始交易黃金、白銀等產品。"
+          "desc": "登入 MetaTrader 5，連接您選擇的帳戶類型，開始交易黃金、白銀與人民幣公斤條。"
         }
       ]
     },
@@ -723,24 +672,24 @@
       "heading": "常見問題解答",
       "items": [
         {
-          "q": "開設真實交易帳戶的最低入金要求是多少？",
-          "a": "不同帳戶類型的最低入金不同（示意：美分帳戶約 10 USD、標準帳戶約 100 USD、RAW ECN 約 500 USD 起）。實際門檻以華安泰昌正式公佈為準。"
+          "q": "開立真實交易帳戶的最低入金是多少？",
+          "a": "依帳戶類型而定：迷你帳戶 USD 100、標準帳戶 USD 300、專業帳戶 USD 1,000、尊尚帳戶 USD 5,000。"
         },
         {
-          "q": "標準帳戶與 RAW ECN 帳戶有什麼主要區別？",
-          "a": "標準帳戶採全包式零佣金報價、點差略高；RAW ECN 提供更低的原始點差，但每手交易收取固定佣金。上述為示意說明，實際條件以官方公佈為準。"
+          "q": "四種帳戶類型的差異是什麼？",
+          "a": "可交易產品與最高槓桿（1:100）四檔相同，差異只在最低入金與點差：黃金點差由迷你帳戶 33 點至尊尚帳戶 20 點，白銀由 44 點至 30 點，人民幣公斤條由 42 點至 35 點。"
         },
         {
-          "q": "我可以先開設免費模擬帳戶體驗嗎？",
-          "a": "我們規劃提供模擬帳戶，讓您在零風險環境中熟悉平台操作。開放時間與細節將另行公佈。"
+          "q": "最高槓桿比例是多少？",
+          "a": "四種帳戶類型、三個產品皆為最高 1:100。槓桿會同時放大盈利與虧損，請謹慎評估。"
         },
         {
-          "q": "我可以使用平台的自動交易 (EA) 策略嗎？",
-          "a": "MT4 與 MT5 平台支援各類專家顧問（EA）與自動交易腳本，適合程式化交易需求。"
+          "q": "你們支援 MetaTrader 4 嗎？",
+          "a": "不支援。華安泰昌目前不提供 MetaTrader 4；交易透過 MetaTrader 5 進行，並可搭配 HATC App 與網頁交易端。"
         },
         {
-          "q": "最高槓桿比例是多少，是否可以調整？",
-          "a": "帳戶槓桿為示意數據（如最高 1:500、美分帳戶最高 1:1000）；實際槓桿與調整方式以華安泰昌正式公佈為準。槓桿會同時放大盈虧，請謹慎評估。"
+          "q": "我可以先開立模擬帳戶體驗嗎？",
+          "a": "模擬帳戶的申請方式與開放時間將另行公佈；開放後頁面上的「申請模擬帳戶」按鈕會直接連至申請入口。"
         }
       ]
     },

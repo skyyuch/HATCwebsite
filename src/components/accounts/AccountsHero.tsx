@@ -2,19 +2,24 @@ import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
-import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
+import {
+  demoAccountHref,
+  getSiteSettings,
+  primaryContactHref
+} from '@/lib/siteSettings';
 
 /**
  * Dark hero for `/accounts` (Figma 62:24). Shares the homepage dark/gold system;
- * the Figma blue accent is mapped to HATC gold. Open-account is an operational
- * link resolved via CMS (never hard-coded); the demo CTA points at /register
- * until the owner supplies a demo flow.
+ * the Figma blue accent is mapped to HATC gold. Open-account and demo-account
+ * are operational links resolved via CMS (never hard-coded); the demo CTA is
+ * hidden until the owner supplies an application URL.
  */
 export default async function AccountsHero() {
   const t = await getTranslations('accounts.hero');
   const nav = await getTranslations('nav');
   const settings = await getSiteSettings();
   const openAccountHref = primaryContactHref(settings);
+  const demoHref = demoAccountHref(settings);
 
   return (
     <section className="relative overflow-hidden bg-[var(--fig-ink)] text-white">
@@ -76,12 +81,16 @@ export default async function AccountsHero() {
               {t('ctaOpen')}
             </Link>
           )}
-          <Link
-            href="/register"
-            className={cn(buttonVariants({variant: 'onDark', size: 'fig'}))}
-          >
-            {t('ctaDemo')}
-          </Link>
+          {demoHref ? (
+            <a
+              href={demoHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(buttonVariants({variant: 'onDark', size: 'fig'}))}
+            >
+              {t('ctaDemo')}
+            </a>
+          ) : null}
         </div>
       </div>
     </section>

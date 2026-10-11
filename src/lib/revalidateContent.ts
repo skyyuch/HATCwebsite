@@ -64,29 +64,8 @@ export function revalidateInstruments(): void {
   }
 }
 
-export function revalidateAccountTiers(): void {
-  safeRevalidateTag(CACHE_TAGS.accountTiers);
-  for (const locale of routing.locales) {
-    safeRevalidatePath(`/${locale}/accounts`);
-  }
-}
-
 export function revalidateAccountBenefits(): void {
   safeRevalidateTag(CACHE_TAGS.accountBenefits);
-  for (const locale of routing.locales) {
-    safeRevalidatePath(`/${locale}/accounts`);
-  }
-}
-
-export function revalidateAccountSpreads(): void {
-  safeRevalidateTag(CACHE_TAGS.accountSpreads);
-  for (const locale of routing.locales) {
-    safeRevalidatePath(`/${locale}/accounts`);
-  }
-}
-
-export function revalidateAccountPlatforms(): void {
-  safeRevalidateTag(CACHE_TAGS.accountPlatforms);
   for (const locale of routing.locales) {
     safeRevalidatePath(`/${locale}/accounts`);
   }

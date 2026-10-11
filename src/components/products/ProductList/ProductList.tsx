@@ -5,8 +5,10 @@ import type {Locale} from '@/i18n/routing';
 import {CFD_PRODUCTS} from '../tradingConditions';
 
 /**
- * Tradeable products. Section chrome from CMS; numbers from tradingConditions.ts
- * (approved facts — never CMS).
+ * Tradeable products (gold / silver / RMB kilobar). Section chrome from CMS;
+ * numbers from tradingConditions.ts (approved facts — never CMS). Spreads vary
+ * by account type, so the card shows the lowest value ("X 點起", owner
+ * 2026-10-11) and the conditions table links to /accounts for the breakdown.
  */
 export default async function ProductList() {
   const locale = (await getLocale()) as Locale;
@@ -27,7 +29,7 @@ export default async function ProductList() {
           ) : null}
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {CFD_PRODUCTS.map((p) => (
             <div
               key={p.key}
@@ -57,11 +59,8 @@ export default async function ProductList() {
                   <dt className="text-xs text-[var(--fig-text-muted)]">
                     {t('spreadLabel')}
                   </dt>
-                  <dd className="font-[family-name:var(--font-ticker)] text-2xl font-bold text-[var(--fig-heading-dark)]">
-                    {p.spread}
-                    <span className="ml-1 text-sm font-semibold text-[var(--fig-text-muted)]">
-                      {cond('pointsUnit')}
-                    </span>
+                  <dd className="font-[family-name:var(--font-ticker)] text-xl font-bold text-[var(--fig-heading-dark)]">
+                    {cond('spreadFrom', {points: p.spreadFrom})}
                   </dd>
                 </div>
                 <div className="flex flex-col gap-1 bg-white p-4">

@@ -1,12 +1,15 @@
 import {getLocale, getTranslations} from 'next-intl/server';
 import SectionTitle from '@/components/home/SectionTitle';
+import {Link} from '@/i18n/navigation';
 import {getProductsMarketing} from '@/lib/productsMarketing';
 import type {Locale} from '@/i18n/routing';
 import {CFD_PRODUCTS} from '../tradingConditions';
 
 /**
  * Trading conditions table. Section chrome from CMS; APPROVED numbers only from
- * tradingConditions.ts (CMS must never override gold27/silver30/1:100).
+ * tradingConditions.ts (the CMS must never be able to override them). The
+ * spread column shows the lowest tier value and links to /accounts for the
+ * per-account-type breakdown.
  */
 export default async function TradingConditions() {
   const locale = (await getLocale()) as Locale;
@@ -57,7 +60,7 @@ export default async function TradingConditions() {
                     {p.symbol}
                   </td>
                   <td className="px-5 py-4 font-semibold">
-                    {p.spread} {t('pointsUnit')}
+                    {t('spreadFrom', {points: p.spreadFrom})}
                   </td>
                   <td className="px-5 py-4 font-semibold text-gold">
                     {p.leverage}
@@ -83,9 +86,17 @@ export default async function TradingConditions() {
           </table>
         </div>
 
-        <p className="max-w-[52rem] text-[13px] leading-[1.6] text-[var(--fig-text-dim)]">
-          {t('note')}
-        </p>
+        <div className="flex flex-col gap-4">
+          <Link
+            href="/accounts#spreads"
+            className="self-start text-[13px] font-semibold text-gold underline-offset-4 hover:underline"
+          >
+            {t('tiersLink')}
+          </Link>
+          <p className="max-w-[52rem] text-[13px] leading-[1.6] text-[var(--fig-text-dim)]">
+            {t('note')}
+          </p>
+        </div>
       </div>
     </section>
   );

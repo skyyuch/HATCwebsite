@@ -83,30 +83,9 @@ export const PERM_RESOURCES: PermResource[] = [
     fields: [publishField]
   },
   {
-    slug: 'account-tiers',
-    kind: 'collection',
-    label: adminLabel('Account tiers', '交易帳戶類型', '交易账户类型'),
-    ops: ['create', 'update', 'delete'],
-    fields: [publishField]
-  },
-  {
     slug: 'account-benefits',
     kind: 'collection',
     label: adminLabel('Account benefits', '帳戶優勢', '账户优势'),
-    ops: ['create', 'update', 'delete'],
-    fields: [publishField]
-  },
-  {
-    slug: 'account-spreads',
-    kind: 'collection',
-    label: adminLabel('Account spreads', '帳戶點差表', '账户点差表'),
-    ops: ['create', 'update', 'delete'],
-    fields: [publishField]
-  },
-  {
-    slug: 'account-platforms',
-    kind: 'collection',
-    label: adminLabel('Account platforms', '帳戶平台', '账户平台'),
     ops: ['create', 'update', 'delete'],
     fields: [publishField]
   },

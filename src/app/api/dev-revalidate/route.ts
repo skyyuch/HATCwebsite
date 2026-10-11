@@ -13,10 +13,7 @@ export async function GET() {
     'academy-articles',
     'faqs',
     'instruments',
-    'account-tiers',
     'account-benefits',
-    'account-spreads',
-    'account-platforms',
     'trading-platforms',
     'funding-methods',
     'testimonials'

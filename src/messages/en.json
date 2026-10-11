@@ -10,15 +10,15 @@
     },
     "products": {
       "title": "Precious-metals CFD products",
-      "description": "HATC precious-metals CFD products — gold and silver — backed by our Hong Kong Gold Exchange AA membership (member no. 008) and traded on the MT5 platform."
+      "description": "HATC precious-metal CFD products: gold, silver and the RMB kilobar, traded on MetaTrader 5 and backed by our AA-class membership (No. 008) of the Hong Kong Gold Exchange."
     },
     "productsAll": {
       "title": "All trading products",
-      "description": "A full list of HATC's tradeable products and specifications. Table figures are illustrative; actual conditions follow official announcements and live MT5 quotes."
+      "description": "Every product HATC offers, with its trading specifications. Spreads and leverage are confirmed trading conditions; contract size and trading hours are illustrative — actual conditions follow official announcements and live MetaTrader 5 quotes."
     },
     "accounts": {
       "title": "Trading accounts",
-      "description": "HATC trading account types and the account-opening process. Account specifications are illustrative; actual conditions follow official announcements and the MT5 platform."
+      "description": "HATC trading account types, conditions and how to open an account: four account types, minimum deposit from USD 100 and leverage up to 1:100 on every type."
     },
     "funding": {
       "title": "Deposits & withdrawals",
@@ -460,14 +460,14 @@
       "titleLead": "Precious-metals ",
       "titleAccent": "CFD",
       "titleTail": " products",
-      "subtitle": "Trade gold and silver CFDs on the MT5 platform, backed by our Hong Kong Gold Exchange AA membership (member no. 008).",
+      "subtitle": "Trade gold, silver and RMB kilobar CFDs on MetaTrader 5, backed by our AA-class membership (No. 008) of the Hong Kong Gold Exchange.",
       "bgAlt": "Gold market chart (illustrative)"
     },
     "list": {
       "kicker": "OUR PRODUCTS",
       "heading": "Tradeable products",
-      "subheading": "We currently offer gold and silver contracts for difference (CFDs).",
-      "spreadLabel": "Average spread",
+      "subheading": "Gold, silver and RMB kilobar contracts for difference (CFDs) are currently available.",
+      "spreadLabel": "Spread",
       "leverageLabel": "Max leverage"
     },
     "items": {
@@ -478,6 +478,10 @@
       "silver": {
         "name": "Silver CFD",
         "desc": "A contract for difference on Loco London silver (XAG/USD), with two-way trading and flexible leverage."
+      },
+      "kilobar": {
+        "name": "RMB Kilobar CFD",
+        "desc": "A contract for difference on the RMB-denominated kilo gold bar (RKG/CNH), with long and short trading and flexible leverage."
       }
     },
     "conditions": {
@@ -485,14 +489,16 @@
       "heading": "Trading conditions",
       "colProduct": "Product",
       "colSymbol": "Symbol",
-      "colSpread": "Average spread",
+      "colSpread": "Spread",
       "colLeverage": "Max leverage",
       "colPlatform": "Platform",
       "pointsUnit": "points",
       "platformValue": "MetaTrader 5",
       "pendingLabel": "Other conditions (minimum lot size, fees, execution mode, etc.)",
       "pending": "To be announced",
-      "note": "Spreads are reference averages; actual dealing spreads follow the platform's live quotes. Leverage can amplify both profits and losses — please make sure you fully understand the risks before trading."
+      "note": "Spreads vary by account type; the table shows the lowest (VIP account), and the trading-accounts page lists every type. Actual execution spreads follow live MetaTrader 5 quotes. Leveraged trading can amplify both profits and losses — make sure you understand the risks before trading.",
+      "spreadFrom": "from {points} points",
+      "tiersLink": "See spreads by account type"
     },
     "credibility": {
       "kicker": "WHY TRADE WITH HATC",
@@ -515,7 +521,7 @@
       "kicker": "ALL PRODUCTS",
       "heading": "Tradeable products",
       "sampleLabel": "Sample data",
-      "sampleNote": "Contract size, spread, leverage and trading hours below are illustrative. Actual trading conditions follow official announcements and live MT5 quotes.",
+      "sampleNote": "Spreads and leverage are HATC's confirmed trading conditions (spreads vary by account type; the table shows the lowest). Contract size and trading hours are illustrative — actual conditions follow official announcements and live MetaTrader 5 quotes.",
       "colProduct": "Product",
       "colContractSize": "Contract size",
       "colSpread": "Spread",
@@ -538,7 +544,7 @@
           "name": "Loco London Gold",
           "category": "metals",
           "contractSize": "100 oz",
-          "spread": "27",
+          "spread": "from 20 points",
           "leverage": "1:100",
           "tradingHours": "Mon–Fri, 24 hours"
         },
@@ -546,8 +552,17 @@
           "symbol": "XAG/USD",
           "name": "Loco London Silver",
           "category": "metals",
-          "contractSize": "5000 oz",
-          "spread": "30",
+          "contractSize": "5,000 oz",
+          "spread": "from 30 points",
+          "leverage": "1:100",
+          "tradingHours": "Mon–Fri, 24 hours"
+        },
+        {
+          "symbol": "RKG/CNH",
+          "name": "RMB Kilobar",
+          "category": "metals",
+          "contractSize": "To be announced",
+          "spread": "from 35 points",
           "leverage": "1:100",
           "tradingHours": "Mon–Fri, 24 hours"
         }
@@ -561,144 +576,78 @@
       "titleLead": "Choose the ",
       "titleAccent": "precious-metals CFD",
       "titleTail": " account that suits you",
-      "subtitle": "We offer multiple account types — from a zero-commission standard account to an ultra-low-spread professional account — to match your gold and silver trading strategy and capital.",
+      "subtitle": "Four account types with a minimum deposit from USD 100. Leverage is up to 1:100 on every type, and spreads on gold, silver and the RMB kilobar step down as you move up the tiers.",
       "ctaOpen": "Open an account",
-      "ctaDemo": "Try a free demo"
+      "ctaDemo": "Apply for a demo account"
     },
     "tiers": {
       "kicker": "CHOOSE YOUR TIER",
-      "heading": "Compare account types",
-      "subtitle": "Choose the account model that best fits your risk appetite, capital and trading frequency.",
+      "heading": "Four account types at a glance",
+      "subtitle": "All four types trade the same products at the same maximum leverage — they differ only in minimum deposit and spread.",
+      "badges": {
+        "lowestDeposit": "Lowest deposit",
+        "lowestSpread": "Lowest spread"
+      },
       "specLabels": {
         "minDeposit": "Minimum deposit",
-        "spread": "Minimum spread",
-        "commission": "Commission / lot",
-        "leverage": "Leverage",
-        "execution": "Execution",
-        "platform": "Platforms"
+        "leverage": "Maximum leverage",
+        "platform": "Platform"
       },
-      "note": "Account specifications above are illustrative; actual conditions follow HATC's official announcements and the MT5 platform. Leveraged trading can amplify both gains and losses — please fully understand the risks."
+      "minDepositValue": "USD {amount, number}",
+      "spreadsLabel": "Spread (points)",
+      "items": {
+        "mini": {
+          "name": "Mini account",
+          "desc": "The entry account with the lowest deposit, so you can get familiar with live trading using a smaller balance. Its spreads are the highest of the four."
+        },
+        "standard": {
+          "name": "Standard account",
+          "desc": "A balanced choice between deposit and spread, suited to steady, regular trading."
+        },
+        "pro": {
+          "name": "Pro account",
+          "desc": "Spreads below the standard account, suited to more frequent, cost-sensitive trading."
+        },
+        "vip": {
+          "name": "VIP account",
+          "desc": "The lowest spreads of the four account types, suited to larger balances."
+        }
+      },
+      "note": "These are HATC's confirmed account conditions. Spreads are quoted in points: 1 point is USD 0.01 on gold, USD 0.001 on silver and 0.01 on the RMB kilobar. Actual execution spreads follow live MetaTrader 5 quotes. Minimum lot size, fees and execution mode will be announced separately. Leveraged trading can amplify both profits and losses — make sure you understand the risks before trading."
     },
-    "tiersSample": [
-      {
-        "key": "standard",
-        "code": "Standard STP",
-        "badge": "Most popular",
-        "popular": true,
-        "name": "Standard STP account",
-        "desc": "A popular entry choice with no commission and simple, transparent costs.",
-        "minDeposit": "USD 100",
-        "spread": "From 1.0 pip",
-        "commission": "Zero commission",
-        "leverage": "Up to 1:500",
-        "execution": "STP straight-through",
-        "platform": "MT4, MT5, TradingView"
-      },
-      {
-        "key": "raw",
-        "code": "Raw ECN",
-        "badge": "Ultra-low spread",
-        "popular": false,
-        "name": "RAW ECN account",
-        "desc": "Built for high-frequency and professional traders seeking raw institutional spreads.",
-        "minDeposit": "USD 500",
-        "spread": "From 0.0 pip",
-        "commission": "USD 3.00 / lot (per side)",
-        "leverage": "Up to 1:500",
-        "execution": "ECN network",
-        "platform": "MT4, MT5, TradingView"
-      },
-      {
-        "key": "vip",
-        "code": "Premium VIP",
-        "badge": "For large volumes",
-        "popular": false,
-        "name": "Premium VIP account",
-        "desc": "For large-capital clients, with the best spread discounts and round-the-clock dedicated support.",
-        "minDeposit": "USD 10,000",
-        "spread": "From 0.0 pip",
-        "commission": "USD 1.50 / lot (per side)",
-        "leverage": "Up to 1:500",
-        "execution": "ECN network",
-        "platform": "MT4, MT5"
-      },
-      {
-        "key": "cent",
-        "code": "Cent Account",
-        "badge": "Minimal risk",
-        "popular": false,
-        "name": "Micro Cent account",
-        "desc": "Settled in cents — validate your automated systems and strategies in a very low-risk environment.",
-        "minDeposit": "USD 10",
-        "spread": "From 1.2 pip",
-        "commission": "Zero commission",
-        "leverage": "Up to 1:1000",
-        "execution": "STP straight-through",
-        "platform": "MT4"
-      }
-    ],
     "benefits": {
       "kicker": "CORE BENEFITS",
       "heading": "Trading advantages built for you",
       "items": [
         {
-          "title": "Zero commission (standard account)",
-          "desc": "The standard account is fully commission-free — costs are built into competitive spreads, ideal for medium-to-long-term and swing traders."
+          "title": "Up to 1:100 leverage on every account",
+          "desc": "Gold, silver and the RMB kilobar all trade at up to 1:100 leverage across all four account types, so your margin works the same way everywhere."
         },
         {
-          "title": "RAW institutional spreads",
-          "desc": "RAW ECN offers raw spreads direct from liquidity providers, from as low as 0.0 pip, suited to high-frequency and algorithmic strategies."
+          "title": "Spreads step down with the tier",
+          "desc": "From the Mini to the VIP account, the gold spread falls from 33 to 20 points, so your trading cost maps clearly to the account type."
         },
         {
-          "title": "Low entry, flexible funding",
-          "desc": "Take part in live markets from a low threshold with the cent account, with flexible funding options that ease pressure on your capital."
+          "title": "Start from USD 100",
+          "desc": "The Mini account opens from USD 100, letting you learn the live environment with a smaller balance before moving to another account type."
         },
         {
-          "title": "Top trading platforms supported",
-          "desc": "Accounts work with MT4, MT5 and TradingView for fast execution, deep charting and expert advisors (EA)."
+          "title": "MetaTrader 5",
+          "desc": "Every account trades on MetaTrader 5, alongside the HATC app and web terminal. MetaTrader 4 is not offered."
         }
       ]
     },
     "spreads": {
-      "kicker": "LIVE SPREADS PREVIEW",
-      "heading": "Popular product spreads",
-      "note": "The quotes and spreads below are illustrative, not a live feed; actual fills follow live MT5 quotes.",
-      "colPair": "Instrument",
-      "colBid": "Bid",
-      "colAsk": "Ask",
-      "colSpread": "Avg. spread"
+      "kicker": "SPREADS BY ACCOUNT TYPE",
+      "heading": "Spreads by account type",
+      "subtitle": "Figures are in points — the lower the number, the lower the trading cost.",
+      "colProduct": "Product",
+      "note": "The table shows HATC's confirmed account spreads, not a live feed; actual execution spreads follow live MetaTrader 5 quotes."
     },
-    "spreadsSample": [
-      {
-        "pair": "XAU/USD (Gold)",
-        "bid": "2,342.30",
-        "ask": "2,342.80",
-        "spread": "0.5 pip"
-      },
-      {
-        "pair": "XAG/USD (Silver)",
-        "bid": "27.83",
-        "ask": "27.85",
-        "spread": "0.8 pip"
-      }
-    ],
     "platforms": {
-      "kicker": "WORLD-CLASS PLATFORMS",
-      "heading": "Backed by leading trading platforms",
-      "items": [
-        {
-          "name": "MetaTrader 4 (MT4)",
-          "desc": "A widely used trading platform supporting many custom indicators and EA automation strategies."
-        },
-        {
-          "name": "MetaTrader 5 (MT5)",
-          "desc": "A next-generation multi-asset terminal with faster execution, more timeframes and built-in technical analysis."
-        },
-        {
-          "name": "TradingView direct",
-          "desc": "Analyse on TradingView and connect directly to your account to place orders for a smooth charting experience."
-        }
-      ]
+      "kicker": "TRADING PLATFORMS",
+      "heading": "Supported trading platforms",
+      "note": "HATC does not offer MetaTrader 4."
     },
     "steps": {
       "kicker": "EASY 3-STEP START",
@@ -706,15 +655,15 @@
       "items": [
         {
           "title": "Register your account",
-          "desc": "Provide your basic personal details and submit ID and proof of address online to complete verification."
+          "desc": "Fill in your basic details and submit proof of identity and address online to complete verification."
         },
         {
-          "title": "Fund securely",
-          "desc": "Multiple mainstream funding methods are supported; available channels and processing times follow official announcements."
+          "title": "Fund your account securely",
+          "desc": "Deposit the minimum for your chosen account type (from USD 100). Available funding channels and crediting times follow official announcements."
         },
         {
           "title": "Start trading",
-          "desc": "Log in to MT4/MT5 or TradingView, connect your chosen account type and start trading gold, silver and more."
+          "desc": "Log in to MetaTrader 5, connect your chosen account type and start trading gold, silver and the RMB kilobar."
         }
       ]
     },
@@ -723,24 +672,24 @@
       "heading": "Frequently asked questions",
       "items": [
         {
-          "q": "What is the minimum deposit to open a live account?",
-          "a": "Minimums vary by account type (illustrative: cent account from about USD 10, standard from about USD 100, RAW ECN from about USD 500). Actual thresholds follow HATC's official announcements."
+          "q": "What is the minimum deposit to open a live trading account?",
+          "a": "It depends on the account type: USD 100 for Mini, USD 300 for Standard, USD 1,000 for Pro and USD 5,000 for VIP."
         },
         {
-          "q": "What is the main difference between Standard and RAW ECN accounts?",
-          "a": "The standard account uses all-in, zero-commission pricing with slightly higher spreads; RAW ECN offers lower raw spreads but charges a fixed commission per lot. This is an illustrative summary; actual conditions follow official announcements."
+          "q": "How do the four account types differ?",
+          "a": "All four trade the same products at the same maximum leverage (1:100); they differ only in minimum deposit and spread. The gold spread runs from 33 points on Mini to 20 points on VIP, silver from 44 to 30 points, and the RMB kilobar from 42 to 35 points."
         },
         {
-          "q": "Can I try a free demo account first?",
-          "a": "We plan to offer a demo account so you can get familiar with the platform in a risk-free environment. Availability and details will be announced separately."
+          "q": "What is the maximum leverage?",
+          "a": "Up to 1:100 on all four account types and all three products. Leverage amplifies both gains and losses, so assess it carefully."
         },
         {
-          "q": "Can I use automated (EA) strategies on the platform?",
-          "a": "MT4 and MT5 support expert advisors (EA) and automated trading scripts, suited to algorithmic trading."
+          "q": "Do you support MetaTrader 4?",
+          "a": "No. HATC does not offer MetaTrader 4. Trading is on MetaTrader 5, alongside the HATC app and web terminal."
         },
         {
-          "q": "What is the maximum leverage, and can it be adjusted?",
-          "a": "Account leverage is illustrative (e.g. up to 1:500, cent account up to 1:1000); actual leverage and any adjustments follow HATC's official announcements. Leverage amplifies both gains and losses — assess carefully."
+          "q": "Can I try a demo account first?",
+          "a": "How to apply for a demo account, and when it opens, will be announced separately. Once it is open, the \"Apply for a demo account\" button on this page will link straight to the application."
         }
       ]
     },

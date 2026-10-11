@@ -4,6 +4,7 @@ import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
 import {getPlatformsMarketing} from '@/lib/platformsMarketing';
+import {demoAccountHref, getSiteSettings} from '@/lib/siteSettings';
 
 const HERO_FALLBACK = '/figma/platforms/hero-devices.png';
 
@@ -13,11 +14,13 @@ const HERO_FALLBACK = '/figma/platforms/hero-devices.png';
  * CMS-uploaded hero image (`platforms-page` global) and falls back to the Figma
  * template's multi-device mockup (owner: 「圖先用 Figma 的」) — a generic charts
  * render, NOT a real HATC platform screenshot; labelled 示意 until replaced. The
- * primary CTA scrolls to platform-types; the demo CTA points at /accounts.
+ * primary CTA scrolls to platform-types; the demo CTA only renders once the
+ * owner configures a demo-account URL in the CMS (no demo flow exists yet).
  */
 export default async function PlatformsHero() {
   const t = await getTranslations('platforms.hero');
   const nav = await getTranslations('nav');
+  const demoHref = demoAccountHref(await getSiteSettings());
 
   const {heroImage} = await getPlatformsMarketing();
   const heroSrc = heroImage ?? HERO_FALLBACK;
@@ -73,12 +76,16 @@ export default async function PlatformsHero() {
             >
               {t('ctaLearn')}
             </a>
-            <Link
-              href="/accounts"
-              className={cn(buttonVariants({variant: 'onDark', size: 'fig'}))}
-            >
-              {t('ctaDemo')}
-            </Link>
+            {demoHref ? (
+              <a
+                href={demoHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(buttonVariants({variant: 'onDark', size: 'fig'}))}
+              >
+                {t('ctaDemo')}
+              </a>
+            ) : null}
           </div>
         </div>
 

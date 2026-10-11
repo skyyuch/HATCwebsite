@@ -10,15 +10,15 @@
     },
     "products": {
       "title": "贵金属 CFD 交易产品",
-      "description": "华安泰昌贵金属差价合约（CFD）交易产品：黄金、白银，以香港黄金交易所 AA 类行员（会员编号 008）资格为后盾，透过 MT5 平台交易。"
+      "description": "华安泰昌贵金属差价合约（CFD）交易产品：黄金、白银与人民币公斤条，以香港黄金交易所 AA 类行员（会员编号 008）资格为后盾，通过 MT5 平台交易。"
     },
     "productsAll": {
       "title": "所有交易产品",
-      "description": "华安泰昌可交易产品一览：贵金属差价合约与交易规格说明。表列规格为示意数据，实际条件以官方公告与 MT5 平台即时报价为准。"
+      "description": "华安泰昌可交易产品一览与交易规格说明。点差与杠杆为已确认交易条件；合约规模与交易时段为示意数据，实际以官方公告与 MT5 平台即时报价为准。"
     },
     "accounts": {
       "title": "交易账户",
-      "description": "华安泰昌交易账户类型与开户流程说明。账户规格为示意数据，实际条件以官方公告与 MT5 平台为准。"
+      "description": "华安泰昌交易账户类型、交易条件与开户流程说明：四种账户类型，最低入金 USD 100 起，最高杠杆一律 1:100。"
     },
     "funding": {
       "title": "入金与出金",
@@ -460,14 +460,14 @@
       "titleLead": "贵金属 ",
       "titleAccent": "CFD",
       "titleTail": " 交易产品",
-      "subtitle": "以香港黄金交易所 AA 类行员（会员编号 008）资格为后盾，透过 MT5 平台交易黄金、白银差价合约。",
+      "subtitle": "以香港黄金交易所 AA 类行员（会员编号 008）资格为后盾，通过 MT5 平台交易黄金、白银与人民币公斤条差价合约。",
       "bgAlt": "黄金市场走势示意图"
     },
     "list": {
       "kicker": "OUR PRODUCTS",
       "heading": "可交易产品",
-      "subheading": "目前提供黄金与白银差价合约（CFD）。",
-      "spreadLabel": "平均点差",
+      "subheading": "目前提供黄金、白银与人民币公斤条差价合约（CFD）。",
+      "spreadLabel": "点差",
       "leverageLabel": "最高杠杆"
     },
     "items": {
@@ -478,6 +478,10 @@
       "silver": {
         "name": "白银 CFD",
         "desc": "以伦敦银（XAG/USD）为标的的差价合约，支持双向交易与灵活杠杆。"
+      },
+      "kilobar": {
+        "name": "人民币公斤条 CFD",
+        "desc": "以人民币计价之公斤金条（RKG/CNH）为标的的差价合约，支持双向交易与灵活杠杆。"
       }
     },
     "conditions": {
@@ -485,14 +489,16 @@
       "heading": "交易条件",
       "colProduct": "产品",
       "colSymbol": "商品代码",
-      "colSpread": "平均点差",
+      "colSpread": "点差",
       "colLeverage": "最高杠杆",
       "colPlatform": "交易平台",
       "pointsUnit": "点",
       "platformValue": "MetaTrader 5",
       "pendingLabel": "其余交易条件（最低手数、手续费、执行方式等）",
       "pending": "将另行公布",
-      "note": "点差为平均参考值，实际成交点差以交易平台实时报价为准；杠杆交易可能同时放大盈利与亏损，请于交易前充分了解相关风险。"
+      "note": "点差依账户类型而异，表列为最低值（尊尚账户）；各账户类型的完整点差见交易账户页。实际成交点差以 MT5 平台即时报价为准；杠杆交易可能同时放大盈利与亏损，请于交易前充分了解相关风险。",
+      "spreadFrom": "{points} 点起",
+      "tiersLink": "查看各账户类型点差"
     },
     "credibility": {
       "kicker": "WHY TRADE WITH HATC",
@@ -515,7 +521,7 @@
       "kicker": "ALL PRODUCTS",
       "heading": "可交易产品一览",
       "sampleLabel": "示意数据",
-      "sampleNote": "下表之合约规模、点差、杠杆与交易时段为示意数据，实际交易条件以官方公告与 MT5 平台即时报价为准。",
+      "sampleNote": "点差与杠杆为华安泰昌已确认之交易条件（点差依账户类型而异，表列为最低值）；合约规模与交易时段为示意数据，实际以官方公告与 MT5 平台即时报价为准。",
       "colProduct": "产品",
       "colContractSize": "合约规模",
       "colSpread": "点差",
@@ -538,7 +544,7 @@
           "name": "伦敦金",
           "category": "metals",
           "contractSize": "100 盎司",
-          "spread": "27",
+          "spread": "20 点起",
           "leverage": "1:100",
           "tradingHours": "周一至周五 24 小时"
         },
@@ -547,7 +553,16 @@
           "name": "伦敦银",
           "category": "metals",
           "contractSize": "5000 盎司",
-          "spread": "30",
+          "spread": "30 点起",
+          "leverage": "1:100",
+          "tradingHours": "周一至周五 24 小时"
+        },
+        {
+          "symbol": "RKG/CNH",
+          "name": "人民币公斤条",
+          "category": "metals",
+          "contractSize": "将另行公布",
+          "spread": "35 点起",
           "leverage": "1:100",
           "tradingHours": "周一至周五 24 小时"
         }
@@ -561,144 +576,78 @@
       "titleLead": "选择最适合您的",
       "titleAccent": "贵金属 CFD",
       "titleTail": "交易账户",
-      "subtitle": "我们提供多种账户类型，从零佣金的标准账户到超低点差的专业账户，贴合您的黄金、白银交易策略与资金规模。",
+      "subtitle": "四种账户类型，最低入金 USD 100 起；最高杠杆一律 1:100，黄金、白银与人民币公斤条的点差随账户类型递减。",
       "ctaOpen": "立即开立账户",
-      "ctaDemo": "免费模拟体验"
+      "ctaDemo": "申请模拟账户"
     },
     "tiers": {
       "kicker": "CHOOSE YOUR TIER",
-      "heading": "多种账户类型，全面对比",
-      "subtitle": "根据您的风险承受能力、资金与交易频率，选择最适合的账户模式。",
+      "heading": "四种账户类型，条件一览",
+      "subtitle": "四档的可交易产品与最高杠杆相同，差异在最低入金与点差。",
+      "badges": {
+        "lowestDeposit": "入金门槛最低",
+        "lowestSpread": "点差最低"
+      },
       "specLabels": {
-        "minDeposit": "最低入金金额",
-        "spread": "最小点差",
-        "commission": "每手佣金",
-        "leverage": "杠杆比例",
-        "execution": "执行方式",
-        "platform": "支持平台"
+        "minDeposit": "最低入金",
+        "leverage": "最高杠杆",
+        "platform": "交易平台"
       },
-      "note": "以上账户规格为示意数据，实际条件以华安泰昌正式公布与 MT5 平台为准；杠杆交易可能同时放大盈利与亏损，请充分了解相关风险。"
+      "minDepositValue": "USD {amount, number}",
+      "spreadsLabel": "点差（点）",
+      "items": {
+        "mini": {
+          "name": "迷你账户",
+          "desc": "入金门槛最低的入门账户，可用较小资金在实盘环境熟悉交易流程；点差为四档中最高。"
+        },
+        "standard": {
+          "name": "标准账户",
+          "desc": "入金门槛与点差较为平衡的常规选择，适合稳定交易的客户。"
+        },
+        "pro": {
+          "name": "专业账户",
+          "desc": "点差低于标准账户，适合交易较频繁、对成本敏感的客户。"
+        },
+        "vip": {
+          "name": "尊尚账户",
+          "desc": "四档中点差最低的账户，适合资金规模较大的客户。"
+        }
+      },
+      "note": "以上为华安泰昌已确认之账户条件。点差以「点」表示：黄金 1 点 = 0.01 美元、白银 1 点 = 0.001 美元、人民币公斤条 1 点 = 0.01；实际成交点差以 MT5 平台即时报价为准。最低手数、手续费与执行方式将另行公布。杠杆交易可能同时放大盈利与亏损，请于交易前充分了解相关风险。"
     },
-    "tiersSample": [
-      {
-        "key": "standard",
-        "code": "Standard STP",
-        "badge": "最受欢迎",
-        "popular": true,
-        "name": "标准 STP 账户",
-        "desc": "最受欢迎的入门首选，无佣金负担，交易成本简单透明。",
-        "minDeposit": "USD 100",
-        "spread": "1.0 点起",
-        "commission": "零佣金",
-        "leverage": "最高 1:500",
-        "execution": "STP 直通式处理",
-        "platform": "MT4, MT5, TradingView"
-      },
-      {
-        "key": "raw",
-        "code": "Raw ECN",
-        "badge": "极致低点差",
-        "popular": false,
-        "name": "RAW ECN 账户",
-        "desc": "专为高频与专业交易者打造，享受机构级的原始极致点差。",
-        "minDeposit": "USD 500",
-        "spread": "0.0 点起",
-        "commission": "每手 USD 3.00（单边）",
-        "leverage": "最高 1:500",
-        "execution": "ECN 电子通讯网络",
-        "platform": "MT4, MT5, TradingView"
-      },
-      {
-        "key": "vip",
-        "code": "Premium VIP",
-        "badge": "大宗交易专属",
-        "popular": false,
-        "name": "尊尚 VIP 账户",
-        "desc": "专属大资金客户，提供最优惠的点差折扣与全天候专属客服。",
-        "minDeposit": "USD 10,000",
-        "spread": "0.0 点起",
-        "commission": "每手 USD 1.50（单边）",
-        "leverage": "最高 1:500",
-        "execution": "ECN 电子通讯网络",
-        "platform": "MT4, MT5"
-      },
-      {
-        "key": "cent",
-        "code": "Cent Account",
-        "badge": "微小风险",
-        "popular": false,
-        "name": "微型美分账户",
-        "desc": "以美分结算，于极低风险环境中验证您的自动化程序与交易策略。",
-        "minDeposit": "USD 10",
-        "spread": "1.2 点起",
-        "commission": "零佣金",
-        "leverage": "最高 1:1000",
-        "execution": "STP 直通式处理",
-        "platform": "MT4"
-      }
-    ],
     "benefits": {
       "kicker": "CORE BENEFITS",
       "heading": "为您量身定制的交易优势",
       "items": [
         {
-          "title": "零佣金负担（标准账户）",
-          "desc": "标准账户完全免佣金，交易成本已包含在具竞争力的点差中，适合中长线与波段交易者。"
+          "title": "全账户最高 1:100 杠杆",
+          "desc": "黄金、白银与人民币公斤条在四种账户类型下皆适用最高 1:100 杠杆，资金运用方式一致。"
         },
         {
-          "title": "RAW 原始极致点差",
-          "desc": "RAW ECN 提供直达流动性提供商的原始点差，低至 0.0 点起，适应高频与程序化交易策略。"
+          "title": "点差随账户类型递减",
+          "desc": "由迷你账户至尊尚账户，黄金点差由 33 点降至 20 点，交易成本与账户类型清楚对应。"
         },
         {
-          "title": "超低起点，灵活入金",
-          "desc": "以美分账户低门槛参与实盘，提供灵活的入金方式，减轻您的资金压力。"
+          "title": "USD 100 起即可开始",
+          "desc": "迷你账户最低入金 USD 100，可先以较小资金熟悉实盘环境，再依需求选择其他账户类型。"
         },
         {
-          "title": "顶尖交易平台全面支持",
-          "desc": "账户适配 MT4、MT5 及 TradingView，体验快速执行、深度图表与智能交易（EA）。"
+          "title": "MetaTrader 5 平台",
+          "desc": "所有账户皆通过 MetaTrader 5 交易，并可搭配 HATC App 与网页交易端；本公司不提供 MetaTrader 4。"
         }
       ]
     },
     "spreads": {
-      "kicker": "LIVE SPREADS PREVIEW",
-      "heading": "热门产品点差预览",
-      "note": "下表报价与点差为示意数据，非即时行情；实际成交以 MT5 平台即时报价为准。",
-      "colPair": "交易对",
-      "colBid": "买入价 (Bid)",
-      "colAsk": "卖出价 (Ask)",
-      "colSpread": "平均点差"
+      "kicker": "SPREADS BY ACCOUNT TYPE",
+      "heading": "各账户类型点差对照",
+      "subtitle": "单位为「点」，数字越小代表交易成本越低。",
+      "colProduct": "产品",
+      "note": "上表为华安泰昌已确认之账户点差条件，非即时行情；实际成交点差以 MT5 平台即时报价为准。"
     },
-    "spreadsSample": [
-      {
-        "pair": "XAU/USD（黄金）",
-        "bid": "2,342.30",
-        "ask": "2,342.80",
-        "spread": "0.5 点"
-      },
-      {
-        "pair": "XAG/USD（白银）",
-        "bid": "27.83",
-        "ask": "27.85",
-        "spread": "0.8 点"
-      }
-    ],
     "platforms": {
-      "kicker": "WORLD-CLASS PLATFORMS",
-      "heading": "支持国际顶尖交易平台",
-      "items": [
-        {
-          "name": "MetaTrader 4 (MT4)",
-          "desc": "全球广泛使用的交易平台，支持大量自定义指标与 EA 自动化策略。"
-        },
-        {
-          "name": "MetaTrader 5 (MT5)",
-          "desc": "新一代多资产交易终端，具备更快执行速度、更多时间周期与内置技术分析工具。"
-        },
-        {
-          "name": "TradingView 直连",
-          "desc": "在 TradingView 上分析并直连账户执行订单，体验流畅的图表交易。"
-        }
-      ]
+      "kicker": "TRADING PLATFORMS",
+      "heading": "支持的交易平台",
+      "note": "华安泰昌目前不提供 MetaTrader 4。"
     },
     "steps": {
       "kicker": "EASY 3-STEP START",
@@ -710,11 +659,11 @@
         },
         {
           "title": "安全存入资金",
-          "desc": "支持多种主流入金方式；实际可用渠道与到账时间以官方公告为准。"
+          "desc": "依所选账户类型存入最低入金（USD 100 起）；可用入金渠道与到账时间以官方公告为准。"
         },
         {
           "title": "开启交易",
-          "desc": "登入 MT4/MT5 或 TradingView，连接您选择的账户类型，开始交易黄金、白银等产品。"
+          "desc": "登录 MetaTrader 5，连接您选择的账户类型，开始交易黄金、白银与人民币公斤条。"
         }
       ]
     },
@@ -723,24 +672,24 @@
       "heading": "常见问题解答",
       "items": [
         {
-          "q": "开设真实交易账户的最低入金要求是多少？",
-          "a": "不同账户类型的最低入金不同（示意：美分账户约 10 USD、标准账户约 100 USD、RAW ECN 约 500 USD 起）。实际门槛以华安泰昌正式公布为准。"
+          "q": "开立真实交易账户的最低入金是多少？",
+          "a": "依账户类型而定：迷你账户 USD 100、标准账户 USD 300、专业账户 USD 1,000、尊尚账户 USD 5,000。"
         },
         {
-          "q": "标准账户与 RAW ECN 账户有什么主要区别？",
-          "a": "标准账户采全包式零佣金报价、点差略高；RAW ECN 提供更低的原始点差，但每手交易收取固定佣金。上述为示意说明，实际条件以官方公布为准。"
+          "q": "四种账户类型的差异是什么？",
+          "a": "可交易产品与最高杠杆（1:100）四档相同，差异只在最低入金与点差：黄金点差由迷你账户 33 点至尊尚账户 20 点，白银由 44 点至 30 点，人民币公斤条由 42 点至 35 点。"
         },
         {
-          "q": "我可以先开设免费模拟账户体验吗？",
-          "a": "我们规划提供模拟账户，让您在零风险环境中熟悉平台操作。开放时间与细节将另行公布。"
+          "q": "最高杠杆比例是多少？",
+          "a": "四种账户类型、三个产品皆为最高 1:100。杠杆会同时放大盈利与亏损，请谨慎评估。"
         },
         {
-          "q": "我可以使用平台的自动交易 (EA) 策略吗？",
-          "a": "MT4 与 MT5 平台支持各类专家顾问（EA）与自动交易脚本，适合程序化交易需求。"
+          "q": "你们支持 MetaTrader 4 吗？",
+          "a": "不支持。华安泰昌目前不提供 MetaTrader 4；交易通过 MetaTrader 5 进行，并可搭配 HATC App 与网页交易端。"
         },
         {
-          "q": "最高杠杆比例是多少，是否可以调整？",
-          "a": "账户杠杆为示意数据（如最高 1:500、美分账户最高 1:1000）；实际杠杆与调整方式以华安泰昌正式公布为准。杠杆会同时放大盈亏，请谨慎评估。"
+          "q": "我可以先开立模拟账户体验吗？",
+          "a": "模拟账户的申请方式与开放时间将另行公布；开放后页面上的「申请模拟账户」按钮会直接连至申请入口。"
         }
       ]
     },

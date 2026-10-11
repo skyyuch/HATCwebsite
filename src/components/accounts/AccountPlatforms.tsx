@@ -1,20 +1,22 @@
 import {getLocale, getTranslations} from 'next-intl/server';
 import SectionTitle from '@/components/home/SectionTitle';
-import {getAccountPlatforms} from '@/lib/accountPlatforms';
+import {getTradingPlatforms} from '@/lib/tradingPlatforms';
 import type {Locale} from '@/i18n/routing';
 
 /**
- * Supported platforms (Figma 62:235). Cards come from the CMS
- * (`account-platforms` collection) with an i18n fallback
- * (`accounts.platforms.items`). The Figma shows platform screenshots; per the
- * red line against fake photos we use a branded gradient placeholder panel
- * instead (real screenshots can be supplied by the owner later).
+ * Supported platforms (Figma 62:235).
+ *
+ * Reads the same `trading-platforms` source as `/platforms` so the platform
+ * list is managed in one place — which is what keeps MetaTrader 4 off the site
+ * (HATC does not offer it, owner 2026-10-11). The Figma shows platform
+ * screenshots; per the red line against fake imagery we render a branded
+ * gradient panel until the owner supplies real ones.
  */
 
 export default async function AccountPlatforms() {
   const locale = (await getLocale()) as Locale;
   const t = await getTranslations('accounts.platforms');
-  const items = await getAccountPlatforms(locale);
+  const items = await getTradingPlatforms(locale);
 
   return (
     <section className="bg-white">
@@ -50,6 +52,10 @@ export default async function AccountPlatforms() {
             </div>
           ))}
         </div>
+
+        <p className="text-xs leading-[1.7] text-[var(--fig-text-muted)]">
+          {t('note')}
+        </p>
       </div>
     </section>
   );

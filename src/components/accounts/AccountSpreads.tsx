@@ -1,69 +1,88 @@
-import {getLocale, getTranslations} from 'next-intl/server';
-import {getAccountSpreads} from '@/lib/accountSpreads';
-import type {Locale} from '@/i18n/routing';
+import {getTranslations} from 'next-intl/server';
+import {
+  ACCOUNT_TIERS,
+  CFD_PRODUCTS
+} from '@/components/products/tradingConditions';
 
 /**
- * Popular-product spreads preview (Figma 62:200). Trimmed to the approved
- * products only (gold / silver). Rows come from the CMS (`account-spreads`
- * collection) with an i18n SAMPLE fallback (`accounts.spreadsSample`). Every
- * quote and spread is SAMPLE「示意數據」, not a live feed and NOT an approved
- * fact — approved average spreads (gold 27 / silver 30) live on /products via
- * tradingConditions.ts.
+ * Spreads by account type (replaces the Figma 62:200 "live spreads" preview).
+ *
+ * The Figma showed a bid/ask quote table, which here could only ever be fake
+ * numbers — and real bid/ask belongs to the live-quote widgets, not to a
+ * statically rendered conditions page. Instead this renders the APPROVED
+ * product × account-type spread matrix from `tradingConditions.ts`
+ * (docs/HATC_FACTS.md, owner 2026-10-11): real facts, no「示意數據」label, and
+ * strictly not CMS-editable.
  */
-
 export default async function AccountSpreads() {
-  const locale = (await getLocale()) as Locale;
   const t = await getTranslations('accounts.spreads');
-  const sampleLabel = await getTranslations('productsAll.table');
-  const rows = await getAccountSpreads(locale);
+  const tiers = await getTranslations('accounts.tiers');
+  const products = await getTranslations('products.items');
+  const table = await getTranslations('productsAll.table');
 
   return (
-    <section className="bg-[var(--fig-light)]">
+    <section id="spreads" className="scroll-mt-20 bg-[var(--fig-light)]">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-8 px-6 py-20 sm:px-10 lg:px-[120px] lg:py-24">
         <div className="flex flex-col items-center gap-3 text-center">
           <span className="text-[13px] font-bold uppercase tracking-[0.14em] text-gold">
             {t('kicker')}
           </span>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <h2 className="font-sans text-[clamp(1.8rem,4vw,2.25rem)] font-extrabold leading-[1.15] text-[var(--fig-heading-dark)]">
-              {t('heading')}
-            </h2>
-            <span className="rounded-[4px] bg-gold/10 px-2.5 py-1 text-xs font-bold text-gold">
-              {sampleLabel('sampleLabel')}
-            </span>
-          </div>
+          <h2 className="font-sans text-[clamp(1.8rem,4vw,2.25rem)] font-extrabold leading-[1.15] text-[var(--fig-heading-dark)]">
+            {t('heading')}
+          </h2>
+          <p className="max-w-[46rem] text-[15px] leading-[1.6] text-[var(--fig-text-muted)]">
+            {t('subtitle')}
+          </p>
         </div>
+
+        <p className="text-xs text-[var(--fig-text-muted)] md:hidden">
+          {table('scrollHint')}
+        </p>
 
         <div className="overflow-x-auto rounded-[8px] border border-[var(--fig-border-light)]">
           <table className="w-full min-w-[640px] border-collapse text-left">
+            <caption className="sr-only">{t('heading')}</caption>
             <thead>
               <tr className="bg-[var(--fig-ink)] text-white">
-                <th className="px-5 py-4 text-sm font-bold">{t('colPair')}</th>
-                <th className="px-5 py-4 text-sm font-bold">{t('colBid')}</th>
-                <th className="px-5 py-4 text-sm font-bold">{t('colAsk')}</th>
-                <th className="px-5 py-4 text-right text-sm font-bold">
-                  {t('colSpread')}
+                <th scope="col" className="px-5 py-4 text-sm font-bold">
+                  {t('colProduct')}
                 </th>
+                {ACCOUNT_TIERS.map((tier) => (
+                  <th
+                    key={tier.key}
+                    scope="col"
+                    className="px-5 py-4 text-right text-sm font-bold"
+                  >
+                    {tiers(`items.${tier.key}.name`)}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, i) => (
+              {CFD_PRODUCTS.map((product, i) => (
                 <tr
-                  key={row.id}
+                  key={product.key}
                   className={i % 2 === 0 ? 'bg-white' : 'bg-[var(--fig-light)]'}
                 >
-                  <td className="border-b border-[var(--fig-border-light)] px-5 py-4 text-[15px] font-bold text-[var(--fig-heading-dark)]">
-                    {row.pair}
-                  </td>
-                  <td className="border-b border-[var(--fig-border-light)] px-5 py-4 font-[family-name:var(--font-ticker)] text-sm text-[var(--fig-text-muted)]">
-                    {row.bid}
-                  </td>
-                  <td className="border-b border-[var(--fig-border-light)] px-5 py-4 font-[family-name:var(--font-ticker)] text-sm text-[var(--fig-text-muted)]">
-                    {row.ask}
-                  </td>
-                  <td className="border-b border-[var(--fig-border-light)] px-5 py-4 text-right font-[family-name:var(--font-ticker)] text-sm font-bold text-gold">
-                    {row.spread}
-                  </td>
+                  <th
+                    scope="row"
+                    className="border-b border-[var(--fig-border-light)] px-5 py-4 text-left"
+                  >
+                    <span className="block text-[15px] font-bold text-[var(--fig-heading-dark)]">
+                      {products(`${product.key}.name`)}
+                    </span>
+                    <span className="block font-[family-name:var(--font-ticker)] text-xs font-semibold text-[var(--fig-text-muted)]">
+                      {product.symbol}
+                    </span>
+                  </th>
+                  {ACCOUNT_TIERS.map((tier) => (
+                    <td
+                      key={tier.key}
+                      className="border-b border-[var(--fig-border-light)] px-5 py-4 text-right font-[family-name:var(--font-ticker)] text-sm font-bold text-gold"
+                    >
+                      {tier.spreads[product.key]}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>
