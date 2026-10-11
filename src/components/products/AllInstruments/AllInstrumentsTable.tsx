@@ -2,15 +2,16 @@ import {getLocale, getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import type {Locale} from '@/i18n/routing';
 import {getInstruments, groupInstruments, type Instrument} from '@/lib/instruments';
-import {CFD_PRODUCTS, TRADING_HOURS} from '../tradingConditions';
+import {CFD_PRODUCTS, MIN_LOT, TRADING_HOURS} from '../tradingConditions';
 
 /**
  * All tradeable products table for `/products/all`.
  *
  * ✅ Governance (owner 2026-10-11): every condition in this table — contract
- * size, spread, leverage, trading hours — is an APPROVED FACT read from
- * tradingConditions.ts, so there is NO「示意數據」label. The CMS `instruments`
- * collection only controls each row's name, grouping and order.
+ * size, spread, leverage, minimum lot size, trading commission, trading hours —
+ * is an APPROVED FACT read from tradingConditions.ts, so there is NO「示意數據」
+ * label. The CMS `instruments` collection only controls each row's name,
+ * grouping and order.
  */
 export default async function AllInstrumentsTable() {
   const locale = (await getLocale()) as Locale;
@@ -63,7 +64,7 @@ export default async function AllInstrumentsTable() {
               </p>
 
               <div className="overflow-x-auto rounded-lg border border-[var(--fig-border-light)] bg-white">
-                <table className="w-full min-w-[720px] border-collapse text-left">
+                <table className="w-full min-w-[920px] border-collapse text-left">
                   <thead>
                     <tr className="border-b border-[var(--fig-border-light)] bg-[var(--fig-light)]">
                       <th className="px-5 py-4 text-xs font-bold uppercase tracking-wide text-[var(--fig-text-muted)]">
@@ -77,6 +78,12 @@ export default async function AllInstrumentsTable() {
                       </th>
                       <th className="px-5 py-4 text-xs font-bold uppercase tracking-wide text-[var(--fig-text-muted)]">
                         {t('colLeverage')}
+                      </th>
+                      <th className="px-5 py-4 text-xs font-bold uppercase tracking-wide text-[var(--fig-text-muted)]">
+                        {cond('colMinLot')}
+                      </th>
+                      <th className="px-5 py-4 text-xs font-bold uppercase tracking-wide text-[var(--fig-text-muted)]">
+                        {cond('colFee')}
                       </th>
                       <th className="px-5 py-4 text-xs font-bold uppercase tracking-wide text-[var(--fig-text-muted)]">
                         {t('colHours')}
@@ -124,6 +131,14 @@ export default async function AllInstrumentsTable() {
                           </td>
                           <td className="px-5 py-4 font-[family-name:var(--font-ticker)] text-[15px] font-bold text-gold">
                             {product ? product.leverage : pending}
+                          </td>
+                          <td className="px-5 py-4 font-[family-name:var(--font-ticker)] text-[15px] text-[var(--fig-text-muted)]">
+                            {product
+                              ? cond('minLotValue', {value: MIN_LOT})
+                              : pending}
+                          </td>
+                          <td className="px-5 py-4 text-[15px] text-[var(--fig-text-muted)]">
+                            {product ? cond('feeFree') : pending}
                           </td>
                           <td className="px-5 py-4 text-[13px] leading-[1.5] text-[var(--fig-text-muted)]">
                             {product ? hours : pending}

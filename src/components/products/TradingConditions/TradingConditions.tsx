@@ -3,7 +3,7 @@ import SectionTitle from '@/components/home/SectionTitle';
 import {Link} from '@/i18n/navigation';
 import {getProductsMarketing} from '@/lib/productsMarketing';
 import type {Locale} from '@/i18n/routing';
-import {CFD_PRODUCTS, TRADING_HOURS} from '../tradingConditions';
+import {CFD_PRODUCTS, MIN_LOT, TRADING_HOURS} from '../tradingConditions';
 
 /**
  * Trading conditions table. Section chrome from CMS; APPROVED numbers only from
@@ -95,6 +95,31 @@ export default async function TradingConditions() {
                     <span>{t('hoursSummer', TRADING_HOURS.summer)}</span>
                     <span>{t('hoursWinter', TRADING_HOURS.winter)}</span>
                   </span>
+                </td>
+              </tr>
+              {/* Uniform across all products and tiers — shown as full-width rows. */}
+              <tr className="border-t border-[var(--fig-border)]">
+                <th
+                  scope="row"
+                  colSpan={5}
+                  className="px-5 py-4 font-sans text-[13px] font-normal text-[var(--fig-text-dim)]"
+                >
+                  {t('colMinLot')}
+                </th>
+                <td className="px-5 py-4 text-[13px] font-semibold text-white">
+                  {t('minLotValue', {value: MIN_LOT})}
+                </td>
+              </tr>
+              <tr className="border-t border-[var(--fig-border)]">
+                <th
+                  scope="row"
+                  colSpan={5}
+                  className="px-5 py-4 font-sans text-[13px] font-normal text-[var(--fig-text-dim)]"
+                >
+                  {t('colFee')}
+                </th>
+                <td className="px-5 py-4 text-[13px] font-semibold text-white">
+                  {t('feeFree')}
                 </td>
               </tr>
               <tr className="border-t border-[var(--fig-border)]">

@@ -489,17 +489,21 @@
       "colSymbol": "Symbol",
       "colSpread": "Spread",
       "colLeverage": "Max leverage",
+      "colMinLot": "Minimum lot size",
+      "colFee": "Trading commission",
       "colPlatform": "Platform",
       "pointsUnit": "points",
       "platformValue": "MetaTrader 5",
+      "minLotValue": "{value} lots",
+      "feeFree": "None",
       "contractSizeOz": "{value, number} oz",
       "contractSizeGram": "{value, number} g",
       "hoursSummer": "Summer: Mon {open} – Sat {close}",
       "hoursWinter": "Winter: Mon {open} – Sat {close}",
       "hoursNote": "Trading hours are Hong Kong time (GMT+8). The market closes daily from {summerFrom} to {summerTo} Tuesday through Friday on the summer schedule, and from {winterFrom} to {winterTo} on the winter schedule.",
-      "pendingLabel": "Other conditions (minimum lot size, fees, execution mode, etc.)",
+      "pendingLabel": "Other conditions (execution mode, etc.)",
       "pending": "To be announced",
-      "note": "Spreads vary by account type; the table shows the lowest (VIP account), and the trading-accounts page lists every type. Actual execution spreads follow live MetaTrader 5 quotes. Leveraged trading can amplify both profits and losses — make sure you understand the risks before trading.",
+      "note": "Spreads vary by account type; the table shows the lowest (VIP account), and the trading-accounts page lists every type. Actual execution spreads follow live MetaTrader 5 quotes. Commission-free means no dealing fee or commission is charged on trades; it does not cover overnight financing or deposit and withdrawal charges. Leveraged trading can amplify both profits and losses — make sure you understand the risks before trading.",
       "spreadFrom": "from {points} points",
       "tiersLink": "See spreads by account type"
     },
@@ -524,7 +528,7 @@
       "kicker": "ALL PRODUCTS",
       "heading": "Tradeable products",
       "sampleLabel": "Sample data",
-      "note": "The contract sizes, spreads, leverage and trading hours below are HATC's confirmed trading conditions. Spreads vary by account type and the table shows the lowest; actual execution spreads follow live MetaTrader 5 quotes.",
+      "note": "The contract sizes, spreads, leverage, minimum lot sizes, trading commission and trading hours below are HATC's confirmed trading conditions. Spreads vary by account type and the table shows the lowest; actual execution spreads follow live MetaTrader 5 quotes. Commission-free means no dealing fee or commission is charged on trades; it does not cover overnight financing or deposit and withdrawal charges.",
       "colProduct": "Product",
       "colContractSize": "Contract size",
       "colSpread": "Spread",
@@ -585,7 +589,7 @@
           "desc": "The lowest spreads of the four account types, suited to larger balances."
         }
       },
-      "note": "These are HATC's confirmed account conditions. Spreads are quoted in points: 1 point is USD 0.01 on gold, USD 0.001 on silver and 0.01 on the RMB kilobar. Actual execution spreads follow live MetaTrader 5 quotes. Minimum lot size, fees and execution mode will be announced separately. Leveraged trading can amplify both profits and losses — make sure you understand the risks before trading."
+      "note": "These are HATC's confirmed account conditions. Spreads are quoted in points: 1 point is USD 0.01 on gold, USD 0.001 on silver and 0.01 on the RMB kilobar. Actual execution spreads follow live MetaTrader 5 quotes. The minimum lot size and trading commission are identical across all four account types; commission-free means no dealing fee or commission is charged on trades, and does not cover overnight financing or deposit and withdrawal charges. Execution mode will be announced separately. Leveraged trading can amplify both profits and losses — make sure you understand the risks before trading."
     },
     "benefits": {
       "kicker": "CORE BENEFITS",

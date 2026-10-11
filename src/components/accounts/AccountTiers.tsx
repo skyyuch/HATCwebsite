@@ -5,7 +5,8 @@ import {buttonVariants} from '@/components/ui/button';
 import {getSiteSettings, openAccountHref} from '@/lib/siteSettings';
 import {
   ACCOUNT_TIERS,
-  CFD_PRODUCTS
+  CFD_PRODUCTS,
+  MIN_LOT
 } from '@/components/products/tradingConditions';
 
 /**
@@ -102,6 +103,22 @@ export default async function AccountTiers() {
                   </dt>
                   <dd className="text-right font-bold text-[var(--fig-heading-dark)]">
                     {conditions('platformValue')}
+                  </dd>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <dt className="text-[var(--fig-text-muted)]">
+                    {conditions('colMinLot')}
+                  </dt>
+                  <dd className="text-right font-bold text-[var(--fig-heading-dark)]">
+                    {conditions('minLotValue', {value: MIN_LOT})}
+                  </dd>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <dt className="text-[var(--fig-text-muted)]">
+                    {conditions('colFee')}
+                  </dt>
+                  <dd className="text-right font-bold text-[var(--fig-heading-dark)]">
+                    {conditions('feeFree')}
                   </dd>
                 </div>
               </dl>

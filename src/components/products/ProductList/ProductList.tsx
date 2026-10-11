@@ -2,7 +2,7 @@ import {getLocale, getTranslations} from 'next-intl/server';
 import SectionTitle from '@/components/home/SectionTitle';
 import {getProductsMarketing} from '@/lib/productsMarketing';
 import type {Locale} from '@/i18n/routing';
-import {CFD_PRODUCTS} from '../tradingConditions';
+import {CFD_PRODUCTS, MIN_LOT} from '../tradingConditions';
 
 /**
  * Tradeable products (gold / silver / RMB kilobar). Section chrome from CMS;
@@ -69,6 +69,22 @@ export default async function ProductList() {
                   </dt>
                   <dd className="font-[family-name:var(--font-ticker)] text-2xl font-bold text-gold">
                     {p.leverage}
+                  </dd>
+                </div>
+                <div className="flex flex-col gap-1 bg-white p-4">
+                  <dt className="text-xs text-[var(--fig-text-muted)]">
+                    {cond('colMinLot')}
+                  </dt>
+                  <dd className="font-[family-name:var(--font-ticker)] text-xl font-bold text-[var(--fig-heading-dark)]">
+                    {cond('minLotValue', {value: MIN_LOT})}
+                  </dd>
+                </div>
+                <div className="flex flex-col gap-1 bg-white p-4">
+                  <dt className="text-xs text-[var(--fig-text-muted)]">
+                    {cond('colFee')}
+                  </dt>
+                  <dd className="text-xl font-bold text-[var(--fig-heading-dark)]">
+                    {cond('feeFree')}
                   </dd>
                 </div>
               </dl>

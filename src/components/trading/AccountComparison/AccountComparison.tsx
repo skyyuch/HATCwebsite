@@ -4,7 +4,8 @@ import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
 import {
   ACCOUNT_TIERS,
-  CFD_PRODUCTS
+  CFD_PRODUCTS,
+  MIN_LOT
 } from '@/components/products/tradingConditions';
 import {getTradingMarketing} from '@/lib/tradingMarketing';
 import type {Locale} from '@/i18n/routing';
@@ -123,6 +124,25 @@ export default async function AccountComparison() {
                 values={ACCOUNT_TIERS.map((tier) => ({
                   key: tier.key,
                   value: conditions('platformValue')
+                }))}
+              />
+              <Row
+                label={conditions('colMinLot')}
+                zebra
+                featured={featured}
+                featuredCell={featuredCell}
+                values={ACCOUNT_TIERS.map((tier) => ({
+                  key: tier.key,
+                  value: conditions('minLotValue', {value: MIN_LOT})
+                }))}
+              />
+              <Row
+                label={conditions('colFee')}
+                featured={featured}
+                featuredCell={featuredCell}
+                values={ACCOUNT_TIERS.map((tier) => ({
+                  key: tier.key,
+                  value: conditions('feeFree')
                 }))}
               />
 

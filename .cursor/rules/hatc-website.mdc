@@ -723,6 +723,35 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  `faqs(category=platforms)`，要連後台資料一起改）。`trading.services.items.londonGold` 不在清單內
  （旁邊就是獨立的 `kilobar` 卡，兩張合起來＝三品種，刻意分法）。
 
+- **2026-10-11 (第五十六輪): 最低手數 0.01 ＋ 交易手續費全免入 FACTS；外部連結全站同窗。
+ SUPERSEDES 第四十四輪的「無佣金欄位 → 不得寫佣金或零佣金」。**
+ 業主本輪三項指示：① 「交易條件最低手數：0.01、手續費全免」；② 「開戶跳轉不要用打開新視窗方式」；
+ ③ 「需要完成隱私權政策及免責聲明」。先就方向級紅線問齊（手續費涵蓋範圍／手數適用品種／法律文本來源／
+ 同窗套用範圍）才動手。
+ - **新核可事實（`HATC_FACTS.md`「Account types & trading conditions」）**：**最低手數 0.01 手**、
+ **交易手續費／佣金全免**，兩者皆適用**全部三品種 × 全部四檔帳戶**。**⚠ 業主明確限定「手續費全免」
+ 只涵蓋交易時收取的手續費／每手佣金，不含隔夜利息（庫存費／swap）與入金／出金費用** → 官網一律寫
+ **「交易手續費」**並在同版面以細則交代排除範圍；**不得**寫「免任何費用」「零成本」或暗示無隔夜利息。
+ 第四十四輪「不得聲稱零佣金」的限制**到此解除**（當時原因是設定表沒有佣金欄位），但**任何非零佣金
+ 金額仍屬虛構**。FACTS「仍待業主提供」現在只剩 **執行方式**。
+ - **程式**：`products/tradingConditions.ts` 新增 **`MIN_LOT = 0.01`** 與 **`TRADING_COMMISSION_FREE`**
+ （後者只是把事實與其範圍限制寫在程式註解裡，UI 讀 i18n `feeFree`）。事實照舊**留在程式、不進 CMS**。
+ - **UI（五處同源）**：`products/ProductList`（卡片 dl 由 2 格變 2×2）／`products/TradingConditions`
+ （新增兩列全寬列，`pendingLabel` 收斂為「其餘交易條件（執行方式等）」）／`trading/AccountComparison`
+ （新增兩列 Row）／`accounts/AccountTiers`（卡片規格清單）／`products/AllInstruments/AllInstrumentsTable`
+ （新增兩欄，`min-w` 720→**920px**；CMS 自建列無核可條件仍渲染「將另行公佈」）。
+ - **i18n**：`products.conditions` 新增 `colMinLot`／`colFee`／`minLotValue`／`feeFree` ＝三語
+ **666 鍵**；`products.conditions.note`／`accounts.tiers.note`／`productsAll.table.note` 三處加上
+ 手續費範圍細則。**標籤刻意不另開 `accounts.tiers.specLabels.*` 鍵**——四個頁面共用
+ `products.conditions.col*`，文字永遠不可能不一致。
+ - **外部連結全站同窗（業主選定套用範圍＝全部）**：移除 22 處 `target="_blank"` ＋
+ `rel="noopener noreferrer"`（開戶／模擬／客服／header mega 橫幅／平台 CTA／外部消息卡）。
+ **新增 CTA 不得再加回去**（另記於「Content governance」）。`noopener` 對同窗導覽本來就無作用，
+ `noreferrer` 會砍掉 referrer，故兩個屬性一起移除。
+ - **待業主（本輪新增）**：(a) **執行方式**＝FACTS 唯一剩下的待提供交易條件；(b) 是否把「交易手續費
+ 全免」做成 `/accounts` 賣點卡（`account-benefits` 為 CMS 集合，改動要連種子腳本與後台資料一起處理）
+ ——本輪刻意只做事實表格，沒碰行銷區塊。
+
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾
  顯示退役的黃金 27／白銀 30 且缺公斤條。已改為條件欄位全部由 `tradingConditions.ts` 產生、
