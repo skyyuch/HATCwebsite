@@ -72,7 +72,33 @@ npm run build              # 生產建置
 npm run start              # 啟動生產伺服器
 npm run generate:types     # 產生 Payload 型別（src/payload-types.ts）
 npm run generate:importmap # 產生 admin importMap
+npm run i18n:check         # 三語文案鍵數對齊檢查（CI／pre-commit 用）
+npm run migrate            # 對資料庫套用 src/migrations/*（部署用）
+npm run migrate:create -- <name>  # 依 config 變更產生新 migration（不需連資料庫）
+npm run migrate:status     # 顯示已套用／待套用的 migration
+npm run migrate:check      # 檢查 config 是否有未產 migration 的 schema 變更
 ```
+
+## 資料庫 schema 與 migration
+
+本機開發靠 Payload 的 Drizzle **push**（僅 dev 模式）自動同步資料庫，**不會**留下任何
+migration 檔；**生產模式不 push，只會重播 `src/migrations/*`**。因此：
+
+- **改了 `src/collections/*`、`src/globals/*`、`src/payload.config.ts` 或
+  `src/payload/permissions/registry.ts`（它的資源清單會生成 `roles` 的勾選欄位）之後，
+  務必跑 `npm run migrate:create -- <描述性名稱>` 並把產生的 `.ts` ＋ `.json` ＋ `index.ts`
+  一起 commit。**
+- `npm run migrate:check` 會把漏掉的 migration 攔下來（CI 與 pre-commit 皆已掛）。
+  它比對 config 與 migrations 目錄最新的 snapshot JSON，**不需要資料庫**。
+- 部署流程：建立空資料庫 → 設好 `DATABASE_URI`／`PAYLOAD_SECRET` → `npm run migrate`
+  → `npm run build` → `npm run start`。首次進入 `/admin` 時 `onInit` 會自動建立
+  full-access 的 `Administrator` 角色。
+  若部署到無法跑 CLI 步驟的 serverless 平台（如 Vercel），把 `npm run migrate` 併進
+  build command，或改用 Payload 的 `postgresAdapter({prodMigrations})`（本倉目前未啟用，
+  避免執行期自動改 schema）。
+- ⚠ **不要**把 `npm run migrate` 指向既有的、由 push 建出來的本機資料庫——那些表已經存在，
+  migration 會在 `CREATE TABLE` 失敗。本機要改用 migration 流程的話，先砍掉重建資料庫
+  （本機資料皆為可重跑的種子腳本產物）。
 
 ## 慣例（詳見 .cursor/rules/）
 

@@ -21,4 +21,16 @@ if git diff --cached --name-only | grep -q '^src/messages/.*\.json$'; then
   fi
 fi
 
+# Schema-affecting files: collections, globals, the Payload config and the
+# permission registry (its resource list generates the Roles checkbox columns).
+# Local dev syncs the database with Drizzle push, which leaves no migration
+# behind — production only replays src/migrations, so the gate runs here too.
+if git diff --cached --name-only |
+  grep -qE '^src/(collections|globals|payload)/|^src/payload\.config\.ts$'; then
+  echo "[pre-commit] CMS schema files changed — checking migration coverage…"
+  if ! npm run --silent migrate:check; then
+    exit 1
+  fi
+fi
+
 exit 0

@@ -1,12 +1,38 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-11（第四十七輪：`/products/all` 退役值 P0 修復＋合約規模/交易時段入 FACTS；
-> 交易端真實截圖上站〔簡中〕）
+> 最後更新：2026-10-11（第四十八輪：migration 基線上線＋漂移防呆；公斤條單位／夏令冬令切換日期結案）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
 ## ▶ 下一步（下一位 agent）
 
+> **✅ 第四十八輪（2026-10-11）完成：migration 基線上線 — 累積三輪的「正式站 migration」債一次清掉，
+> 並加上防止再犯的漂移閘門。另結案業主兩項事實確認。**
+>
+> **診斷（比交棒 prompt 的描述更嚴重）**：原本以為是「第四十四／四十五／四十七輪少了三個增量
+> migration」，實際是**本倉從第一張表開始就沒有任何 migration**（`src/migrations/` 不存在、
+> `package.json` 無 migrate 指令），一直只靠 **dev-only 的 drizzle push**。而 **Payload 生產模式不 push、
+> 只重播 `src/migrations/*`** → 正式站用正規流程**根本無法建庫**。業主確認「部署之後交給開發處理」
+> ＝目前沒有任何正式站資料庫，因此走 **baseline** 而非增量遷移。
+> - **`src/migrations/20261011_073413_initial.ts`＋ snapshot `.json` ＋ `index.ts`**＝依**現行 config**
+>   產出的完整建表 SQL（39 張表）。現行 config 早已不含退役物件，所以 baseline 天然**不含**
+>   `account_tiers`／`account_spreads`／`account_platforms`／`sample_trading_conditions*`，不含
+>   `instruments` 的 `contract_size`／`spread`／`leverage`／`trading_hours`，且**含**
+>   `site_settings.demo_account_url`。→ 正式站第一次建庫即正確 schema，**不可能**再有舊 27／30 資料。
+> - **已實證驗過（非紙上推論）**：另建暫時空庫 → `payload migrate` → `pg_dump --schema-only` 與本機
+>   dev 庫逐字比對 → **欄位集合完全一致、零缺漏**（兩份 dump 皆 2968 行；唯一差異是欄位**順序**，
+>   dev 是逐輪 push 追加、migration 走 config 順序，對 Payload/drizzle 無影響）。暫時庫驗完已 DROP。
+>   ⇒ 這也順便證明第四十四／四十五／四十七輪的手動 ALTER 沒有漏做。
+> - **npm scripts**：`migrate`／`migrate:create`／`migrate:status`／`migrate:check`。
+> - **防呆 `scripts/check-migrations.sh`（已掛 CI ＋ pre-commit）**：改了 schema 卻沒產 migration 就 fail。
+>   原理＝`payload migrate:create` 的 diff 是比對 migrations 目錄最新 snapshot JSON、CLI 帶
+>   `disableDBConnect` → **不需資料庫、不需 TTY**，CI 用空 `DATABASE_URI` 即可跑。兩個方向都實測過
+>   （乾淨→exit 0；暫時加一個欄位→exit 1）。
+> - **事實結案（業主 2026-10-11）**：① 人民幣公斤條合約規模單位＝**克**（已核可事實，非推定）；
+>   ② **夏令／冬令切換日期不對外公布** → 只列兩組時段，不得標示轉換日、不得比照美國夏令時間推導。
+>   前台與 `tradingConditions.ts` 本已符合，**無需改碼**。
+> - 細節見下方「🟢 第四十八輪」。
+>
 > **✅ 第四十七輪（2026-10-11）完成：① `/products/all` 的退役值 P0 修復（架構層解掉）；
 > ② 合約規模與交易時段升為已核可事實；③ 交易端真實截圖上站（簡中版）。**
 >
@@ -63,8 +89,11 @@
 > `build` 綠且 `/products/all`、`/platforms` 維持 ● SSG、`/api/market/quotes` 為 ƒ。
 >
 > **⏭️ 第四十七輪留下的待辦**
-> - **正式站**：清 `instruments` 舊資料 ＋ 刪 4 欄的 migration（連同第四十四／四十五輪未做的 migration）。
-> - 業主確認：公斤條合約規模的**單位**是否為克；夏令/冬令**切換日期**是否可公布。
+> - ~~**正式站**：清 `instruments` 舊資料 ＋ 刪 4 欄的 migration（連同第四十四／四十五輪未做的
+>   migration）~~ → **第四十八輪以 baseline migration 結案**（正式站是全新空庫，直接
+>   `npm run migrate` 即得正確 schema，無舊資料可清）。
+> - ~~業主確認：公斤條合約規模的**單位**是否為克；夏令/冬令**切換日期**是否可公布~~ →
+>   **第四十八輪結案**（單位＝克；切換日期不公布）。
 > - 交易端截圖：(a) 生產遊客組配好產品後改用**生產**環境重截；(b) 交易端支援繁中/英文後補上另外兩語；
 >   (c) 需登入的下單/持倉/資金頁仍需業主提供測試帳號；(d) MT5 仍無真實截圖。
 > - `/accounts` 平台區仍用漸層色塊＋`panelLabel`（**無假圖，非紅線**），要不要也換成真實截圖待業主定。
@@ -288,6 +317,101 @@
 2. **第十八輪 `/trading` 暫緩 UI／驗收項**（多數需業主拍板）：淺色系是否推廣、帳戶分級真偽、
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
+
+## 🟢 第四十八輪（實作，2026-10-11）：migration 基線 ＋ 漂移防呆
+
+### 問題的真實樣貌
+
+交棒 prompt 把它寫成「累積三輪未做的正式站 migration」，實際更根本：
+
+- `src/migrations/` **不存在**、`package.json` **沒有任何 migrate 指令**——本倉自第一張表起
+  從未產生過 migration，全靠 **Payload 的 Drizzle push**（`push` 預設只在 `NODE_ENV !== production`
+  啟用）同步本機資料庫。
+- **生產模式不 push，只重播 `src/migrations/*`**。因此正式站不是「schema 會舊三輪」，而是
+  **連建庫都做不到**。
+- 業主回覆「部署之後會交給開發處理」＝**目前沒有任何正式站／託管資料庫**
+  （與本檔長期開放項「託管 Postgres 由誰開」一致）。→ 不需要保留資料的增量遷移，走 **baseline**。
+
+### 落地
+
+- **`src/migrations/20261011_073413_initial.{ts,json}` ＋ `index.ts`**＝依現行 config 產出的完整
+  建表 SQL（**39 張表**）。產生方式：另建一個暫時空庫、把 `DATABASE_URI` 指過去再
+  `payload migrate:create initial`（在空庫上產生才會是完整建表，而非對已同步的本機庫 diff 出空檔）。
+- 因為現行 config 早已移除退役物件，baseline **天然乾淨**：
+  - 不含 `account_tiers`／`account_spreads`／`account_platforms`（第四十四輪退役）
+  - 不含 `sample_trading_conditions*`（第四十五輪退役）
+  - 不含 `instruments` 的 `contract_size`／`spread`／`leverage`／`trading_hours`（第四十七輪退役）
+  - **含** `site_settings.demo_account_url`（第四十四輪新增）
+  - ⇒ 正式站第一次建庫就是正確 schema，**不存在**被種回黃金 27／白銀 30 的可能。
+- **npm scripts**：`migrate`（套用）／`migrate:create`（產生，不需 DB）／`migrate:status`／
+  `migrate:check`（漂移閘門）。
+- **`scripts/check-migrations.sh`**＝漂移閘門，已掛 **CI**（lint → i18n:check → **migrate:check** → build）
+  與 **pre-commit**（僅當 `src/collections/`、`src/globals/`、`src/payload/`、`src/payload.config.ts`
+  有 staged 異動時才跑，約 2 秒）。
+- **eslint 新增 ignore `src/migrations/**`**：Payload 產生的 migration 帶 4 個 unused-vars warning，
+  且每次重新產生都會回來，不該手改。lint 維持 0 error／1 個既有 warning。
+- **README 新增「資料庫 schema 與 migration」章節**：改 schema 必產 migration、部署步驟
+  （空庫 → `migrate` → `build` → `start`，首次進 `/admin` 由 `onInit` 建 full-access Administrator）、
+  serverless 選項（把 `migrate` 併進 build command，或 `postgresAdapter({prodMigrations})`——本倉
+  刻意未啟用，避免執行期自動改 schema）。
+
+### 為什麼漂移閘門不需要資料庫（關鍵機制，日後沿用）
+
+讀 `node_modules/@payloadcms/drizzle/dist/utilities/buildCreateMigration.js` 確認：
+
+- `migrate:create` 的 diff **是比對 migrations 目錄中最新的 snapshot `.json`**，不是比對線上 DB；
+  `payload/dist/bin/migrate.js` 對 `migrate:create` 帶 **`disableDBConnect: true`**。
+  → 空 `DATABASE_URI` 也能跑（CI 現有 env 直接可用）。
+- 無變更時會問「No schema changes detected. Would you like to create a blank migration file?」，
+  **無 TTY／`< /dev/null` 時 prompts 走 onCancel → `process.exit(0)` 且不寫檔**。
+- ⚠ **這版 Payload 的 `--skipEmpty` 旗標實際無效**：`bin/migrate.js` 傳 `skipEmpty`，但
+  `buildCreateMigration` 解構的是 `ln`。所以閘門靠 `< /dev/null`，不要依賴該旗標。
+- ⚠ **產 migration 會重寫 `src/migrations/index.ts`**。閘門用探測名產檔判定漂移，因此
+  **cleanup 必須同時還原 `index.ts`**，否則只刪探測檔會留下指向已刪檔案的 import 而弄壞 build
+  （本輪第一版就踩到，已修）。
+
+### 驗證
+
+- **schema 等價性（實測）**：暫時空庫 `hatc_migrate` → `payload migrate` → 與本機 dev 庫各做
+  `pg_dump --schema-only --no-owner --no-acl` 比對：兩份皆 **2968 行**，正規化後 diff **完全為空**；
+  逐字 diff 僅剩**欄位順序**（dev 逐輪 push 追加 vs migration 走 config 順序）與 pg_dump 的
+  restrict token。⇒ 前三輪的手動 ALTER **沒有漏**。暫時庫驗完已 `DROP DATABASE`。
+- **閘門雙向實測**：乾淨狀態 → `No schema drift`／exit 0；暫時替 `Instruments` 加一個欄位 →
+  `Schema drift` ／exit 1，且 `index.ts` 完好、無殘留探測檔。
+- `lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`i18n:check` 三語 **665 鍵**齊／
+  `build` 綠且頁面維持 ● SSG、`/api/market/quotes` 為 ƒ／dev server 三頁 200、`/api/users/me` 200
+  （無 drizzle push 卡住）。
+- **本輪未改任何 collection/global 欄位**，故 `generate:types`／`generate:importmap` 無需重跑。
+
+### 🚨 順手修掉：pre-commit hook 其實從未生效
+
+本輪要掛閘門時發現 `git config core.hooksPath` 是**空的** → 第三十五輪寫的 **i18n pre-commit 閘門
+一直沒有真正跑過**。原因：`package.json` 的 `prepare`（`git config core.hooksPath .githooks`）只在
+`npm install` 時執行，而第三十五輪當時本倉**還沒 `git init`**（當時即記為 no-op），之後也沒再跑過
+`npm install`。本輪已手動 `git config core.hooksPath .githooks` 啟用，並驗證檔案比對規則：
+`src/collections/`、`src/globals/`、`src/payload/`、`src/payload.config.ts` 會觸發 `migrate:check`，
+`src/components/*`、`src/messages/*.json` 不會（messages 走原本的 i18n 閘門）。
+⚠ **hooksPath 是 local git config，不隨 commit 走** → 新 clone 的人要 `npm install`（或手動
+`git config core.hooksPath .githooks`）才會有 hook；CI 的閘門才是真正的保險。
+
+### 本機維持 push（刻意不改）
+
+本機開發仍走 push，流程與過去各輪一致。⚠ **不要**把 `npm run migrate` 指向既有的、由 push 建出來的
+本機庫——表已存在，migration 會在 `CREATE TABLE` 失敗。本機若要改走 migration 流程，砍掉資料庫重建即可
+（本機內容皆為可重跑的種子腳本產物）。本機 dev 庫**沒有** `payload_migrations` 記錄，屬預期。
+
+### 事實結案（業主 2026-10-11）
+
+- 人民幣公斤條合約規模單位＝**克**（1,000 克＝1 公斤）→ FACTS 由「依定義推定」改為**已核可事實**。
+- **夏令／冬令切換日期不對外公布** → FACTS 由「業主未提供」改為**業主決定不公布**，並明文禁止
+  自行推導（例如比照美國夏令時間）。前台與 `tradingConditions.ts` 本已符合，無需改碼。
+
+### 待業主 / 下一棒
+
+- 部署平台與託管 Postgres（業主：交給開發處理）。開發接手時只需：空庫 → `DATABASE_URI`／
+  `PAYLOAD_SECRET` → `npm run migrate`。
+- 若開發已經用 dev push 建過某個環境的庫，**不要**在上面跑 baseline migration；砍掉重建，或
+  自行 baseline（建 `payload_migrations` 表並插入 `20261011_073413_initial` 一列）。
 
 ## 🟢 第四十五輪（實作，2026-10-11）：`/trading` 接上真實條件 ＋ 即時報價，示意表退役
 

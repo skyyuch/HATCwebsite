@@ -38,5 +38,8 @@ jobs:
       - name: i18n message key parity
         run: npm run i18n:check
 
+      - name: Payload migration drift
+        run: npm run migrate:check
+
       - name: Build (SSG fallback)
         run: npm run build

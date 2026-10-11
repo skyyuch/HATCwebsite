@@ -445,8 +445,38 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  今開 4616 對現價 4194，已棄用）；④ **遊客「交易」分頁不可截**——它寫著「开户领$50奖励」
  「30分钟出入金」「5×24小时专属客服」「资金独立存取账户0风险」「4+热门贵金属产品」，全是官網
  被禁止的未確認宣稱（已回報業主）。
- - **待業主**：公斤條合約規模單位是否為克；夏令/冬令切換日期；生產遊客組配好產品後改用生產環境
- 重截；交易端支援繁中/英文後補另外兩語；需登入頁的測試帳號；MT5 真實截圖。
+ - **待業主**：生產遊客組配好產品後改用生產環境重截；交易端支援繁中/英文後補另外兩語；
+ 需登入頁的測試帳號；MT5 真實截圖。（公斤條單位／夏令冬令切換日期已於第四十八輪結案。）
+
+- **2026-10-11 (第四十八輪): migration 基線上線 — 「正式站 migration」債一次清掉，並加防呆。**
+ 業主確認「部署之後交給開發處理」＝**目前沒有任何正式站資料庫**。據此拍板走 **baseline**：
+ **本倉從第一張表開始就沒有任何 migration**（一直只靠 dev-only drizzle push），所以第四十四／
+ 四十五／四十七輪的刪表刪欄不是「少了三個增量 migration」，而是整套 migration 機制不存在、
+ **生產模式根本無法建庫**（prod 不 push，只重播 `src/migrations/*`）。
+ - **`src/migrations/20261011_073413_initial.ts`（＋ snapshot `.json` ＋ `index.ts`）**＝依**現行
+ config** 產生的完整建表 SQL（39 張表）。因為現行 config 早已不含退役物件，baseline 天然**不含**
+ `account_tiers`／`account_spreads`／`account_platforms`／`sample_trading_conditions*`、不含
+ `instruments` 的 `contract_size`／`spread`／`leverage`／`trading_hours`，且**含**
+ `site_settings.demo_account_url` → 正式站第一次建庫即為正確 schema，也**不可能**有舊 27／30 資料。
+ - **驗證方式（日後比對 schema 可沿用）**：建暫時空庫 → `payload migrate` → `pg_dump --schema-only`
+ 與本機 dev 庫逐字比對：**欄位集合完全一致、零缺漏**（唯一差異是欄位**順序**，dev 是逐輪 push 追加、
+ migration 是 config 順序，對 Payload/drizzle 無影響）。暫時庫驗完即 DROP。
+ - **npm scripts**：`migrate`／`migrate:create`／`migrate:status`／**`migrate:check`**。
+ **改 `src/collections/*`、`src/globals/*`、`src/payload.config.ts` 或
+ `src/payload/permissions/registry.ts`（其資源清單生成 `roles` 勾選欄）後，必須
+ `npm run migrate:create -- <名稱>` 並連 `.ts`＋`.json`＋`index.ts` 一起 commit。**
+ - **防呆 `scripts/check-migrations.sh`（已掛 CI ＋ pre-commit）**：`payload migrate:create` 的 diff
+ 是比對 migrations 目錄最新 snapshot JSON、CLI 帶 `disableDBConnect` → **不需資料庫、不需 TTY**
+ （無 stdin 時「建立空白 migration？」提問會 cancel 並 exit 0）。腳本以探測名產檔判定漂移，
+ **跑完必還原 `index.ts`**（產 migration 會重寫它，只刪探測檔會留下壞 import）。⚠ 這版 Payload 的
+ `--skipEmpty` 旗標實際未生效（bin 傳 `skipEmpty`、實作讀 `ln`），故靠 `< /dev/null`。
+ - **本機仍走 push（未改變）**：dev 便利性優先；⚠ **不要**把 `npm run migrate` 指向既有的 push 建出來
+ 的本機庫（表已存在 → `CREATE TABLE` 失敗），要改用 migration 流程就砍掉重建（本機資料皆為可重跑種子）。
+ - **部署流程（寫入 README）**：空庫 → 設 `DATABASE_URI`／`PAYLOAD_SECRET` → `npm run migrate` →
+ `build` → `start`；首次進 `/admin` 由 `onInit` 建 full-access `Administrator` 角色。
+ - **事實確認（業主 2026-10-11，已寫入 FACTS）**：① 人民幣公斤條合約規模單位＝**克**（1,000 克＝
+ 1 公斤）＝已核可事實，非推定；② **夏令／冬令切換日期不對外公布** → 官網只列兩組時段，
+ **不得標示轉換日期、不得比照美國夏令時間自行推導**。前台與 `tradingConditions.ts` 本已符合，無需改碼。
 
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾
@@ -605,6 +635,10 @@ CMS. Full plan + phases in `docs/HANDOFF.md` (第十九輪, planning). Key rules
 - **可選 follow-up：** 託管 Postgres 後手動驗 admin 編輯 → revalidate。
   （`/academy/[slug]` Lexical 詳情頁＝第二十六輪已完成。）
 - Regen `payload-types.ts` (`npm run generate:types`) after every collection/field change.
+- **And generate a migration in the same change**: `npm run migrate:create -- <name>`
+ (no DB needed), commit the `.ts` + `.json` + `index.ts`. Local dev still syncs via
+ Drizzle push, but production only replays `src/migrations/*` — `npm run migrate:check`
+ (CI + pre-commit) fails the build when a schema change has no migration. 第四十八輪.
 - **Deployment prerequisite:** owner-editable content needs hosted Postgres
   (Neon/Supabase) + `DATABASE_URI` + `PAYLOAD_SECRET` on the host for `/admin`.
   Without it the site still runs on i18n fallback (SSG).
@@ -669,7 +703,9 @@ CMS. Full plan + phases in `docs/HANDOFF.md` (第十九輪, planning). Key rules
  `-- --to en` 等）。**`.github/workflows/ci.yml`**＝lint→i18n:check→build（空 `DATABASE_URI`／dummy
  `PAYLOAD_SECRET`／`MT_API_KEY` 空，走 SSG fallback）。**`.githooks/pre-commit`**（僅在 `src/messages/*.json`
  有 staged 異動時跑 `i18n:check`，快）＋ `package.json` `prepare`＝`git config core.hooksPath .githooks || true`
- （`npm install` 自動掛勾；本倉尚未 `git init`，故目前為 no-op，git 初始化後即生效）。② **glossary 擴充**：
+ （`npm install` 自動掛勾；⚠ **第四十八輪發現本倉 `core.hooksPath` 一直是空的 → 此閘門從未真正跑過**，
+ 原因是寫入當時尚未 `git init`、之後也沒重跑 `npm install`；已手動 `git config core.hooksPath .githooks`
+ 啟用。hooksPath 是 local config 不隨 commit 走，新 clone 需 `npm install` 或手動設定；**CI 才是真保險**）。② **glossary 擴充**：
  補 FACTS 已核可但缺漏術語（en／zh-Hans 對稱、長詞在前）——參與者／行員證書、香港海關 **A 類註冊人／A 類註冊**
  ＋《打擊洗錢及恐怖分子資金籌集條例》(AMLO)、現貨黃金／現貨白銀、董事會 主席／副主席（人名不譯，無核可羅馬拼音）、
  客戶資金／資金隔離／信託賬戶／託管（＝「Client fund custody」核可聲明用詞），並補齊 zh-Hans `99 金／999.9 金`。

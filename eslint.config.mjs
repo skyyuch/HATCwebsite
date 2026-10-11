@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Payload-generated migrations (`npm run migrate:create`) — regenerating
+    // them would undo any hand-edits, so they are not linted.
+    "src/migrations/**",
   ]),
 ]);
 
