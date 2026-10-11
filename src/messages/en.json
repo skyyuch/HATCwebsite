@@ -134,6 +134,10 @@
       "high": "Day high",
       "low": "Day low"
     },
+    "market": {
+      "liveLabel": "Live quotes",
+      "sourceNote": "Quotes are supplied by the MT5 market feed for reference only and do not constitute an offer to trade."
+    },
     "trust": {
       "field": {
         "title": "Gold & Silver Exchange",
@@ -318,7 +322,7 @@
           "l4": "Technical indicators"
         }
       },
-      "risk": "Risk disclosure: precious-metals trading involves risk and prices can move sharply; you may lose part or all of your capital. All prices, charts and figures shown on this website are sample data for design demonstration only and do not constitute investment advice or an offer. Please make sure you fully understand the risks before trading.",
+      "risk": "Risk disclosure: precious-metals trading involves risk and prices can move sharply; you may lose part or all of your capital. Live quotes shown on this website are for reference only and may differ from executable prices; charts and figures marked as sample data are design placeholders. None of this constitutes investment advice or an offer. Please make sure you fully understand the risks before trading.",
       "privacy": "Privacy Policy",
       "disclaimer": "Disclaimer"
     },

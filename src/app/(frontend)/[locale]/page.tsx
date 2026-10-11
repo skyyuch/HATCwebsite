@@ -3,6 +3,7 @@ import {setRequestLocale} from 'next-intl/server';
 import {getTranslations} from 'next-intl/server';
 import {siteUrl, localeAlternates} from '@/lib/seo';
 import Hero from '@/components/home/Hero/Hero';
+import LiveQuotesProvider from '@/components/home/LiveQuotes/LiveQuotesProvider';
 import TrustStrip from '@/components/home/TrustStrip/TrustStrip';
 import Services from '@/components/home/Services/Services';
 import MT5Showcase from '@/components/home/MT5Showcase/MT5Showcase';
@@ -45,9 +46,13 @@ export default async function HomePage({
           Figma frame 4:4. Dark trading-desk theme with light sections
           interleaved. Section order matches docs/FIGMA_HOMEPAGE_SPEC.md §2.
           The FinalCta band + global Footer close the page. */}
-      <Hero />
-      <TrustStrip />
-      <Services />
+      {/* Hero + Services share one live-quote poll; the page stays static and
+          renders labelled sample data until the feed answers. */}
+      <LiveQuotesProvider>
+        <Hero />
+        <TrustStrip />
+        <Services />
+      </LiveQuotesProvider>
       <MT5Showcase />
       <WhyHATC />
       <Academy />

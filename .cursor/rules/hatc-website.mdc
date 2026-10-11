@@ -307,6 +307,37 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
   body。`LocaleSwitcher` 切語系後 `router.refresh()`（第四十輪 follow-up e）。種子後
   `curl http://127.0.0.1:3000/api/dev-revalidate`。未動 schema。
 
+- **2026-10-11 (第四十三輪): 首頁行情接上自家 MT5 真實報價（server BFF ＋ 示意降級）。**
+ 來源＝`~/Desktop/mt5-web` 的 Node 行情閘道（prd `https://node.hatcmarket.com`／uat
+ `https://node.666678910.com`）。業主拍板：① **先把接線做完，拿不到真資料就自動退回示意數據**；
+ ② 首頁品種收斂＝**金／銀／人民幣公斤條**（`XAUUSD`／`XAGUSD`／`RKGCNH`），**不列外匯/指數為 HATC 產品**。
+ - **必須走 server 端 BFF，禁止瀏覽器直連閘道**：閘道 CORS 只放行 `h5/admin.hatcmarket.com`，且 HTTP
+ 回應是 **AES-256-GCM 信封**、密鑰為靜態共享密鑰（放進前端 bundle 等於公開）。WS 握手也需 server-only
+ 的 `contextToken`。→ **輪詢 ＋ server 代理 ＋ server 快取**。
+ - **檔案**：`src/lib/marketQuotes.ts`（**server-only**；遊客 `POST /v1/context/resolve {scene:"guest"}`
+ → `GET /v1/market/symbol-detail`；`change = bid − tickStat.PriceClose`、高低 = `BidHigh/BidLow`；
+ context 快取＋**2 秒報價快取**）／`src/lib/marketQuoteTypes.ts`（型別＋格式化，**刻意不含 server-only**
+ 以供 client 共用）／`src/app/api/market/quotes/route.ts`（`force-dynamic`；**`{ok:false}` 是正常答案**
+ ＝前端維持示意）／`src/components/home/LiveQuotes/LiveQuotesProvider.tsx`（client，單一 5s 輪詢供
+ ticker/hero/服務卡共用，`document.hidden` 暫停，累積價格點供 sparkline）。
+ - **env（SERVER-ONLY，不得 `NEXT_PUBLIC_`）**：`QUOTE_GATEWAY_URL`／`QUOTE_HTTP_CRYPT_SECRET`。
+  **留空＝停用**，首頁照常顯示示意數據。⚠ **prd 與 uat 密鑰不同**（h5 的 `env.prd.uts` 寫錯成 uat 值，
+ 別跟著拿錯）。**密鑰值不得寫進本倉任何檔案（含 `docs/*`、`.env.example`、註解）**——只寫「去閘道專案
+ `deploy/env/*.env` 取」的指引，實際值填主機環境變數（`.env` 已被 `.gitignore` 排除）。
+ - **SSG 不變**：server 永遠輸出示意數據，client 取到真資料才替換（無 hydration mismatch；無 gateway 也能 build）。
+ - **治理紅線（本輪確立）**：① **真實報價 ≠ 事實** → 不入 `HATC_FACTS.md`、不是交易條件（核可的
+ 金 27／銀 30／1:100 仍只在 `products/tradingConditions.ts`）。② **標籤必須隨資料來源切換**：真資料→
+ 「即時報價」＋來源/免責說明；拿不到→「示意數據」。**不得**真價格配示意標籤或示意數字掛「即時報價」。
+ ③ **真價格旁不放假走勢**：hero sparkline 只畫本次工作階段實際觀測到的價格點，不足 3 點就不畫。
+ ④ 行情轉真後，`home.footerV2.risk` 已三語改寫（原句「所示行情…均為示意數據」會變不實）。
+ - **🚩 阻塞（待業主推後端，非本倉 bug）**：**生產**遊客交易組
+ `demo\DirectCustomer\GUEST\DEFAULT\Standard` 在業務後台**沒配產品** → `allowedSymbols: []` → 403
+ `SYMBOL_NOT_ALLOWED`。UAT 遊客組有 29 個白名單（含金銀公斤條）＝鏈路本身通。**後端配好產品後官網
+ 不需改碼即自動變真。**
+ - **待業主**：(a) 配生產遊客組產品；(b) 正式站換 prd URL＋prd 密鑰；(c) **`/v1/market/bars` 目前回空**
+ → `Services` 的 K 線**仍是示意**並保留標籤，待後端修好才可接真 K 線；(d) `/products`、`/accounts`、
+ `/trading`、`/products/all` 的示意點差/報價表本輪未動（層級不同＝交易條件，改接須業主決定）。
+
 ## Visual system
 
 - **Logo (2026-08-10 第十六輪; header updated 第十七輪)**: use the real wordmark `public/brand/hatc-logo.png`

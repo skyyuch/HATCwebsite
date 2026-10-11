@@ -21,6 +21,6 @@ export async function GET() {
     'funding-methods',
     'testimonials'
   ];
-  for (const t of tags) revalidateTag(t);
+  for (const t of tags) revalidateTag(t, 'max');
   return NextResponse.json({revalidated: tags});
 }

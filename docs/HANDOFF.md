@@ -1,11 +1,28 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-09-01（第四十二輪：GitBook 知識庫 22 篇已搬入 `/academy`、三語補譯完成、MT 分塊修復；學院現共 49 篇）
+> 最後更新：2026-10-11（第四十三輪：首頁行情接上 MT5 真實報價＝server BFF 代理＋示意降級；
+> 阻塞點＝生產遊客交易組未配產品，待業主推後端）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
 ## ▶ 下一步（下一位 agent）
 
+> **✅ 第四十三輪（2026-10-11）完成：首頁行情已接上自家 MT5 行情閘道（真實報價），拿不到時自動退回示意數據。**
+> 架構＝**server 端 BFF**（`src/lib/marketQuotes.ts` ＋ `GET /api/market/quotes`）＋ client 共用輪詢
+> （`LiveQuotes/LiveQuotesProvider`），首頁維持 **SSG**。品種＝金／銀／人民幣公斤條
+> （`XAUUSD`／`XAGUSD`／`RKGCNH`，業主拍板）。
+>
+> **🚩 唯一阻塞（待業主推後端）**：**生產**遊客交易組 `demo\DirectCustomer\GUEST\DEFAULT\Standard`
+> 在業務後台**沒配任何產品** → `allowedSymbols: []` → 報價 403。UAT 遊客組有 29 個白名單（含金銀公斤條），
+> 證明鏈路本身是通的。**後端配好產品後，官網不需改任何程式碼就會自動顯示真實行情。**
+> 本機 `.env` 現指 **UAT**（`https://node.666678910.com`）以便驗證；**正式站須換 prd URL ＋ prd 密鑰**。
+> 詳見下方「🟢 第四十三輪」。
+>
+> **🔁 複驗（2026-10-11 第四十四輪，直接打閘道實測）**：生產遊客 `allowedSymbols` **仍為 `[]`**，
+> 三品種 `symbol-detail` 全 **403** → 阻塞**未解除**。UAT 仍正常（29 個白名單；金 4194.49／銀 60.8／
+> 公斤條 902.14）。**`/v1/market/bars` 連 UAT 都仍回空陣列**（`status 200, bars: []`）→ follow-up (c)
+> 真 K 線同樣**還不能動**。下一位 agent 若要碰行情，**先用 `/tmp` 探針或 `curl` 複驗這兩項**，別直接改碼。
+>
 > **✅ 第四十二輪（2026-09-01）完成：業主 GitBook 知識庫已搬入黃金學院 `/academy`（22 篇、三語）。**
 > 來源＝**GitBook Content API**（業主提供 token＋space；存 `.env` `GITBOOK_API_TOKEN`/`GITBOOK_SPACE_ID`，
 > 不進 git）。腳本 `scripts/seed-academy-from-gitbook.ts`（抓目錄樹→每頁 Markdown→Payload 內建
@@ -120,6 +137,100 @@
 2. **第十八輪 `/trading` 暫緩 UI／驗收項**（多數需業主拍板）：淺色系是否推廣、帳戶分級真偽、
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
+
+## 🟢 第四十三輪（實作，2026-10-11）：首頁行情接上 MT5 真實報價（BFF 代理＋示意降級）
+
+**任務**：業主指「首頁的行情需要接上」，來源＝同機 `~/Desktop/mt5-web`（自家 MT5 後端全家桶）的
+**Node 行情閘道** `mt5-tcp-quote-gateway-node`。業主拍板：① **現在就把接線做完，拿不到真資料時自動
+退回示意數據**（業主自行去推後端配遊客組）；② 首頁品種收斂為 **金／銀／人民幣公斤條**（`XAUUSD`／
+`XAGUSD`／`RKGCNH`），**不把外匯/指數列為 HATC 產品**。
+
+### 鏈路事實（實測，非推測）
+
+| 項目 | 值 |
+|---|---|
+| 生產閘道 | `https://node.hatcmarket.com`（`/health` 200，appEnv=prd，接 `mt5.hatcmarket.com`） |
+| UAT 閘道 | `https://node.666678910.com` |
+| 遊客通道 | `POST /v1/context/resolve {"scene":"guest"}` → `contextToken`（閘道自己去業務後端 `/api/customer/guest/login` 換交易組） |
+| 報價讀取 | `GET /v1/market/symbol-detail?symbol=&contextToken=` → `latestTick{bid,ask,digits}` ＋ `tickStat{BidHigh,BidLow,PriceClose}` |
+| 漲跌算法 | `change = bid − tickStat.PriceClose`；高低 = `BidHigh`／`BidLow`（與 h5 `normalizeSnapshotPriceClose` 一致） |
+| 回應加密 | **AES-256-GCM 信封**（`{codec,iv,tag,data}`），key = `SHA-256(secret)`。**prd secret ≠ uat secret** |
+| CORS | 閘道只放行 `h5.hatcmarket.com`／`admin.hatcmarket.com` |
+
+> ⚠️ h5 的 `services/config/env.prd.uts` 裡 `QUOTE_HTTP_CRYPT_SECRET` 仍寫著 **UAT 的值**，與閘道
+> `deploy/env/prd.env` 不一致（那是 mt5-web 側的既有 bug，本倉不受影響，但對接時別拿錯密鑰）。
+
+### 🚩 阻塞點（**業主待推後端**，不是本倉的 bug）
+
+**生產遊客交易組 `demo\DirectCustomer\GUEST\DEFAULT\Standard` 在業務後台沒有配任何產品** →
+`allowedSymbols: []` → 取 `XAUUSD` 回 **403 `SYMBOL_NOT_ALLOWED`**。對照 UAT 遊客組
+`demo\HATC\HK\Guest\Standard` 有 29 個白名單（含金/銀/`RKGCNH`）＝**設計上通，只是生產沒配**。
+→ 請後端在管理後台給**遊客交易組**加上黃金/白銀（＋公斤條）產品，官網無須改碼即自動變真實行情。
+
+### 架構決策（為何做 server 端 BFF，而非瀏覽器直連）
+
+1. 閘道 CORS 不含官網域名 → 瀏覽器直連必被擋。
+2. 回應加密密鑰是**靜態共享密鑰** → 放進前端 bundle 等於公開（閘道 README 自己也說這只是混淆層）。
+3. WS 握手需要 server-only 的 `contextToken`，且每訪客一條常駐 socket 不適合 serverless。
+→ 結論：**輪詢 + server 代理 + server 端快取**。
+
+### 落地
+
+- **`src/lib/marketQuotes.ts`（server-only）**：`getLiveQuotes()`＝遊客 context 快取（提前 60s 續期、
+  併發合流）＋ `symbol-detail` 併發讀 ＋ AES-GCM 解封 ＋ **2 秒 server 快取**（訪客再多，上游負載不變）。
+  白名單為空時**直接不發請求**（省掉必然 403）。任何失敗 → `console.warn` 一行 ＋ 回 `null`。
+- **`src/lib/marketQuoteTypes.ts`**：`LiveQuote` 型別、`MARKET_SYMBOLS`、`formatPrice/formatChange/
+  formatChangePercent`。**獨立於 server-only 模組**，故 client 元件可共用而不會把憑證/crypto 拉進 bundle。
+- **`src/app/api/market/quotes/route.ts`**：`force-dynamic`、`no-store`。`{ok:false}` 是**正常答案**
+  （＝前端維持示意），不是錯誤。
+- **`src/components/home/LiveQuotes/LiveQuotesProvider.tsx`（client）**：單一輪詢（5s）供三個元件共用；
+  `document.hidden` 時跳過、切回可見立即刷新；per-symbol 累積最多 48 點價格序列供 sparkline。
+  feed 消失時**清回 null**（不凍結最後價格，避免悄悄變成陳舊報價）。
+- **改接的元件**：`Hero/MarketTicker.tsx`（改 client）、新 `Hero/HeroPriceCard.tsx`、新
+  `Services/ServicePriceCards.tsx`；`Hero.tsx`／`Services.tsx` 改傳翻譯字串進 client 元件。
+  `page.tsx` 用 `LiveQuotesProvider` 包住 `Hero`＋`TrustStrip`＋`Services`。
+- **SSG 不變**：server 永遠輸出**示意數據**，client 拿到真資料才替換 → 無 hydration mismatch、
+  無 gateway 也能 build（已用空 `DATABASE_URI`＋空 `QUOTE_GATEWAY_URL` 實測 build 綠、首頁三語仍 `●` SSG）。
+- **i18n**：新增 `home.market.{liveLabel,sourceNote}`（3 語）。**`home.footerV2.risk` 三語改寫**——
+  原文寫「本網站所示行情、圖表與數字均為示意數據」，行情轉真後該句即不實；改為「即時報價僅供參考、
+  可能與實際成交價有差異；標示『示意數據』的圖表與數字僅供設計展示」。
+- **env**（`.env.example` 已補）：`QUOTE_GATEWAY_URL`／`QUOTE_HTTP_CRYPT_SECRET`（**SERVER-ONLY，
+  不得 `NEXT_PUBLIC_`**）。留空＝停用，首頁照常顯示示意數據。
+  **本機 `.env` 目前指 UAT**（因生產白名單空，指 UAT 才驗得到真實路徑）；**正式站須改 prd URL ＋ prd 密鑰**。
+
+### 治理紅線（本輪確立）
+
+- **真實報價 ≠ 事實**：不入 `HATC_FACTS.md`、不是交易條件。核可的金 27／銀 30／1:100 仍只在
+  `products/tradingConditions.ts`。
+- **標籤隨資料來源切換**：真資料 → 「即時報價」＋ 來源/免責說明；拿不到 → 「示意數據」（原標籤）。
+  **不得**真價格配示意標籤，也不得示意數字掛「即時報價」。
+- **真價格旁不放假走勢**：hero sparkline 改畫**本次工作階段實際觀測到的價格點**，不足 3 點就不畫線；
+  降級時才用示意曲線。（`Services` 的 K 線仍是示意並保留標籤，見下。）
+
+### 驗證
+
+`lint` 0 error（唯 2 個既有 warning）／`i18n:check` **743 鍵三語齊**／`tsc` 無新錯／build 綠（首頁三語 SSG、
+`/api/market/quotes` 為 ƒ）。實測 API 三品種真實值（金 4,194.49／銀 60.800／公斤條 902.14、含高低與漲跌）；
+瀏覽器 DOM 確認 ticker／hero 卡／服務卡三處都換成真實數字且標籤為「即時報價」；**降級路徑亦實測**
+（切到生產閘道 → `{ok:false}` → 頁面完整回到示意數據與「示意數據」標籤）。
+
+### 順修
+
+`src/app/api/dev-revalidate/route.ts` 的 `revalidateTag(t)` 缺第二參數（Next 16 需要），**既有已提交
+的型別錯誤會讓 `npm run build`／CI 直接失敗**；依專案慣例補為 `revalidateTag(t, 'max')`。
+
+### 待業主 / follow-ups
+
+- (a) **推後端給生產遊客交易組配金銀產品**（唯一阻塞；配好官網不用改碼）。
+- (b) 正式部署時把 `QUOTE_GATEWAY_URL` 換成 `https://node.hatcmarket.com` ＋ **prd** 密鑰。
+  密鑰值**不寫進本倉**（含文件）：到閘道專案 `mt5-tcp-quote-gateway-node/deploy/env/prd.env`
+  的 `QUOTE_HTTP_CRYPT_SECRET` 取，直接填進主機環境變數；若後端輪替密鑰需同步更新。
+  ⚠ **prd 與 uat 密鑰不同**，且 h5 的 `services/config/env.prd.uts` 誤填 uat 值，別從那裡取。
+- (c) **`/v1/market/bars` 目前回空陣列**（UAT 實測 `bars: []`）→ 故 `Services` 的 K 線圖**仍是示意**
+  並保留「示意數據 (設計佔位)」標籤。待後端確認 bars 可用後可接真 K 線。
+- (d) 其他頁面（`/products`、`/accounts`、`/trading`、`/products/all`）的示意點差/報價表**本輪未動**，
+  仍是示意；是否改接真實行情由業主決定（注意這些是「交易條件」，與即時報價的治理層級不同）。
+- (e) 若未來要秒級更新，可評估在官網 server 端開一條常駐 WS（需非 serverless 主機）。
 
 ## 🟢 第四十二輪（實作，2026-09-01）：GitBook 知識庫 → 黃金學院 `/academy`（22 篇、三語）
 
@@ -2124,6 +2235,10 @@ banner**（深藍／綠漸層＋格線花紋＋角落光暈＋分類標籤＋白
 1. 複製 `.env.example` → `.env`，設定 `PAYLOAD_SECRET`、`DATABASE_URI`、`NEXT_PUBLIC_SITE_URL`
 2. `npm run dev`；前台 `http://localhost:3000`、後台 `/admin`（首次建立管理者帳號）
 3. 未設 `DATABASE_URI` 時 `/admin` 會 500（預期），前台仍可運行
+4. 本機 Postgres＝Docker 容器 `hatc-postgres`（對外 **5433**）。重開機後需
+   `open -a Docker` → `docker start hatc-postgres` → `npm run dev`；略過則前台走 i18n fallback、`/admin` 不可用
+5. 首頁即時行情：設 `QUOTE_GATEWAY_URL` ＋ `QUOTE_HTTP_CRYPT_SECRET`（見 `.env.example`）。
+   留空＝停用並顯示示意數據。本機建議指 UAT（生產遊客組尚未配產品，見「🟢 第四十三輪」）
 
 ## 過程中已解決的坑（避免重踩）
 

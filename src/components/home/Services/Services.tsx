@@ -6,7 +6,8 @@ import {buttonVariants} from '@/components/ui/button';
 import {getHomeMarketing} from '@/lib/homeMarketing';
 import type {Locale} from '@/i18n/routing';
 import SectionTitle from '../SectionTitle';
-import {SAMPLE_CANDLES, SAMPLE_PRICE_CARDS} from '../sampleMarketData';
+import {SAMPLE_CANDLES} from '../sampleMarketData';
+import ServicePriceCards from './ServicePriceCards';
 
 // gold-services (Figma 4:71): light section pairing the value proposition with a
 // candlestick chart mockup + price cards. Chart/prices are SAMPLE data, labelled.
@@ -17,6 +18,7 @@ const TIME_AXIS = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00'];
 export default async function Services() {
   const locale = (await getLocale()) as Locale;
   const t = await getTranslations('home.goldServices');
+  const market = await getTranslations('home.market');
   const copy = (await getHomeMarketing(locale)).services;
 
   return (
@@ -131,31 +133,11 @@ export default async function Services() {
               </div>
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-2">
-              {SAMPLE_PRICE_CARDS.map((card) => (
-                <div
-                  key={card.symbol}
-                  className="rounded-lg border border-[var(--fig-border)] bg-[var(--fig-surface)] p-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-white">
-                        {card.symbol}
-                      </span>
-                      <span className="text-xs text-[var(--fig-text-dim)]">
-                        {t(`loco.${card.nameKey}`)}
-                      </span>
-                    </div>
-                    <span className="rounded-[4px] bg-[rgba(16,185,129,0.1)] px-2 py-1 text-xs font-semibold text-[var(--fig-up)]">
-                      {card.change}
-                    </span>
-                  </div>
-                  <div className="mt-3 font-[family-name:var(--font-ticker)] text-[22px] font-bold text-gold">
-                    {card.value}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <ServicePriceCards
+              names={{gold: t('loco.gold'), silver: t('loco.silver')}}
+              sampleLabel={t('chartSample')}
+              liveLabel={market('liveLabel')}
+            />
           </div>
         </div>
       </div>

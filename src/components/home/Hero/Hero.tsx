@@ -5,7 +5,7 @@ import {buttonVariants} from '@/components/ui/button';
 import {getHomeMarketing} from '@/lib/homeMarketing';
 import type {Locale} from '@/i18n/routing';
 import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
-import {SAMPLE_HERO_PRICE, SAMPLE_SPARKLINE} from '../sampleMarketData';
+import HeroPriceCard from './HeroPriceCard';
 import MarketTicker from './MarketTicker';
 
 /**
@@ -18,6 +18,7 @@ import MarketTicker from './MarketTicker';
 export default async function Hero() {
   const locale = (await getLocale()) as Locale;
   const t = await getTranslations('home.heroV2');
+  const market = await getTranslations('home.market');
   const copy = (await getHomeMarketing(locale)).hero;
   const common = await getTranslations('common');
   const settings = await getSiteSettings();
@@ -94,64 +95,21 @@ export default async function Hero() {
           </div>
         </div>
 
-        {/* Right column — live-price card (SAMPLE data) */}
-        <div className="w-full max-w-[481px] justify-self-end rounded-2xl border border-[var(--fig-border)] bg-[rgba(17,22,37,0.8)] p-6 backdrop-blur-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-gold">
-              {t('priceTitle')} XAU/USD
-            </span>
-            <span className="text-xs text-[var(--fig-text-dim)]">
-              {t('sampleData')}
-            </span>
-          </div>
-
-          <div className="mt-5 flex items-end gap-3">
-            <span className="font-[family-name:var(--font-ticker)] text-[32px] font-extrabold leading-none text-white">
-              {SAMPLE_HERO_PRICE.value}
-            </span>
-            <span className="pb-1 text-sm font-bold text-[var(--fig-up)]">
-              {SAMPLE_HERO_PRICE.change}
-            </span>
-          </div>
-
-          <svg
-            aria-hidden
-            viewBox="0 0 105 32"
-            preserveAspectRatio="none"
-            className="mt-5 h-12 w-full"
-          >
-            <path
-              d={SAMPLE_SPARKLINE}
-              fill="none"
-              stroke="var(--fig-gold)"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-
-          <div className="mt-5 flex justify-between border-t border-[var(--fig-border)] pt-4">
-            <div className="flex flex-col gap-1">
-              <span className="text-[11px] text-[var(--fig-text-dim)]">
-                {t('high')}
-              </span>
-              <span className="text-sm font-bold text-white">
-                {SAMPLE_HERO_PRICE.high}
-              </span>
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              <span className="text-[11px] text-[var(--fig-text-dim)]">
-                {t('low')}
-              </span>
-              <span className="text-sm font-bold text-white">
-                {SAMPLE_HERO_PRICE.low}
-              </span>
-            </div>
-          </div>
-        </div>
+        {/* Right column — live-price card, sample data until the feed answers */}
+        <HeroPriceCard
+          title={t('priceTitle')}
+          sampleLabel={t('sampleData')}
+          liveLabel={market('liveLabel')}
+          highLabel={t('high')}
+          lowLabel={t('low')}
+          sourceNote={market('sourceNote')}
+        />
       </div>
 
-      <MarketTicker sampleLabel={t('sampleData')} />
+      <MarketTicker
+        sampleLabel={t('sampleData')}
+        liveLabel={market('liveLabel')}
+      />
     </section>
   );
 }
