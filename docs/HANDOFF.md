@@ -1,6 +1,7 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-11（第四十五輪：`/trading` 接上真實交易條件＋即時報價，示意帳戶/報價表退役）
+> 最後更新：2026-10-11（第四十五輪：`/trading` 接上真實交易條件＋即時報價，示意帳戶/報價表退役；
+> 已 push `3aaeaea`）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
@@ -21,6 +22,11 @@
 > 拿不到就收回價格欄，不回退假數字，也不並列 bid/ask）；**CMS global `sample-trading-conditions`
 > 連同 `sampleTradingData.ts` 一併退役**（事實不該能被後台改到）。`LiveQuotesProvider` 搬到
 > `src/components/market/` 供首頁與 `/trading` 共用。詳見下方「🟢 第四十五輪」。
+>
+> **📦 第四十五輪已 commit＋push**（`3aaeaea`，origin/main，2026-10-11 第四十六輪推送）＝工作區乾淨、
+> 與遠端同步，**無未 commit 清單**。第四十四輪（`f1f682b`）亦已在遠端。
+> ⚠ 仍待辦：**正式站 DB migration**（第四十四輪的刪表/刪欄 ＋ 第四十五輪 drop `sample_trading_conditions`
+> 四張表與 `roles.can_sample_trading_conditions_update`）。
 >
 > **⏭️ 下一棒（第四十六輪）候選，皆非阻塞：**
 > - `/products/all` 的**合約規模與交易時段**仍是示意（點差/槓桿已真實），等業主給值。
