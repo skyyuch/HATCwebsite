@@ -87,10 +87,13 @@ section-title 為置中（kicker + heading）。
   - 折線 SVG 分隔。
   - 今日最高 `$2,351.10` / 今日最低 `$2,320.50`（label `#8e99b0` 11、值白 14 Bold）。
 - 底部 **market-ticker**（`7:2`，absolute top664，h56，滿版）：bg `rgba(8,10,18,0.85)`、
-  `border-top rgba(51,56,71,0.5)`、置中、`px40`。6 組報價（Inter 字體）：
+  `border-top rgba(51,56,71,0.5)`、置中、`px40`。Figma 原稿為 6 組報價（Inter 字體）：
   - XAU/USD 2,342.80 `+18.60 +0.80%`(綠) ｜ XAG/USD 28.45 `+0.32 +1.14%`(綠) ｜
-    XAU/HKD 18,312.50 `-42.30 -0.23%`(紅) ｜ USD/CNH 7.2480 `+0.0085 +0.12%`(綠) ｜
-    HKD/USD 0.1281 `-0.0001 -0.01%`(紅) ｜ XAU/EUR 2,156.20 `+12.40 +0.58%`(綠)
+    ~~XAU/HKD 18,312.50｜USD/CNH 7.2480｜HKD/USD 0.1281｜XAU/EUR 2,156.20~~
+  - ⚠ **第五十輪（2026-10-11）：後四組已刪，不得還原。** XAU/HKD 屬退役值，其餘為外匯／
+    非 HATC 產品——紅線「不得列外匯/指數為 HATC 產品」**不因標了「示意數據」而豁免**。
+    實作改為三組＝`MARKET_SYMBOLS`（XAU/USD、XAG/USD、**RKG/CNH 546.10 `+4.30 +0.79%`**），
+    與閘道正常時顯示的真實品種一致（跑馬燈接真實報價，示意列只在降級狀態出現）。
   - 分隔線 `rgba(64,69,82,0.6)` w1 h24；尾端「示意數據」`#666b75` 10（Noto Sans TC）。
   - 標籤 `#8c94a1` 12、值 `#ebedf2` 13、漲 `#21c773`／跌 `#eb4545` 12。
 
@@ -106,10 +109,14 @@ section-title 為置中（kicker + heading）。
 - section-title 置中：kicker `#d4af37` 13 Bold uppercase「PREMIUM TRADING SERVICES」／
   heading `#0c111d` 36 ExtraBold「優質黃金交易服務」。
 - 內容兩欄 gap48：
-  - 左 w533 gap32：標題 28「專注、合規、高效的倫敦金/銀投資通道」；body `#475467` 15；
-    3 個 check 條列（check SVG 18、標題 15 Bold `#0c111d`、副 13 `#475467`）：
-    靈活槓桿與低交易門檻 / 24小時雙向不間斷交易 / 極速訂單執行通道；金色按鈕
+  - 左 w533 gap32：標題 28；body `#475467` 15；
+    3 個 check 條列（check SVG 18、標題 15 Bold `#0c111d`、副 13 `#475467`）；金色按鈕
     「了解黃金交易服務」。
+    ⚠ **第五十輪（2026-10-11）改文案，Figma 原字不得還原**：標題／body 原只提「倫敦金/銀」→
+    已補**人民幣公斤條**（第三個 CFD 產品）；條列原為「靈活槓桿與低交易門檻 /
+    ~~24小時雙向不間斷交易~~ / ~~極速訂單執行通道~~」→ 後兩項改**「全球市場時段雙向交易」**
+    與**「MetaTrader 5 專業交易平台」**（前者與核可交易時段的每日休市牴觸，後者屬被禁的
+    執行速度宣稱）。
   - 右 w635 gap20：
     - **chart-mockup**（bg `#070a14`、border `#1f293d`、rounded8、h280、p20）：
       頭列「XAU/USD (倫敦金)」白14 + 「● 實時交易中」綠12 + 右「示意數據 (設計佔位)」；
@@ -119,7 +126,8 @@ section-title 為置中（kicker + heading）。
       XAG/USD 倫敦銀 +0.85%（漲幅 badge bg `rgba(16,185,129,0.1)` 綠字），大數字金 `#d4af37` 22 Bold。
 
 ### 2.5 mt5-showcase（`4:154`，背景圖 + 遮罩 `rgba(7,10,20,0.9)`，py96 px120 gap64）
-- section-title：kicker「METATRADER 5 PLATFORM」／heading 白 36「國際頂尖 MT5 交易平台」。
+- section-title：kicker「METATRADER 5 PLATFORM」／heading 白 36「~~國際頂尖~~ **國際通用**
+  MT5 交易平台」（第五十輪：移除最高級形容詞，屬未確認宣稱）。
 - 兩欄 gap48：
   - 左：平台截圖卡（bg `#111625` border `#1f293d` rounded16 h380 w584，內滿版圖）。
   - 右 w584 gap32：標題 28 白「功能強大，多端無縫連通」；body `#8e99b0` 15 leading1.65；
@@ -132,7 +140,8 @@ section-title 為置中（kicker + heading）。
 - 4 張白卡（flex 均分 gap24；bg white、border `#e4e7ec`、rounded8、p32、gap24，等高）：
   - 大數字 32 ExtraBold **半透明金** `rgba(212,175,55,0.2)`（01/02/03/04）；
     標題 18 ExtraBold `#0c111d`；body 13 `#475467` leading1.5。
-  - 四項：合規安全保障 / 一流執行速度 / 個性化尊貴服務 / 投資教育資源。
+  - 四項：合規安全保障 / ~~一流執行速度~~ **透明的交易條件** / 個性化尊貴服務 / 投資教育資源
+    （第五十輪：執行速度宣稱改為已核可事實——四帳戶點差與最高槓桿公開列示）。
 
 ### 2.7 gold-academy（`4:213`，最深 `#070a14`，py96 px120 gap64）
 - section-title：kicker「HATC GOLD ACADEMY」／heading 白 36「黃金交易學堂」。

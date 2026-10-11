@@ -1,10 +1,38 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-11（第四十九輪：首頁服務區 K 線接上真實日 K，示意蠟燭只剩降級狀態）
+> 最後更新：2026-10-11（第五十輪：文案紅線清除 ＋ `/accounts` 真實交易端截圖 ＋ push 補上）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
 ## ▶ 下一步（下一位 agent）
+
+> **✅ 第五十輪（2026-10-11）完成：首頁／平台頁的文案紅線衝突清除、示意跑馬燈收斂成三個真實產品、
+> `/accounts` 平台卡換上真實交易端截圖、落後的 commit 已 push。**
+>
+> 業主本輪選定三項：文案修正（方向 A）、`/accounts` 真實截圖、push。
+> - **文案（三語同步）**：`home.goldServices` 的 `f2`「24小時雙向不間斷交易」→**「全球市場時段雙向交易」**、
+>   `f3`「極速訂單執行通道」→**「MetaTrader 5 專業交易平台」**；`subheading`／`body` 補上**人民幣公斤條**
+>   並改稱差價合約。追加（業主同輪核可）：`home.whyV2.cards.c2`「一流執行速度」→**「透明的交易條件」**、
+>   `home.mt5.heading`「國際頂尖」→**「國際通用」**、`platforms.hero.subtitle` 移除「追求極速下單」。
+>   業主**保留** `home.mt5.features.f1`「全天候多端自適應」（指多端可用，非交易時段）。
+> - **🚨 本輪新發現並修掉的紅線**：首頁 hero 跑馬燈的**示意**列（`SAMPLE_TICKER`）仍含已退役的
+>   **`XAU/HKD`** 與 **`USD/CNH`／`HKD/USD`／`XAU/EUR`** ——外匯／非 HATC 產品**即使標了「示意數據」
+>   也不得列出**。已收斂為 `XAU/USD`／`XAG/USD`／`RKG/CNH` 三列（＝`MARKET_SYMBOLS`）。
+>   閘道正常時跑馬燈本來就只顯示三個真實品種，所以這個違規**只在降級狀態出現**，很容易漏看。
+> - **`/accounts` 平台卡**：`AccountPlatforms` 改用新的共用 helper
+>   **`resolveTerminalVisual()`**（放在 `components/platforms/terminalScreenshots.ts`）＝
+>   **CMS 上傳 → 真實交易端截圖 → `null`**；`null` 時各頁自備佔位（`/platforms` 用 Figma mockup＋「示意」，
+>   `/accounts` 用金色漸層＋`panelLabel`，**不放任何假截圖**）。`/platforms` 原本重複的優先序邏輯已改呼叫它。
+> - 卡片視覺高度 200→**260px**，portrait 截圖用 `object-cover object-top`＋**底部漸層淡入卡片**
+>   （避免 K 線被硬切成破圖）；有截圖時區塊下方補一次 `platforms.types.screenshotNote`（跨 namespace 重用鍵）。
+>   截圖只在 **zh-Hans**（交易端僅簡體介面）→ 繁中/英文仍是漸層卡，已實機確認降級正常。
+> - 順手修掉 `/api/dev-revalidate` 只列 7 個 tag 的漏洞（改成 `Object.values(CACHE_TAGS)`）——
+>   marketing global 的 tag 不在清單裡，改 `src/messages/*` 後 dev 看不到新文案就是這個原因。
+> - **驗收**：`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／
+>   `i18n:check` 三語 **666 鍵**齊（本輪只改值不加鍵）／`migrate:check` 無漂移（未動 schema）／
+>   `build` 綠且頁面維持 ● SSG、`/api/market/{quotes,bars}` 為 ƒ；`npm start` 實測即時報價仍為
+>   三個真實品種＋「即時報價」標籤。`/accounts` 桌機 1440／平板 834／手機 390 三語截圖檢查過。
+> - 細節見下方「🟢 第五十輪」。
 
 > **✅ 第四十九輪（2026-10-11）完成：首頁服務區（gold-services）的 K 線由「Figma 示意蠟燭」
 > 改為**自家 MT5 行情閘道的真實日 K**；示意蠟燭降級為「完全沒有行情時」才出現。**
@@ -337,6 +365,73 @@
 2. **第十八輪 `/trading` 暫緩 UI／驗收項**（多數需業主拍板）：淺色系是否推廣、帳戶分級真偽、
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
+
+## 🟢 第五十輪（實作，2026-10-11）：文案紅線清除 ＋ `/accounts` 真實截圖
+
+### 業主決策
+
+- 本輪做三項：**① 文案紅線修正（方向 A）② `/accounts` 平台區換真實交易端截圖 ③ push 落後的 commit**。
+  未選：`/trading` 合作夥伴佔位與 `--trd-gold` 統一、交易端繁中/英文截圖、`/products/all` 待業主值。
+- 文案方向 A ＝ 移除違規宣稱後改用**已核可事實**替代，並把產品敘述補齊成三個 CFD 品種。
+- 同輪追加核可：`home.whyV2.cards.c2`、`home.mt5.heading`、`platforms.hero.subtitle` 三處一併改；
+  **`home.mt5.features.f1`「全天候多端自適應」業主決定保留**（語意是多端隨時可用，非聲稱 24 小時交易）。
+
+### 文案改動（三語同步，鍵數不變）
+
+| 鍵 | 原文（違規點） | 新文 |
+|---|---|---|
+| `home.goldServices.features.f2.title` | 24小時雙向不間斷交易（與核可時段每日休市牴觸） | 全球市場時段雙向交易 |
+| `home.goldServices.features.f2.sub` | 配合全球市場時段，靈活把握行情。 | 可做多亦可做空；交易時段為香港時間，詳見交易條件。 |
+| `home.goldServices.features.f3.title` | 極速訂單執行通道（執行方式待業主提供＋禁速度宣稱） | MetaTrader 5 專業交易平台 |
+| `home.goldServices.features.f3.sub` | 穩定的下單與訂單執行體驗。 | 黃金、白銀與人民幣公斤條均於 MT5 平台交易。 |
+| `home.goldServices.subheading`／`body` | 只提倫敦金/銀 | 黃金、白銀與人民幣公斤條（差價合約） |
+| `home.whyV2.cards.c2` | 一流執行速度／穩定的交易系統與訂單執行通道。 | 透明的交易條件／四個帳戶類型的點差與最高槓桿公開列示… |
+| `home.mt5.heading` | 國際頂尖 MT5 交易平台 | 國際通用 MT5 交易平台 |
+| `platforms.hero.subtitle` | 追求極速下單的專業交易者…掌握市場先機 | 經驗豐富的專業交易者…檢視行情 |
+
+- 替代文案全部落在**已核可事實**上：MT5 為唯一平台（FACTS「Trading platforms」）、
+  四帳戶點差/槓桿公開（FACTS「Account types & trading conditions」）、三個 CFD 品種（FACTS「CFD business」）。
+- ⚠ `home.goldServices.{subheading,body}` 與 `home.mt5.heading` **可被 CMS global `home-page` 覆寫**
+  （`servicesSubheading`／`servicesBody`／`mt5Heading`）。本機 `home_page_locales` 為 0 列＝走 i18n，
+  但**正式站若業主在後台填過舊文案，仍會蓋掉這次修正** → 上線前需檢查該 global。
+  `features.*`／`whyV2.cards.*`／`platforms.hero.*` 純 i18n，不受 CMS 影響。
+
+### 🚨 示意跑馬燈的紅線（本輪發現並修掉）
+
+- `src/components/home/sampleMarketData.ts` 的 `SAMPLE_TICKER` 原有 6 列，含**已退役的 `XAU/HKD`**
+  與 `USD/CNH`／`HKD/USD`／`XAU/EUR`。紅線「不得列外匯/指數為 HATC 產品」**不因標了「示意數據」而豁免**。
+- 已收斂為三列（`XAU/USD` 2,342.80／`XAG/USD` 28.45／`RKG/CNH` 546.10，示意值彼此量級自洽），
+  與 `MARKET_SYMBOLS` 一致；檔頭加註「這四個代號已退役」以免日後照 Figma 復原。
+- **為何之前沒被發現**：閘道正常時跑馬燈顯示的是三個真實品種，示意列只在**降級狀態**（無閘道／取不到）
+  才出現。⇒ 日後審示意資料時，請**刻意跑一次降級狀態**（`QUOTE_GATEWAY_URL=` 空值 `npm start`）。
+
+### `/accounts` 平台卡 → 真實交易端截圖
+
+- 新共用 helper **`resolveTerminalVisual(platform, locale)`**（`components/platforms/terminalScreenshots.ts`）
+  ＝ **CMS 上傳 → 真實截圖（僅 zh-Hans）→ `null`**。回 `null` 代表「沒有誠實可用的圖」，
+  由各頁自行決定佔位：`/platforms` → Figma device mockup＋「示意」標籤；`/accounts` → 金色漸層＋`panelLabel`。
+  `/platforms` 原本 inline 的同一套優先序已改呼叫 helper（兩頁不會再走岔）。
+- `AccountPlatforms.tsx`：視覺區 200→**260px**；截圖用 `object-cover object-top`（保留品種名／價格／OHLC），
+  底部加 `to-[var(--fig-light)]` 漸層讓裁切邊**淡入卡片**，避免 K 線硬切像破圖；
+  有任一張截圖時，區塊下方顯示**一次** `platforms.types.screenshotNote`（圖中報價為截圖當時價格）。
+- 對應關係沿用 `panelLabel`：`HATC App`→金日 K、`Web Trading`→銀日 K、**MT5 無真實截圖 → 漸層卡**
+  （`/accounts` 從未放假截圖，維持此原則）。
+- 實機檢查：zh-Hans 桌機/平板/手機皆正常（平板因卡片較窄反而露出更多 K 線）；
+  zh-Hant／en 正確降級為漸層卡且不顯示截圖註記。
+
+### 順手修掉的既有隱患
+
+- `src/app/api/dev-revalidate/route.ts` 原本硬列 7 個 tag，**漏掉所有 marketing global**
+  （`home-page`／`trading-page`／…）→ 改 `src/messages/*` 後 dev 看不到新文案。
+  已改成 `Object.values(CACHE_TAGS)`，新增 tag 自動納入。
+
+### 待業主 / 下一棒
+
+- **正式站上線前**：檢查 CMS global `home-page` 是否存有舊的 services／mt5 文案（會覆寫本輪修正）。
+- 其他未選候選仍在：`/trading` 合作夥伴標誌佔位、淺色 `--trd-gold #c9a84c` 與深色 `#d4af37` 是否統一、
+  交易端繁中/英文截圖（現僅簡中）、`/products/all` 的最低手數／手續費／執行方式、
+  Footer「MT5平台」欄是否改名／改指 `/platforms`（第三十八輪起的 follow-up，連結仍為 `/#mt5` 類錨點）。
+- 生產遊客交易組配好產品後：`QUOTE_GATEWAY_URL`／`QUOTE_HTTP_CRYPT_SECRET` 換 prd（官網不需改碼）。
 
 ## 🟢 第四十九輪（實作，2026-10-11）：首頁 K 線接真實日 K
 

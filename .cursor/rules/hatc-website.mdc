@@ -513,9 +513,40 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  會 client chunk ERR_ABORTED）。另外 **`chrome-headless-shell` 要加 `--no-sandbox`
  ＋`--run-all-compositor-stages-before-draw`**，且 `nohup … &` 起的 server 會被收掉，請用背景
  Shell 任務跑 `npm start`。
- - **待業主**：`home.goldServices.features` 仍寫著**「24小時雙向不間斷交易」**（與核可交易時段的
- 每日休市牴觸）與**「極速訂單執行通道」**（執行方式＝FACTS 明列「仍待業主提供」，且平台能力紅線
- 禁止速度宣稱）——**本輪未改**（不擅自改既有中文文案），已回報業主待定。
+ - ~~**待業主**：`home.goldServices.features` 的「24小時雙向不間斷交易」與「極速訂單執行通道」~~
+ → **第五十輪已改**（見下）。
+
+- **2026-10-11 (第五十輪): 文案紅線清除 ＋ 示意跑馬燈收斂 ＋ `/accounts` 真實交易端截圖。**
+ 業主選定三項（文案方向 A／`/accounts` 截圖／push），並核可一併修掉同類宣稱。
+ - **文案（三語，鍵數不變 666）**：`home.goldServices.features.f2`「24小時雙向不間斷交易」→
+ **「全球市場時段雙向交易」**（sub 改「可做多亦可做空；交易時段為香港時間，詳見交易條件。」）；
+ `f3`「極速訂單執行通道」→ **「MetaTrader 5 專業交易平台」**；`subheading`／`body` 補**人民幣
+ 公斤條**並改稱差價合約。追加：`home.whyV2.cards.c2`「一流執行速度」→ **「透明的交易條件」**
+ （body 改點差/槓桿公開列示）、`home.mt5.heading`「國際頂尖」→ **「國際通用」**、
+ `platforms.hero.subtitle` 移除「追求極速下單」。**業主決定保留** `home.mt5.features.f1`
+ 「全天候多端自適應」（＝多端隨時可用，非交易時段宣稱）。
+ - **紅線重申（本輪三個新教訓）**：① **示意標籤不豁免產品清單**——`SAMPLE_TICKER` 原含已退役的
+ `XAU/HKD` 與 `USD/CNH`／`HKD/USD`／`XAU/EUR`，即使標「示意數據」也違反「不得列外匯/指數為 HATC
+ 產品」，已收斂為 `MARKET_SYMBOLS` 三列（檔頭已註明這四個代號退役，勿照 Figma 復原）。
+ ② **審示意資料要刻意跑降級狀態**（`QUOTE_GATEWAY_URL=` 空值 `npm start`），因為閘道正常時
+ 跑馬燈顯示的是真實品種，違規只在降級時現身。③ **速度／24 小時／最高級形容詞一律視為未確認宣稱**
+ （執行方式在 FACTS 列「仍待業主提供」），替代文案必須落在已核可事實上（MT5 為唯一平台、
+ 四帳戶點差槓桿公開、三個 CFD 品種）。
+ - **⚠ CMS 覆寫風險**：`home.goldServices.{subheading,body}` 與 `home.mt5.heading` 可被 global
+ `home-page`（`servicesSubheading`／`servicesBody`／`mt5Heading`）覆寫 → **正式站上線前須檢查
+ 該 global 是否存有舊文案**，否則會蓋掉紅線修正。`features.*`／`whyV2.cards.*` 為純 i18n。
+ - **`/accounts` 平台卡換真實截圖**：新共用 helper **`resolveTerminalVisual(platform, locale)`**
+ （`components/platforms/terminalScreenshots.ts`）＝**CMS 上傳 → 真實截圖（僅 zh-Hans）→ `null`**；
+ `null` ＝「沒有誠實可用的圖」，各頁自備佔位（`/platforms` → Figma mockup＋「示意」；
+ `/accounts` → 金色漸層＋`panelLabel`，**永不放假截圖**）。`/platforms` 原 inline 判斷已改呼叫它，
+ **日後新頁要畫平台一律用這支 helper**。`AccountPlatforms` 視覺區 200→**260px**、
+ `object-cover object-top` ＋**底部漸層淡入卡片**（避免裁切邊像破圖），有截圖時區塊下方顯示一次
+ `platforms.types.screenshotNote`（跨 namespace 重用鍵）。
+ - **順手修掉**：`/api/dev-revalidate` 原本硬列 7 個 tag、**漏掉所有 marketing global** →
+ 改 `Object.values(CACHE_TAGS)`（改 `src/messages/*` 後 dev 看不到新文案就是這個原因）。
+ - **驗收**：`lint` 0 error（僅 `seed-academy.ts` 1 既有 warning）／`tsc --noEmit`／`i18n:check`
+ 666 鍵／`migrate:check` 無漂移（未動 schema）／`build` 綠 ● SSG；`npm start` 實測即時報價仍為
+ 三品種＋「即時報價」；`/accounts` 三語 × 桌機/平板/手機截圖檢查過。
 
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾

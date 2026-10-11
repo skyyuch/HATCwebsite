@@ -18,6 +18,14 @@ export const SAMPLE_HERO_PRICE = {
 
 export type TickerDir = 'up' | 'down';
 
+/**
+ * Ticker fallback. The rows mirror MARKET_SYMBOLS (gold, silver, RMB kilobar)
+ * so the degraded state never lists anything HATC does not trade.
+ *
+ * ⚠️ The earlier Figma rows XAU/HKD, USD/CNH, HKD/USD and XAU/EUR are retired
+ * (2026-10-11): XAU/HKD is on the retired-values list, and FX pairs must never
+ * appear as HATC products — not even as labelled sample data.
+ */
 export const SAMPLE_TICKER: ReadonlyArray<{
   symbol: string;
   value: string;
@@ -26,10 +34,7 @@ export const SAMPLE_TICKER: ReadonlyArray<{
 }> = [
   {symbol: 'XAU/USD', value: '2,342.80', change: '+18.60 +0.80%', dir: 'up'},
   {symbol: 'XAG/USD', value: '28.45', change: '+0.32 +1.14%', dir: 'up'},
-  {symbol: 'XAU/HKD', value: '18,312.50', change: '-42.30 -0.23%', dir: 'down'},
-  {symbol: 'USD/CNH', value: '7.2480', change: '+0.0085 +0.12%', dir: 'up'},
-  {symbol: 'HKD/USD', value: '0.1281', change: '-0.0001 -0.01%', dir: 'down'},
-  {symbol: 'XAU/EUR', value: '2,156.20', change: '+12.40 +0.58%', dir: 'up'}
+  {symbol: 'RKG/CNH', value: '546.10', change: '+4.30 +0.79%', dir: 'up'}
 ];
 
 export const SAMPLE_PRICE_CARDS: ReadonlyArray<{

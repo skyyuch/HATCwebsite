@@ -155,20 +155,20 @@
     "goldServices": {
       "kicker": "PREMIUM TRADING SERVICES",
       "heading": "Premium gold trading services",
-      "subheading": "A focused, compliant and efficient Loco London gold/silver channel",
-      "body": "Backed by its AA-class membership of the Hong Kong Gold Exchange, HATC offers two-way trading in Loco London gold and silver, giving you a clear and transparent way to take part in global precious-metals markets.",
+      "subheading": "A focused, compliant and efficient channel into gold, silver and the RMB kilobar",
+      "body": "Backed by its AA-class membership of the Hong Kong Gold Exchange, HATC offers two-way CFD trading in gold, silver and the RMB kilobar, giving you a clear and transparent way to take part in global precious-metals markets.",
       "features": {
         "f1": {
           "title": "Flexible leverage, low entry",
           "sub": "Take part in precious-metals markets with a lower capital threshold."
         },
         "f2": {
-          "title": "24-hour two-way trading",
-          "sub": "Follow global market sessions and act on opportunities flexibly."
+          "title": "Two-way trading across global sessions",
+          "sub": "Go long or short; sessions follow Hong Kong time — see the trading conditions."
         },
         "f3": {
-          "title": "Fast order-execution channel",
-          "sub": "A stable order-placing and execution experience."
+          "title": "MetaTrader 5 trading platform",
+          "sub": "Gold, silver and the RMB kilobar all trade on MT5."
         }
       },
       "cta": "Explore gold trading",
@@ -183,7 +183,7 @@
     },
     "mt5": {
       "kicker": "METATRADER 5 PLATFORM",
-      "heading": "The world-class MT5 trading platform",
+      "heading": "The widely adopted MT5 trading platform",
       "subheading": "Powerful, seamlessly connected across devices",
       "body": "Trade precious metals on the industry-standard MetaTrader 5 platform, seamlessly synced across desktop, web and mobile so you can follow prices and positions anytime.",
       "features": {
@@ -213,8 +213,8 @@
           "body": "AA-class membership of the Hong Kong Gold Exchange; funds supervised under exchange rules."
         },
         "c2": {
-          "title": "First-class execution",
-          "body": "A stable trading system and order-execution channel."
+          "title": "Transparent trading conditions",
+          "body": "Spreads and maximum leverage are published for all four account types, so you can compare before you trade."
         },
         "c3": {
           "title": "Personalised premium service",
@@ -680,7 +680,7 @@
       "titleLead": "Explore ",
       "titleAccent": "MetaTrader 5",
       "titleTail": " and HATC's own platforms",
-      "subtitle": "Whether you are a professional chasing lightning-fast execution or a newcomer just getting started, HATC's full suite of trading tools has you covered — across multiple devices, so you can seize opportunities anytime, anywhere.",
+      "subtitle": "Whether you are an experienced professional trader or a newcomer just getting started, HATC's full suite of trading tools has you covered — across multiple devices, so you can follow the market anytime, anywhere.",
       "ctaLearn": "Learn more",
       "ctaDemo": "Open a demo account",
       "visualLabel": "HATC trading platform"

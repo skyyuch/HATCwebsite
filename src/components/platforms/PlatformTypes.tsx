@@ -4,10 +4,7 @@ import {getTradingPlatforms} from '@/lib/tradingPlatforms';
 import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
 import type {Locale} from '@/i18n/routing';
 import PlatformTabsClient, {type PlatformVisual} from './PlatformTabsClient';
-import {
-  TERMINAL_SCREENSHOTS,
-  hasTerminalScreenshots
-} from './terminalScreenshots';
+import {resolveTerminalVisual} from './terminalScreenshots';
 
 type Bullet = {title: string; desc: string};
 
@@ -38,14 +35,9 @@ export default async function PlatformTypes() {
   const settings = await getSiteSettings();
   const openAccountHref = primaryContactHref(settings);
 
-  const terminalAvailable = hasTerminalScreenshots(locale);
   const visuals: PlatformVisual[] = platforms.map((platform) => {
-    if (platform.visual) return {src: platform.visual, kind: 'upload'};
-
-    const screenshot = terminalAvailable
-      ? TERMINAL_SCREENSHOTS[platform.panelLabel]
-      : undefined;
-    if (screenshot) return {src: screenshot, kind: 'screenshot'};
+    const real = resolveTerminalVisual(platform, locale);
+    if (real) return real;
 
     const isApp = /app|應用|应用/i.test(
       `${platform.panelLabel} ${platform.name}`

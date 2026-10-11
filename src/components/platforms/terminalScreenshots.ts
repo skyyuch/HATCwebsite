@@ -36,3 +36,29 @@ export const TERMINAL_HERO = '/platforms/terminal-home.png';
 export function hasTerminalScreenshots(locale: Locale): boolean {
   return locale === 'zh-Hans';
 }
+
+export type TerminalVisual = {
+  src: string;
+  kind: 'upload' | 'screenshot';
+};
+
+/**
+ * Shared image precedence for anything that pictures a platform: owner upload
+ * (CMS) → real terminal capture → `null`.
+ *
+ * `null` means "no honest image available", and each surface supplies its own
+ * placeholder: `/platforms` falls back to the Figma device mockup (labelled
+ * 「示意」), `/accounts` to a branded gradient panel. Never substitute an image
+ * of something that is not HATC's terminal without that label.
+ */
+export function resolveTerminalVisual(
+  platform: {visual?: string; panelLabel: string},
+  locale: Locale
+): TerminalVisual | null {
+  if (platform.visual) return {src: platform.visual, kind: 'upload'};
+
+  const screenshot = hasTerminalScreenshots(locale)
+    ? TERMINAL_SCREENSHOTS[platform.panelLabel]
+    : undefined;
+  return screenshot ? {src: screenshot, kind: 'screenshot'} : null;
+}
