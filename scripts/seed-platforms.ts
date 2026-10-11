@@ -5,8 +5,8 @@
  * `src/messages/*` so it stays in sync with the front-end fallback.
  *
  * ⚠️ Governance: platform names/copy are placeholder-ish (owner will supply real
- * device names/screenshots later); no fabricated stats. Product/feature claims
- * are already converged to gold/silver in the messages.
+ * device names/screenshots later); no fabricated stats. Product claims in the
+ * messages list the three approved CFDs (gold / silver / RMB kilobar).
  *
  * Idempotent: seeds a collection only when it is empty, so re-running never
  * duplicates.

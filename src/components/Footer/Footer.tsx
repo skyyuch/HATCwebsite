@@ -1,6 +1,7 @@
 import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {company} from '@/content/company';
+import {CFD_PRODUCTS} from '@/components/products/tradingConditions';
 import {
   ACADEMY_CATEGORY_SLUGS,
   academyCategoryHref
@@ -9,26 +10,19 @@ import BrandLogo from '../BrandLogo';
 
 // main-footer (Figma 4:296): dark global footer.
 //
-// Link destinations were confirmed by the owner (2026-08-10, 第十一輪):
-// content/nav links resolve to existing pages/anchors; links whose destination
-// pages don't exist yet (最新新聞 / 交易細則 / 合約保證金 / 隱私權 / 免責) point at
-// "coming soon" stub pages until the owner supplies the real content/routes.
-// These are content-navigation links (not operational customer-service links,
-// which still resolve via getSiteSettings()), so internal route paths are fine.
-// The risk statement makes clear that all on-site prices/charts are sample data.
+// Every label here must name a page or section that actually exists, and must not
+// promise a capability the owner has not confirmed (第五十三輪). These are
+// content-navigation links — operational customer-service links still resolve via
+// getSiteSettings() — so internal route paths are fine.
 const COLS = ['about', 'trading', 'platforms', 'academy'] as const;
 const LINKS = ['l1', 'l2', 'l3', 'l4'] as const;
 
 type Col = (typeof COLS)[number];
-type StaticCol = Exclude<Col, 'academy'>;
+type StaticCol = Exclude<Col, 'trading' | 'academy'>;
 type LinkKey = (typeof LINKS)[number];
 
-// Centralised link map — fill these in when the owner supplies a full link table.
-// `/#...` are homepage section anchors; `/products` is the dedicated Products /
-// CFD page (owner 待辦5, 2026-08-10) which now carries the approved trading
-// conditions, so the former `/trading-rules` and `/margin` stubs are retired and
-// the 交易服務 column points at `/products` anchors instead. `/news`, `/privacy`,
-// `/disclaimer` remain "coming soon" stubs awaiting owner content.
+// Columns with footer-only labels. The 交易服務 and 黃金學院 columns are generated
+// from their canonical sources instead — see the branches in the component below.
 //
 // 2026-10-11 (第五十三輪): the former `mt5` column is now `platforms` — it pointed
 // every link at the homepage `#mt5` teaser and advertised destinations that don't
@@ -36,16 +30,12 @@ type LinkKey = (typeof LINKS)[number];
 // (EA / algo support). It now resolves to the real `/platforms` page and its
 // section anchors, matching the header rename done in 第三十八輪.
 //
-// 2026-10-11 (第五十四輪): the academy column is built separately — see
-// FOOTER_ACADEMY_CATEGORIES below.
+// ⚠️ The about column's l1–l3 all land on `/about` with no anchor: the section ids
+// the old warm-white About had (#milestones / #credentials / #office) disappeared
+// in the 第十三輪 rebuild and were never restored. Fixing it means adding ids to
+// src/components/about/* first; the owner deferred this in 第五十七輪.
 const FOOTER_LINKS: Record<StaticCol, Record<LinkKey, string>> = {
   about: {l1: '/about', l2: '/about', l3: '/about', l4: '/news'},
-  trading: {
-    l1: '/products#gold',
-    l2: '/products#silver',
-    l3: '/products#conditions',
-    l4: '/products#conditions'
-  },
   platforms: {
     l1: '/platforms',
     l2: '/platforms#platform-types',
@@ -72,23 +62,39 @@ export default async function Footer() {
   const year = new Date().getFullYear();
   const categories = t.raw('academy.categories') as string[];
 
-  const columns = COLS.map((col) => ({
-    key: col,
-    title: f(`cols.${col}.title`),
-    links:
-      col === 'academy'
-        ? [
-            {href: '/academy', label: f('cols.academy.l1')},
-            ...FOOTER_ACADEMY_CATEGORIES.map((index) => ({
-              href: academyCategoryHref(ACADEMY_CATEGORY_SLUGS[index]),
-              label: categories[index]
-            }))
-          ]
-        : LINKS.map((l) => ({
-            href: FOOTER_LINKS[col as StaticCol][l],
-            label: f(`cols.${col}.${l}`)
-          }))
-  }));
+  const columns = COLS.map((col) => {
+    let links: {href: string; label: string}[];
+
+    if (col === 'academy') {
+      links = [
+        {href: '/academy', label: f('cols.academy.l1')},
+        ...FOOTER_ACADEMY_CATEGORIES.map((index) => ({
+          href: academyCategoryHref(ACADEMY_CATEGORY_SLUGS[index]),
+          label: categories[index]
+        }))
+      ];
+    } else if (col === 'trading') {
+      // Generated from CFD_PRODUCTS (第五十七輪): the previous hard-coded labels
+      // (倫敦黃金交易 / 倫敦白銀交易 / 市場交易細則 / 合約保證金) were missing the RMB
+      // kilobar, sent l3 and l4 to the same `#conditions` anchor, and promised
+      // margin content the site does not have. Labels come from products.items.*
+      // so they match the destination cards, which render `id={p.key}`.
+      links = [
+        ...CFD_PRODUCTS.map((p) => ({
+          href: `/products#${p.key}`,
+          label: t(`products.items.${p.key}.name`)
+        })),
+        {href: '/products#conditions', label: t('products.conditions.heading')}
+      ];
+    } else {
+      links = LINKS.map((l) => ({
+        href: FOOTER_LINKS[col][l],
+        label: f(`cols.${col}.${l}`)
+      }));
+    }
+
+    return {key: col, title: f(`cols.${col}.title`), links};
+  });
 
   return (
     <footer className="border-t border-[var(--fig-border)] bg-[var(--fig-ink)] text-[var(--fig-text-dim)]">

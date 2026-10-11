@@ -772,6 +772,55 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  管轄法律、資料保存期限、具名資料處理者等條款；(d) 後台填入客服電郵／電話（法律頁的資料查閱
  窗口靠它）；(e) `legal.updatedAt` 是手動維護的日期字串，**改法律文字時必須同時更新**。
 
+- **2026-10-11 (第五十七輪): 行銷文案補齊第三個 CFD 品種 ＋ Footer 交易服務欄改由 `CFD_PRODUCTS`
+ 生成；順手拆掉兩個「隱形覆寫」陷阱。**
+ 業主選定第五十五輪留下的候選 (d)＋(e)（同一個根因＝全站產品清單還停在「黃金／白銀」），並拍板
+ ① 交易服務欄走 **A 案**（三品種＋交易條件，全部 `/products` 錨點）；② **關於我們欄本輪不動**；
+ ③ EA FAQ **保留不改**（見下）。
+ - **六個活鍵改文案（三語）**：`home.heroV2.subtitle`（「倫敦金銀交易通道…全球黃金市場」→ 三品種＋
+ **全球貴金屬市場**，因為白銀不屬黃金市場）／`home.footerV2.brandDesc`／`accounts.cta.body`／
+ `funding.cta.body`／`platforms.faq.items[4].a`（原文「倫敦金、倫敦銀**等**」的「等」還暗示未確認的
+ 其他產品 → 改「三項貴金屬差價合約」把清單封閉）／`nav.mega.banner.desc`（mega 橫幅很窄，列三個會換行
+ → 用**「貴金屬」**概括，涵蓋全部三品種且不少講）。英文沿用 **`RMB kilobar`** 譯法。
+ - **🚩 `home.hero.*` 整個區塊是死鍵，已刪除（6 鍵 × 3 語）**：首頁 hero 實際渲染的是 `home.heroV2`
+ （`home/Hero.tsx` 讀 `home.heroV2`），`homeMarketing.ts` 的 CMS 覆寫也掛在 `heroV2` 上；全站沒有任何
+ 東西讀 `home.hero.*`（第九輪改版後的孤兒）。**第五十五輪的稽核清單把它列為「⚠ 可被 CMS 覆寫」是指錯
+ 對象**——可被覆寫的是 `heroV2.subtitle`。死鍵留著只會讓下一棒去「修」沒人看得到的文案。
+ - **🚩 CMS 影子副本會吃掉 i18n 修正（本輪第二個根因，日後務必先查）**：`funding_page` global 的
+ **22 個欄位、三語全部都是 i18n 預設值的逐字副本**（應是某輪在 `/admin` 測試或翻譯按鈕留下的），
+ 而 `pickText(cms, fallback)` 只要 CMS 非空就贏 → 改 i18n 完全不生效。該 global 的欄位說明本來就寫
+ 「留空＝使用網站預設文案（i18n）」，其餘四個 page global 的覆寫表也都是 0 列 → **已把
+ `funding_page_locales` 全部欄位清成 NULL**，回到 i18n fallback（渲染輸出完全不變，因為值本來逐字相同），
+ 圖片在父表 `funding_page` 不受影響。**慣例：改任何可被 marketing global 覆寫的 i18n 文案前，
+ 先 `select` 一下對應的 `*_page_locales`；若存的只是預設值副本就清空，不要把修正複製進 DB 變兩份來源。**
+ - **`faqs` 不能用清空解決**（reader 是 collection 級 DB→i18n fallback，只要該分類有列就完全不讀 i18n）
+ → CMS `faqs` id=13 的三語 answer 直接 UPDATE 成新文案。`scripts/seed-platforms.ts` 是 seed-once，
+ 所以**正式站空庫會直接種到新文案**，不需改腳本（只修了檔頭一句過時的「converged to gold/silver」）。
+ - **Footer 交易服務欄改為生成式**（比照第五十四輪學院欄）：`Footer.tsx` 由 `CFD_PRODUCTS` 產生
+ `/products#{gold,silver,kilobar}`（產品卡本來就渲染 `id={p.key}`，錨點免新增）＋
+ `/products#conditions`，標籤讀 **`products.items.*.name`／`products.conditions.heading`**，
+ **不另開 footer 鍵** → 增刪品種時 footer 自動跟上。刪掉 `home.footerV2.cols.trading.l1–l4`
+ （原標籤缺公斤條、l3/l4 指向同一個 `#conditions`、「合約保證金」承諾站上不存在的保證金內容）。
+ `StaticCol` 型別改成 `Exclude<Col, 'trading' | 'academy'>`。i18n 三語 **718 鍵**（728 − 6 − 4）。
+ - **業主本輪的兩個保留決定（不要自行改動）**：① **關於我們欄暫不處理**——已知 l1–l3 都指 `/about`
+ **而 About 沒有任何區段 id**（第十三輪改版後 `#milestones`／`#credentials` 等全部消失），且
+ 「安全與監管 / Security & supervision」容易被讀成 HATC 自身受監管；要做需先補 About 區段錨點。
+ ② **EA FAQ 保留**：`platforms.faq.items[3]`（＋CMS `faqs` id=12）在聲稱 MT5 支援 EA／自動化腳本，
+ 與 FACTS「不得聲稱未確認的平台能力」衝突（第五十三輪正是以此移除 footer 的「EA程序化支持」）。
+ **業主表示 HATC 的 MT5 伺服器確實允許 EA、日後會正式確認為核可事實** → 本輪不動，已在
+ `HATC_FACTS.md`「Trading platforms」記為**【待業主確認】**。**在業主正式確認前不得據此在別處
+ 新增 EA／量化／跟單文案。**
+ - **刻意沒改的近似項（判斷依據，別誤當漏修）**：`home.trust.grade.sub`「可經營倫敦金銀及實物黃金」
+ 與 `about.identity.p2`／`about.credentials.cards.c2.body`「倫敦金、倫敦銀**等**」講的是**交易所
+ AA 會員的獲准經營範圍**（參與者證書 7 項，「等」在此準確），不是 HATC 的 CFD 產品清單。
+ `trading.services.items.londonGold` 旁邊就有獨立的 `kilobar` 卡，兩張合起來＝三品種（刻意分法）。
+ - **驗收**：`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／
+ `i18n:check` 三語 718 鍵／`migrate:check` 無漂移（未動 schema）／`rm -rf .next` 後 `build` 綠且
+ 全頁維持 ● SSG。`npm start` 實測：六個改動鍵三語皆渲染新文案、footer 四個連結三語正確、
+ `#gold/#silver/#kilobar/#conditions` 四個錨點以 CDP 量測皆停在 80px sticky header 下方、
+ mega 橫幅單行不換行；footer 桌機 1440／平板 834／手機 390 ＋英文版截圖逐一看過
+ （平板「人民幣公斤條 CFD」會換成兩行，與鄰欄「行動與網頁交易端」一致，非回歸）。
+
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾
  顯示退役的黃金 27／白銀 30 且缺公斤條。已改為條件欄位全部由 `tradingConditions.ts` 產生、
@@ -892,8 +941,20 @@ CMS. Full plan + phases in `docs/HANDOFF.md` (第十九輪, planning). Key rules
   type that has approved seeds — do NOT delete them when adding CMS. **Exception
   (news/activities):** no fabricated activity seeds; empty → neutral empty UI via
   `news.*` chrome only.
+- **⚠ Marketing globals must stay EMPTY unless the owner really overrode something
+ (第五十七輪).** `pickText(cms, fallback)` gives the CMS value priority whenever it is
+ non-empty, so a global field holding a verbatim copy of the i18n default silently
+ swallows every future i18n fix to that string — `funding_page` had all 22 fields ×
+ 3 locales mirrored this way and ate a red-line copy correction. **Before editing any
+ i18n string that a `*-page` global can override, `select` the matching
+ `*_page_locales` row; if the stored value is just a copy of the default, NULL it out
+ rather than duplicating your fix into the DB.** Empty is the normal state (the other
+ four page globals have zero rows) and the field help text already says
+ 「留空＝使用網站預設文案（i18n）」. Collections are different: their readers fall back at
+ *collection* level (any row in the category wins over the whole i18n seed), so there
+ you must update the rows.
 - **Refresh = SSG + on-demand revalidation.** Tag reads and revalidate via Payload
-  `afterChange`/`afterDelete` hooks (`revalidateTag(tag, 'max')`/`revalidatePath`). No full SSR.
+ `afterChange`/`afterDelete` hooks (`revalidateTag(tag, 'max')`/`revalidatePath`). No full SSR.
 - **DRY infra (Phase 0 done, 2026-08-10):** `src/lib/payload.ts` (`getPayloadClient()` +
   `hasDb()`), `src/lib/cacheTags.ts`, `src/lib/revalidateContent.ts`; readers use
   `unstable_cache` + tags. Refactored `siteSettings` / `homeActivities`.

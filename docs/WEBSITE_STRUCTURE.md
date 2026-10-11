@@ -176,8 +176,17 @@
     `/academy?category=<slug>` 深連到分類篩選。**標籤直接讀 `academy.categories`**，不另開
     footer 文案鍵，所以永遠不會和篩選選項不一致（業主 2026-10-11 決定該欄維持 4 格，
     其餘三類在 `/academy` 頁內篩選）。
-  - 仍待整理（下一棒候選）：交易服務欄缺**人民幣公斤條**；關於我們欄 l1–l3 都指 `/about`
-    沒有錨點。
+  - 第五十七輪已把**交易服務欄**改成**由 `CFD_PRODUCTS` 生成**（業主 2026-10-11 選定 A 案）：
+    三個核可品種 → `/products#{gold,silver,kilobar}`（產品卡本來就渲染 `id={p.key}`）＋
+    交易條件 → `/products#conditions`。**標籤讀 `products.items.*.name` 與
+    `products.conditions.heading`**，比照學院欄不另開 footer 鍵，所以增刪品種時 footer 自動
+    跟上、不可能再漏品種。取代原本四個寫死標籤（倫敦黃金交易／倫敦白銀交易／市場交易細則／
+    合約保證金）——那組缺人民幣公斤條、l3 與 l4 指向同一個 `#conditions`，而「合約保證金」
+    承諾了站上不存在的保證金內容。i18n `home.footerV2.cols.trading` 現在只剩 `title`。
+  - 仍待整理（下一棒候選）：關於我們欄 l1–l3 都指 `/about` **沒有錨點**（第十三輪 About 改版
+    後舊的 `#milestones`／`#credentials` 等區段 id 全部消失，全站也沒有東西連過去），
+    且 l3 標籤「安全與監管 / Security & supervision」容易被讀成 HATC 本身受監管；
+    業主 2026-10-11 第五十七輪決定該欄暫不處理。
 - **黃金學院分類深連**＝`/academy?category=<slug>`（可逗號分隔多選，如
   `?category=gold-basics,portfolio`）。slug 清單在
   [`src/lib/academyCategories.ts`](../src/lib/academyCategories.ts)，**順序必須對齊

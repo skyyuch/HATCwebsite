@@ -111,7 +111,7 @@
       },
       "banner": {
         "title": "Open an account",
-        "desc": "— Start your professional gold / silver investment journey"
+        "desc": "— Start your professional precious-metals investment journey"
       }
     }
   },
@@ -121,20 +121,12 @@
     "en": "English"
   },
   "home": {
-    "hero": {
-      "eyebrow": "AA-class member of the Hong Kong Gold Exchange",
-      "titleLead": "Precious-metals",
-      "titleAccent": "CFD",
-      "titleTail": "trading",
-      "subtitle": "Trade CFDs on gold and silver — backed by our Hong Kong Gold Exchange AA membership.",
-      "imageAlt": "HATC reception at the Hong Kong office"
-    },
     "heroV2": {
       "badge": "Hong Kong Gold Exchange · AA-class member No. 008",
       "titleLine1": "Connecting global gold markets",
       "titleBrand": "HATC",
       "titleTail": "at your side",
-      "subtitle": "Built on our AA-class membership of the Hong Kong Gold Exchange (member no. 008), HATC offers a compliant, professional channel for Loco London gold and silver trading — connecting you to global gold markets.",
+      "subtitle": "Built on our AA-class membership of the Hong Kong Gold Exchange (member no. 008), HATC offers a compliant, professional channel for trading gold, silver and the RMB kilobar — connecting you to global precious-metals markets.",
       "ctaPrimary": "Learn more",
       "bgAlt": "Gold bars over a market chart (illustrative)",
       "priceTitle": "Live gold price",
@@ -300,7 +292,7 @@
       "bgAlt": "Hong Kong financial market (illustrative)"
     },
     "footerV2": {
-      "brandDesc": "HATC Group Limited is an AA-class member of the Hong Kong Gold Exchange (member no. 008), offering compliant, professional Loco London gold and silver trading services.",
+      "brandDesc": "HATC Group Limited is an AA-class member of the Hong Kong Gold Exchange (member no. 008), offering compliant, professional CFD trading on gold, silver and the RMB kilobar.",
       "cols": {
         "about": {
           "title": "About us",
@@ -310,11 +302,7 @@
           "l4": "Latest news"
         },
         "trading": {
-          "title": "Trading services",
-          "l1": "Loco London gold",
-          "l2": "Loco London silver",
-          "l3": "Market trading rules",
-          "l4": "Contract margin"
+          "title": "Trading services"
         },
         "platforms": {
           "title": "Trading platforms",
@@ -679,7 +667,7 @@
     },
     "cta": {
       "heading": "Begin your precious-metals trading journey",
-      "body": "Experience secure fund custody and professional client support, and start allocating to gold and silver whenever you're ready."
+      "body": "Experience secure fund custody and professional client support, and start allocating to gold, silver and the RMB kilobar whenever you're ready."
     }
   },
   "platforms": {
@@ -767,7 +755,7 @@
         },
         {
           "q": "What can I trade on HATC's platforms?",
-          "a": "Backed by our AA-category Hong Kong Gold Exchange membership, HATC offers precious-metals products such as Loco London Gold and Silver; for detailed trading conditions please see the trading-conditions page or contact client support."
+          "a": "Backed by our AA-category Hong Kong Gold Exchange membership, HATC offers CFDs on three precious-metals instruments — gold, silver and the RMB kilobar; for detailed trading conditions please see the trading-conditions page or contact client support."
         },
         {
           "q": "Are my funds safe on the platform?",
@@ -987,7 +975,7 @@
     },
     "cta": {
       "heading": "Ready to get started?",
-      "body": "Open your gold and silver allocation in a secure, transparent environment. Once your account is open you can experience the full funding service.",
+      "body": "Open your gold, silver and RMB kilobar allocation in a secure, transparent environment. Once your account is open you can experience the full funding service.",
       "ctaOpen": "Open a live account",
       "ctaDemo": "Explore trading accounts"
     }

@@ -1,10 +1,41 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-11（第五十六輪：最低手數 0.01 ＋ 交易手續費全免入 FACTS；外部連結全站同窗；隱私權政策與免責聲明上線）
+> 最後更新：2026-10-11（第五十七輪：行銷文案補齊第三個 CFD 品種；Footer 交易服務欄改由 `CFD_PRODUCTS` 生成）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
 ## ▶ 下一步（下一位 agent）
+
+> **✅ 第五十七輪（2026-10-11）完成：全站行銷文案補齊第三個 CFD 品種「人民幣公斤條」，Footer
+> 交易服務欄改由 `CFD_PRODUCTS` 生成；順手拆掉兩個會讓文案修正「看不見」的陷阱。**
+>
+> 業主選定第五十五輪留下的候選 (d)＋(e)（我先指出兩者是同一個根因＝全站產品清單還停在「黃金／白銀」），
+> 並在三個方向級問題上拍板：交易服務欄走 **A 案**（三品種＋交易條件）、**關於我們欄本輪不動**、
+> **EA FAQ 保留不改**。
+> - **六個活鍵改文案（三語）**：`home.heroV2.subtitle`／`home.footerV2.brandDesc`／`accounts.cta.body`／
+>   `funding.cta.body`／`platforms.faq.items[4].a`／`nav.mega.banner.desc`。mega 橫幅太窄，列三個會換行
+>   → 用**「貴金屬」**概括；`heroV2` 的「全球黃金市場」也改成**全球貴金屬市場**（白銀不屬黃金市場）。
+> - **🚩 `home.hero.*` 整個區塊是死鍵 → 已刪（6 鍵 × 3 語）**。首頁 hero 渲染的是 `home.heroV2`，
+>   CMS 覆寫也掛在 `heroV2` 上，全站沒有東西讀 `home.hero.*`。**第五十五輪清單裡「`home.hero.subtitle`
+>   〔⚠ 可被 CMS 覆寫〕」指錯對象**——可被覆寫的是 `heroV2.subtitle`。
+> - **🚩 新發現的通用陷阱：CMS marketing global 的影子副本會吃掉 i18n 修正**。`funding_page` 的 22 個
+>   欄位、三語全部是 i18n 預設值的逐字副本，而 `pickText` 只要 CMS 非空就贏 → 改 i18n 無效。
+>   **已清成 NULL**（輸出不變、圖片在父表不受影響）。**日後改任何可被 global 覆寫的文案前，
+>   先查 `*_page_locales`。** 寫進規則「CMS-first content architecture」。
+> - **`faqs` 不能清空**（collection 級 fallback：該分類有列就完全不讀 i18n）→ 直接 UPDATE id=13 三語。
+>   `scripts/seed-platforms.ts` 是 seed-once，正式站空庫會種到新文案，腳本不需改。
+> - **Footer 交易服務欄改生成式**（比照第五十四輪學院欄）：由 `CFD_PRODUCTS` 產生
+>   `/products#{gold,silver,kilobar}`＋`#conditions`，標籤讀 `products.items.*.name`／
+>   `products.conditions.heading`，**不另開 footer 鍵** → 增刪品種自動跟上。
+>   刪掉 `cols.trading.l1–l4` → 三語 **718 鍵**（728 − 6 − 4）。
+> - **業主保留的兩項（不要自行改）**：① 關於我們欄——已知 l1–l3 都指 `/about` 而 **About 完全沒有
+>   區段 id**，且「安全與監管」易讀成 HATC 受監管；要做需先補 About 錨點。② EA FAQ——業主表示
+>   MT5 伺服器確實允許 EA、日後正式確認為核可事實，已在 FACTS 記為**【待業主確認】**。
+> - **驗收**：`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／
+>   `i18n:check` 718 鍵／`migrate:check` 無漂移（未動 schema）／`rm -rf .next` 後 `build` 綠且維持
+>   ● SSG。`npm start` 實測六個鍵三語渲染、footer 四連結三語正確、四個錨點以 CDP 量測皆停在 80px
+>   sticky header 下方、mega 橫幅單行；footer 桌機／平板／手機＋英文截圖逐一看過。
+> - 細節見下方「🟢 第五十七輪」。
 
 > **✅ 第五十六輪（2026-10-11）完成：業主一次給了三件事，全部做完 —— ① 最低手數 0.01 與交易手續費
 > 全免成為已核可事實（四個頁面同源顯示）；② 全站外部連結改同視窗；③ 隱私權政策與免責聲明兩頁三語上線。**
@@ -521,6 +552,119 @@
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
 
+## 🟢 第五十七輪（實作，2026-10-11）：行銷文案補齊第三個 CFD 品種 ＋ Footer 交易服務欄生成式
+
+### 業主決策（本輪開場三問，皆已拍板）
+
+| 問題 | 業主決定 |
+|---|---|
+| Footer 交易服務欄怎麼重做 | **A 案**：4 格＝三個核可品種＋交易條件，全部 `/products` 錨點 |
+| 關於我們欄要不要補 About 錨點並改掉「安全與監管」 | **本輪不動**（已記為下一棒候選） |
+| `/platforms` FAQ 的 EA／自動化交易宣稱 | **先不改** —— MT5 伺服器確實允許 EA，業主稍後正式確認成核可事實 |
+
+### 一、為什麼 (d) 與 (e) 是同一件事
+
+第五十五輪留下兩組候選：(d) 七個「只講金銀、漏公斤條」的行銷文案鍵、(e) footer 交易服務欄缺人民幣
+公斤條。兩者根因相同＝**FACTS 的 CFD 標的自 2026-10-11 起是三項（黃金／白銀／人民幣公斤條），但行銷
+文案與 footer 連結表是在「只有金銀」年代寫的，之後沒人回頭對照**。因此合併為一輪處理。
+
+稽核時另外確認了兩件事（都和交棒說明不同）：
+
+- **`/products#gold`、`#silver` 本來就有效**：`ProductList` 的產品卡渲染 `id={p.key}`，所以
+  `#kilobar` 直接可用，**不需新增錨點**。但 l3「市場交易細則」與 l4「合約保證金」**都指向同一個
+  `#conditions`**，而「合約保證金／Contract margin」在站上沒有任何保證金內容 → 屬第五十三輪
+  「footer 標籤不得承諾不存在的目的地」同一條紅線。
+- **`/about` 完全沒有任何區段錨點**：第十三輪 About 改版後，舊的 `#milestones`／`#credentials`／
+  `#office`／`#contact` 全部消失，全站也沒有任何連結指過去。所以關於我們欄的 l1–l3 其實都只是落在
+  頁首。要修必須先替 About 區段補 `id`（本輪業主決定不動）。
+
+### 二、六個活鍵改文案（三語）
+
+| 鍵 | 原文問題 | 新寫法 |
+|---|---|---|
+| `home.heroV2.subtitle` | 「倫敦金銀交易通道…全球黃金市場」 | 三品種＋**全球貴金屬市場**（白銀不屬黃金市場） |
+| `home.footerV2.brandDesc` | 「倫敦金銀交易服務」 | 三品種差價合約交易服務 |
+| `accounts.cta.body` | 「黃金、白銀交易配置」 | 加入人民幣公斤條 |
+| `funding.cta.body` | 同上 | 同上（⚠ 另需清 CMS，見第三節） |
+| `platforms.faq.items[4].a` | 「倫敦金、倫敦銀**等**」—「等」還暗示未確認的其他產品 | 「**三項**貴金屬差價合約」把清單封閉（⚠ 另需改 CMS） |
+| `nav.mega.banner.desc` | 「黃金/白銀投資配置之旅」 | **「貴金屬」**概括 —— mega 橫幅很窄，列三個會換行；貴金屬涵蓋全部三品種且不少講 |
+
+英文沿用站上既有譯法 **`RMB kilobar`**（第五十五輪定下）。
+
+**🚩 `home.hero.*` 整個區塊是死鍵，已刪除（6 鍵 × 3 語）。** 首頁 hero 實際渲染的是 `home.heroV2`
+（`home/Hero.tsx` 讀 `home.heroV2`），`homeMarketing.ts` 的 CMS 覆寫也掛在 `heroV2` 上；`grep` 全倉
+確認沒有任何東西讀 `home.hero.*`（第九輪 Figma 改版後的孤兒）。**第五十五輪稽核清單裡
+「`home.hero.subtitle`〔⚠ 可被 CMS global 覆寫〕」指錯了對象**——可被覆寫的是 `heroV2.subtitle`，
+而 `home.hero.subtitle` 改了也沒人看得到。死鍵留著只會讓下一棒再去「修」一次沒人看的文案。
+
+**刻意沒改的近似項（別誤當漏修）**：`home.trust.grade.sub`「可經營倫敦金銀及實物黃金」與
+`about.identity.p2`／`about.credentials.cards.c2.body`「倫敦金、倫敦銀**等**」講的是**交易所 AA 會員
+的獲准經營範圍**（參與者證書 7 項，「等」在此準確），不是 HATC 的 CFD 產品清單。
+`trading.services.items.londonGold` 旁邊就有獨立的 `kilobar` 卡，兩張合起來＝三品種（刻意分法）。
+
+### 三、🚩 兩個「改了看不見」的陷阱（本輪最有價值的發現）
+
+**(1) CMS marketing global 的影子副本。** `funding.cta.body` 改完前台沒變——因為 `funding_page` global
+的**22 個欄位、三語全部是 i18n 預設值的逐字副本**（應是某輪在 `/admin` 測試或一鍵翻譯留下的），而
+`pickText(cms, fallback)` 只要 CMS 值非空就贏。該 global 的欄位說明本來就寫「留空＝使用網站預設文案
+（i18n）」，其餘四個 page global 的覆寫表也都是 **0 列** → `funding_page` 是唯一的異常。
+**處置：把 `funding_page_locales` 全部文字欄位 UPDATE 成 NULL**，回到 i18n fallback。渲染輸出完全
+不變（值本來逐字相同），圖片在父表 `funding_page` 的 `*_image_id` 不受影響。
+
+> **慣例（已寫進規則）**：改任何可被 marketing global 覆寫的 i18n 文案前，先 `select` 對應的
+> `*_page_locales`；若存的只是預設值副本就**清空**，不要把修正複製進 DB 變成兩份來源。
+
+**(2) collection 不能用清空解決。** `faqs` 的 reader 是 **collection 級** DB→i18n fallback：只要該
+分類有任何一列，整個 i18n 種子就不會被讀 → 無法靠「清空單列」退回預設。因此 CMS `faqs` id=13 的
+三語 `answer` 直接 UPDATE 成新文案（備份 `/tmp/hatc-r57-backup.sql`）。
+`scripts/seed-platforms.ts` 是 **seed-once**，所以**正式站空庫第一次種就會拿到新文案**，腳本不需改
+（只修了檔頭一句過時的「Product/feature claims are already converged to gold/silver」）。
+
+### 四、Footer 交易服務欄改為由 `CFD_PRODUCTS` 生成
+
+比照第五十四輪學院欄的做法——**標籤讀正規來源，不複製進 footer 鍵**，這樣根本不可能再漂移：
+
+```
+三個品種  → /products#{gold,silver,kilobar}   標籤 = products.items.*.name
+交易條件  → /products#conditions              標籤 = products.conditions.heading
+```
+
+`Footer.tsx` 的 `StaticCol` 改成 `Exclude<Col, 'trading' | 'academy'>`，交易服務欄走自己的分支；
+`home.footerV2.cols.trading` 現在只剩 `title`（刪掉 `l1–l4`）。三語 **718 鍵**（728 − 6 − 4）。
+
+渲染結果（三語實測）：黃金 CFD／白銀 CFD／人民幣公斤條 CFD／交易條件 ·
+Gold CFD／Silver CFD／RMB Kilobar CFD／Trading conditions。
+
+### 五、驗收
+
+- `lint` 0 error（僅 `scripts/seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／
+  `i18n:check` 三語 **718 鍵**／`migrate:check` 無漂移（**未動 schema**，故無 migration）。
+- `rm -rf .next` 後 `npm run build` 綠，全部頁面維持 **● SSG**；直接讀 `.next/server/app/**` 的靜態
+  HTML 確認三語都含 `products#kilobar` 連結與新的 funding CTA 文案。
+- `npm start`（port 3140）＋獨立 `chrome-headless-shell` ＋ CDP 實測：
+  - 六個改動鍵三語皆渲染新文案；舊的「倫敦金銀交易／Loco London gold and silver」全站 0 筆。
+  - footer 交易服務欄四個連結三語正確；`合約保證金／Contract margin／市場交易細則` 在 messages 中 0 筆。
+  - `#gold`／`#silver`／`#kilobar`／`#conditions` 四個錨點量測 `top` 皆 ≥ `header` 的 `bottom`（80px），
+    未被 sticky header 遮住。
+  - mega 橫幅「立即開戶 — 開始您的專業級貴金屬投資配置之旅」單行不換行。
+  - footer 截圖：桌機 1440／平板 834／手機 390 ＋英文桌機。平板上「人民幣公斤條 CFD」換成兩行，
+    與鄰欄「行動與網頁交易端」行為一致，**非回歸**。
+  - 首頁 hero（手機／桌機）與 `/accounts`、`/funding` 收尾 CTA（手機）版面無溢出。
+
+### 六、下一棒候選（本輪新增／更新）
+
+- **關於我們欄**（業主本輪選擇不動）：要做就得先替 About 區段補 `id`（`CompanyIdentity` →
+  `#identity`、`Credentials` → `#credentials`、`CredentialsGallery` → `#gallery` 等），再決定
+  「安全與監管 / Security & supervision」是否改掉——該標籤容易被讀成 HATC 自身受監管，而業主已定案
+  CFD 業務不需 SFC 牌照；頁內既有的「監管與資產安全聲明」指的是交易所監管其行員（屬核可事實）。
+- **EA／自動化交易**：業主會正式確認。確認後要同步更新 `HATC_FACTS.md`「Trading platforms」把
+  【待業主確認】改成核可事實，才可在其他頁面使用相關文案。
+- **Footer 仍完全沒有連到** `/trading`、`/products/all`、`/accounts`、`/funding`——這四頁只能從
+  header mega 選單進入（本輪業主選 A 案，刻意維持 4 格）。
+- `home.trust.field.title`「金銀業貿易場」與 `home.trust.member.sub`「資金安全受貿易場嚴格監管」
+  用的是交易所**前身名稱**（FACTS：現為香港黃金交易所，前身香港金銀業貿易場）。不是錯誤陳述，
+  但與站上其他地方的稱法不一致，可併入下一次文案稽核。
+
 ## 🟢 第五十六輪（實作，2026-10-11）：新交易條件事實 ＋ 外部連結同窗 ＋ 法律頁上線
 
 ### 業主決策（本輪開場四問，皆已拍板）
@@ -667,6 +811,11 @@ placeholders — the owner supplies real device screenshots later」，兩句都
 已寫進 `.cursor/rules/hatc-seo.mdc`。
 
 ### 三、同時稽核出、本輪刻意沒改（下一棒候選）
+
+> ✅ **第五十七輪已全部處理**（業主選定此候選）。下表保留供追溯；一處更正：`home.hero.subtitle`
+> **不是**「可被 CMS 覆寫」的那個鍵，它根本是死鍵（全站無人讀，第五十七輪已刪整個 `home.hero`
+> 區塊）；真正可被 `home-page` global 覆寫的是 `home.heroV2.subtitle`。另外 `funding.cta.body`
+> 當時沒注意到 `funding_page` global 存了一份預設值副本，會把 i18n 修正吃掉（第五十七輪已清空）。
 
 用腳本掃過三語訊息檔，找出「同時出現黃金與白銀、但沒有公斤條」的鍵。排除掉講**交易所名稱**
 （金銀業貿易場／Gold & Silver Exchange）與**交易所獲准權限**（`about.identity.p2`、
@@ -855,20 +1004,18 @@ state、沒有 URL 參數，所以即使標籤改對也無處可連。
 
 footer 其餘三欄有同一個根因（Figma 佔位標籤沒對照真實內容），但各自是獨立的內容決策，沒有擅自改：
 
-- **交易服務欄缺人民幣公斤條**：只有倫敦黃金交易／倫敦白銀交易，與 FACTS 的三個 CFD 標的不符
-  （同一類問題第四十五輪在 `/trading`、第五十二輪在 `platforms.detail.bullets` 都修過）。
-  該欄只有 4 格，要補第三個產品就得拿掉一個現有連結或讓該欄變 5 格 —— 屬版面決策。
-- **黃金學院欄**四個標籤（基礎課程／進階分析／巨集觀基本面／技術指標解讀）對不上
-  `academy.categories` 的真實六分類，且全部指 `/academy`；分類篩選是 client state、無 URL 參數，
-  想深連要先讓 `AcademyExplorer` 支援查詢字串。
-- **關於我們欄** l1–l3 都指 `/about` 沒有錨點（About 有 `#milestones`／`#credentials`／`#office`
-  可用）。
-- **`metadata.platforms.description`（三語）仍寫「平台視覺為示意／actual screens follow the official
-  release」** —— 第五十一／五十二輪換成真實截圖與供應商官方畫面後，這句已不實，且該描述只提黃金白銀，
-  一樣缺人民幣公斤條。
-- **`platforms.types.items.mt5.desc` 與 `platforms.faq`** 提到 MT5「支援自動化（EA）交易」。這是
-  MetaTrader 5 平台本身的特性（不是 HATC 的服務承諾），所以沒有比照 footer 一併刪 —— 但 FACTS 的
-  平台紅線把「跟單／量化功能」列為不得聲稱，**邊界由業主裁定**。
+- ~~**交易服務欄缺人民幣公斤條**~~ → **第五十七輪已做**（業主選 A 案：改為由 `CFD_PRODUCTS` 生成
+  三品種＋交易條件，維持 4 格；順便拿掉沒有目的地的「合約保證金」）。
+- ~~**黃金學院欄**四個標籤對不上真實六分類~~ → **第五十四輪已做**（`?category=` 深連）。
+- **關於我們欄** l1–l3 都指 `/about` 沒有錨點。
+  ⚠ **第五十七輪更正**：本條原寫「About 有 `#milestones`／`#credentials`／`#office` 可用」是**錯的**
+  —— 第十三輪 About 改版後那些區段 id 全部消失，`/about` 目前**完全沒有任何錨點**。要修必須先替
+  About 區段補 `id`。業主第五十七輪決定該欄暫不處理。
+- ~~**`metadata.platforms.description`（三語）仍寫「平台視覺為示意」**~~ → **第五十五輪已做**。
+- **`platforms.types.items.mt5.desc` 與 `platforms.faq`** 提到 MT5「支援自動化（EA）交易」。
+  → **第五十七輪業主已裁定**：先不改，因為 HATC 的 MT5 伺服器確實允許 EA，業主稍後會正式確認成
+  核可事實。已在 `HATC_FACTS.md`「Trading platforms」記為**【待業主確認】**；在正式確認前**不得**
+  據此在其他頁面新增 EA／量化／跟單文案。
 
 ## 🟢 第五十二輪（實作，2026-10-11）：開戶連結進 CMS ＋ 平台視覺改走首頁視覺概念
 
