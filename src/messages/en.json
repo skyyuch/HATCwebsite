@@ -39,6 +39,14 @@
     "academy": {
       "title": "Gold Academy",
       "description": "HATC Gold Academy: neutral educational content on precious-metals markets and platform basics. Nothing on this site constitutes investment advice."
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "description": "Privacy policy for the HATC Group Limited website: how browsing data and cookies are handled, what the data is used for, and how to access and correct personal data."
+    },
+    "disclaimer": {
+      "title": "Disclaimer",
+      "description": "Disclaimer for the HATC Group Limited website: the information here is general in nature and is not investment advice. Covers precious-metals and CFD trading risk, quotes, and how the stated trading conditions apply."
     }
   },
   "common": {
@@ -1151,6 +1159,142 @@
       "aria": "Pagination",
       "prev": "Previous",
       "next": "Next"
+    }
+  },
+  "legal": {
+    "updatedLabel": "Last updated",
+    "updatedAt": "2026-10-11",
+    "contactHeading": "Contact us",
+    "contactBody": "If you have any question about this page, or wish to exercise a right relating to your personal data, please contact us using the details below.",
+    "contactCompany": "Company:",
+    "contactAddress": "Registered office:",
+    "contactEmail": "Email:",
+    "contactPhone": "Telephone:",
+    "privacy": {
+      "intro": "This privacy policy explains how HATC Group Limited (the Company) handles data when you browse this website. It applies to this website only. If you follow a link from here to an online account-opening or trading system, or to any third-party website, please read that platform's own terms for how it handles data.",
+      "sections": [
+        {
+          "heading": "What we collect",
+          "body": [
+            "This is an informational website with no online application or contact form, so we do not actively collect your name, contact details or identity documents here.",
+            "As with any website, our servers may generate technical records while serving pages — for example IP address, browser and device information, access time and the pages viewed. These records are used to keep the site running and to protect its security.",
+            "If you choose to contact us by email, telephone or a customer-service channel, the information you provide in that exchange is used only to answer and handle your enquiry."
+          ]
+        },
+        {
+          "heading": "Cookies",
+          "body": [
+            "This website uses one necessary cookie to remember the language version you selected (cookie name: NEXT_LOCALE). You can delete or block cookies in your browser at any time; if you block this one the site still works, but it may not remember your language preference.",
+            "The content-management back office additionally uses cookies for its interface language and login session. Those apply only to authorised Company administrators, not to ordinary visitors.",
+            "No advertising or web-analytics tracking tool is currently enabled on this website. If one is introduced, we will update this policy on this page first."
+          ]
+        },
+        {
+          "heading": "How the data is used",
+          "body": [
+            "The data above is used only to provide, maintain and improve the content and functionality of this website; to remember your language preference; to protect the security of the site and its systems; and to answer enquiries you send us.",
+            "We do not use it for direct marketing without your consent."
+          ]
+        },
+        {
+          "heading": "Disclosure and sharing",
+          "body": [
+            "We do not sell your personal data.",
+            "To the extent necessary to operate this website, data may be processed by service providers that supply hosting, networking or technical maintenance. Those providers may process it only on our instructions and only to deliver their service.",
+            "We may have to disclose data where required by law, regulation or a competent authority."
+          ]
+        },
+        {
+          "heading": "Retention",
+          "body": [
+            "We keep data only for as long as needed for the purposes above. Cookie lifetimes depend on the cookie, and you can delete them yourself at any time."
+          ]
+        },
+        {
+          "heading": "Your rights",
+          "body": [
+            "Under the Hong Kong Personal Data (Privacy) Ordinance (Cap. 486) you have the right to request access to, and correction of, the personal data we hold about you. To exercise those rights, please contact us using the details at the bottom of this page.",
+            "To protect your data, we may need to verify your identity before acting on a request."
+          ]
+        },
+        {
+          "heading": "Third-party links and external systems",
+          "body": [
+            "This website may link to an online account-opening or trading system, or to other third-party websites. We are not responsible for the content or privacy practices of those sites — please read their own policies before using them."
+          ]
+        },
+        {
+          "heading": "Changes to this policy",
+          "body": [
+            "We may revise this policy from time to time. The revised version will be published on this page, and the Last updated date shown here applies."
+          ]
+        }
+      ]
+    },
+    "disclaimer": {
+      "intro": "This disclaimer applies to all content on the website of HATC Group Limited (the Company). Please read it before using this website.",
+      "sections": [
+        {
+          "heading": "General information only",
+          "body": [
+            "The information on this website is general in nature and does not constitute investment or financial advice, an offer, a solicitation, or a recommendation to buy or sell any product. We have not taken any individual's investment objectives, financial situation or particular needs into account.",
+            "You should make your own assessment before any trading decision and seek independent professional advice where appropriate."
+          ]
+        },
+        {
+          "heading": "Trading risk",
+          "body": [
+            "Precious-metals trading involves risk; prices can move sharply and investors may lose part or all of their principal. Financial-market instruments (including CFDs) involve leverage that can amplify both gains and losses, and they are not suitable for every investor.",
+            "Past performance is not indicative of future results. Please make sure you fully understand the risks before trading."
+          ]
+        },
+        {
+          "heading": "Quotes, charts and illustrative content",
+          "body": [
+            "Live quotes shown on this website come from the Company's own MetaTrader 5 feed. They are indicative only, may differ from actual execution prices, and may be delayed or interrupted for technical reasons.",
+            "Figures, tables or charts marked as illustrative data exist for layout purposes only and do not represent the Company's actual trading conditions or market prices."
+          ]
+        },
+        {
+          "heading": "Trading conditions",
+          "body": [
+            "The account types, minimum deposits, leverage, spreads, contract sizes, trading hours, minimum lot size and trading commission shown on this website are the Company's current trading conditions and may be adjusted in response to market or business circumstances. The conditions that actually apply are those shown on the trading platform and in your account documentation.",
+            "Commission-free means no dealing fee or commission is charged on trades; it does not cover overnight financing or deposit and withdrawal charges.",
+            "Some conditions — such as execution mode — have not been published yet and will be announced once confirmed."
+          ]
+        },
+        {
+          "heading": "Educational content",
+          "body": [
+            "The Gold Academy and the other educational content on this website is neutral educational information and does not constitute investment advice or an offer. Any method, indicator or example described is for illustration only and guarantees no outcome."
+          ]
+        },
+        {
+          "heading": "Funds and payments",
+          "body": [
+            "The Company does not accept payments from any third party; the depositor's name must match the name on your verified trading account."
+          ]
+        },
+        {
+          "heading": "Third-party content and trademarks",
+          "body": [
+            "Some platform screens on this website are official demonstration material from a platform vendor. The instruments and prices visible in those screens belong to the vendor's demonstration account and do not represent the products the Company offers. The Company's CFD products are gold, silver and the RMB kilobar.",
+            "MetaTrader 5 is a trademark of MetaQuotes Ltd. Intellectual property in the rest of this website belongs to the Company or its licensors."
+          ]
+        },
+        {
+          "heading": "Availability and accuracy",
+          "body": [
+            "We work to keep this website accurate but give no express or implied warranty as to its completeness, timeliness or uninterrupted availability. We may change or remove any content at any time."
+          ]
+        },
+        {
+          "heading": "Scope",
+          "body": [
+            "The content of this website is not directed at any person or place where local law or regulation prohibits receiving it. You are responsible for ensuring that your use of this website complies with the laws that apply to you."
+          ]
+        }
+      ]
     }
   },
   "footer": {

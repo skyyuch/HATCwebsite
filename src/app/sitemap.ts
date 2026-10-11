@@ -14,7 +14,9 @@ const staticPaths = [
   '/funding',
   '/platforms',
   '/news',
-  '/academy'
+  '/academy',
+  '/privacy',
+  '/disclaimer'
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

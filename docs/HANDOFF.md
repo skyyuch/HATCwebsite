@@ -1,10 +1,39 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-11（第五十五輪：三語 SEO 描述修正 — 退役「平台視覺為示意」不實句，補齊三個 CFD 品種）
+> 最後更新：2026-10-11（第五十六輪：最低手數 0.01 ＋ 交易手續費全免入 FACTS；外部連結全站同窗；隱私權政策與免責聲明上線）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
 ## ▶ 下一步（下一位 agent）
+
+> **✅ 第五十六輪（2026-10-11）完成：業主一次給了三件事，全部做完 —— ① 最低手數 0.01 與交易手續費
+> 全免成為已核可事實（四個頁面同源顯示）；② 全站外部連結改同視窗；③ 隱私權政策與免責聲明兩頁三語上線。**
+>
+> 業主沒有從候選清單選，而是直接指示：「交易條件最低手數：0.01、手續費全免。另外，開戶跳轉不要用打開
+> 新視窗方式。另外，需要完成隱私權政策及免責聲明。」依工作規則**先把方向級紅線問齊才動手**（手續費涵蓋
+> 範圍／手數適用品種／法律文本來源／同窗套用範圍），四個問題業主都已拍板。
+> - **🚩 最重要的一個邊界**：FACTS 原本明文「**無佣金欄位** → 官網不得聲稱佣金金額或『零佣金』」。
+>   業主確認「手續費全免」**只涵蓋交易時收取的手續費／每手佣金**，**不含隔夜利息（庫存費／swap）與
+>   入金／出金費用** → 官網一律寫**「交易手續費」**，並在同一版面以細則交代排除範圍；**不得**寫
+>   「免任何費用」「零成本」。第四十四輪那條限制**到此解除**，但非零佣金金額仍屬虛構。
+>   FACTS「仍待業主提供」現在**只剩「執行方式」**。
+> - **事實仍留在程式**：`products/tradingConditions.ts` 新增 `MIN_LOT = 0.01` 與
+>   `TRADING_COMMISSION_FREE`（含範圍限制註解）。五個元件同源顯示：`/products` 產品卡（2×2）與條件表、
+>   `/trading` 帳戶比較表、`/accounts` 帳戶卡、`/products/all` 表格（新增兩欄、`min-w` 720→920px）。
+> - **外部連結同窗**：業主選擇**套用到全站**（不只開戶）→ 移除 22 處 `target="_blank"`＋
+>   `rel="noopener noreferrer"`。新增 CTA 不得再加回去（已寫進規則「Content governance」）。
+> - **法律頁＝保守版草稿，待業主／法務審核**。內文只由兩個來源推導：網站**實際**行為（未啟用任何
+>   分析追蹤、前台無會送出資料的表單、cookie 實測只有 `NEXT_LOCALE` 與後台兩個）＋ FACTS 公司資料。
+>   **刻意不寫**保存期限、具名資料處理者／主機商、管轄法律／仲裁條款、合規保證。詳見下方第三節。
+> - **⚠ 上線前必辦**：後台 `SiteSettings` 要填客服**電郵／電話**（法律頁的資料查閱窗口讀它，
+>   未設定即不渲染該列；值為 FACTS 已核可的 `info@hatchk.com`／`(852) 2322 2888`。本機 DB 已填入以
+>   驗證渲染）。
+> - **驗收**：`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／
+>   `i18n:check` 三語 **728 鍵**（662 → 666 → 728）／`migrate:check` 無漂移（未動 schema）／
+>   `rm -rf .next` 後 `build` 綠，`/privacy`、`/disclaimer` 三語皆 ● SSG。`npm start` 實測六頁 200、
+>   sitemap 含兩條新路徑；`/products`、`/products/all`、`/accounts`、`/trading` 與兩個法律頁
+>   以獨立 headless Chrome 截圖檢查桌機 1440／平板 834／手機 390。
+> - 細節見下方「🟢 第五十六輪」。
 
 > **✅ 第五十五輪（2026-10-11）完成：三語 SEO 描述修正 —— `/platforms` 不再宣稱「平台介面為示意」
 > （第五十一／五十二輪換成真實截圖後該句已不實），並把首頁／`/trading`／`/platforms` 的產品清單
@@ -491,6 +520,114 @@
 2. **第十八輪 `/trading` 暫緩 UI／驗收項**（多數需業主拍板）：淺色系是否推廣、帳戶分級真偽、
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
+
+## 🟢 第五十六輪（實作，2026-10-11）：新交易條件事實 ＋ 外部連結同窗 ＋ 法律頁上線
+
+### 業主決策（本輪開場四問，皆已拍板）
+
+| 問題 | 業主決定 |
+|---|---|
+| 「手續費全免」涵蓋範圍 | **僅交易佣金／手續費**；隔夜利息（swap）與出入金費用**另計**，文案限定「交易手續費」 |
+| 最低手數 0.01 適用範圍 | **三個品種都是 0.01**（金／銀／人民幣公斤條） |
+| 法律頁內容來源 | **我依網站實況草擬保守版三語全文**，業主／法務審核後定稿 |
+| 「不開新視窗」套用範圍 | **全站外部連結**（不只開戶） |
+
+### 一、最低手數 0.01 ＋ 交易手續費全免（commit `303f9bc`）
+
+**FACTS 變更**（「Account types & trading conditions」）：新增兩條已核可事實，並**取代**第四十四輪
+「無佣金欄位 → 不得聲稱佣金金額或『零佣金』」的限制（當時原因是業主設定表沒有佣金欄位，現在業主
+正式提供了）。**非零的佣金金額仍屬虛構**，不得出現。「仍待業主提供」**只剩「執行方式」**。
+
+**⚠ 範圍限制是本輪最容易踩的雷**：業主只確認交易手續費，所以三處說明文字都加了同一句細則
+（`products.conditions.note`／`accounts.tiers.note`／`productsAll.table.note`）：
+「交易手續費全免僅指交易時不收取手續費或佣金，不包含隔夜利息及入金／出金相關費用。」
+**不得**把它寫成「免任何費用」「零成本」，也不得暗示沒有隔夜利息。
+
+**程式**：`src/components/products/tradingConditions.ts` 新增 `MIN_LOT = 0.01` ＋
+`TRADING_COMMISSION_FREE`（後者的值不被 UI 使用，用途是把事實與其範圍限制留在程式註解裡，
+與 `MAX_LEVERAGE` 同層級）。事實照舊**留在程式、不進 CMS**。
+
+**五處同源顯示**：
+
+| 位置 | 做法 |
+|---|---|
+| `products/ProductList` | 產品卡的規格 `dl` 由 2 格變 **2×2**（點差／槓桿／最低手數／交易手續費） |
+| `products/TradingConditions` | 新增兩列**全寬列**（比照交易時段列的 `colSpan={5}`），`pendingLabel` 收斂為「其餘交易條件（執行方式等）」 |
+| `trading/AccountComparison` | 平台列後新增兩個 `Row`（四檔值相同），zebra 交錯維持 |
+| `accounts/AccountTiers` | 卡片規格清單新增兩列 |
+| `products/AllInstruments/AllInstrumentsTable` | 新增兩欄（7 欄），`min-w` 720→**920px**；CMS 自建列（無核可條件）仍渲染「將另行公佈」 |
+
+**i18n**：`products.conditions` 新增 `colMinLot`／`colFee`／`minLotValue`／`feeFree` → 662→**666 鍵**。
+**標籤刻意不另開 `accounts.tiers.specLabels.*` 鍵**，四個頁面共用 `products.conditions.col*`，
+所以文字永遠不可能不一致（符合 i18n「相同文字不開新鍵」）。
+
+### 二、外部連結全站同窗（commit `1202864`）
+
+業主只提了開戶按鈕，但選擇**套用全站**。移除 **22 處** `target="_blank"` ＋
+`rel="noopener noreferrer"`（21 個檔案）：開戶／模擬帳戶／客服／header mega 開戶橫幅／平台分頁 CTA／
+外部消息卡。
+
+- 兩個屬性**一起**移除：`noopener` 對同視窗導覽本來就沒有作用，而 `noreferrer` 會砍掉 referrer
+  （對自家 `h5.hatcmarket.com` 沒必要）。
+- 已寫進 `.cursor/rules/hatc-website.mdc`「Content governance」＋ `WEBSITE_STRUCTURE.md`「導覽與版面」，
+  **新增 CTA 不得再加回去**。
+
+### 三、`/privacy` ＋ `/disclaimer` 上線（本輪第三個 commit）
+
+原本兩頁是 `ComingSoon` 佔位（footer 早就連過去了）。現在共用
+**`src/components/legal/LegalPage.tsx`**：麵包屑 → navy/gold 標題帶（含「最後更新」）→
+`max-w-[820px]` 編號章節 → 聯絡卡 → 互連另一頁。內文＝i18n
+**`legal.{privacy,disclaimer}.{intro,sections[]}`**，`sections` 以 `t.raw` 讀（`heading` ＋ `body[]`）。
+
+**🚩 法律頁內容紅線（新慣例，寫進 rules 與元件檔頭）**——這兩頁的文字**只能**來自兩個來源：
+
+1. **網站實際行為**。本輪實地查證後的事實基礎：
+   - **未啟用任何分析／廣告追蹤**（`components/Analytics/Analytics.tsx` 是回傳 `null` 的佔位，
+     工具選型仍待定）；
+   - **前台沒有任何會送出資料的表單**（`academy/AcademyNewsletter` 是 `preventDefault` 的誠實佔位，
+     不發任何請求）；
+   - **cookie 實測只有三個**：前台 `NEXT_LOCALE`（next-intl 語言偏好）、後台 `payload-lng`
+     （proxy 注入的 admin 介面語言）與 Payload 登入 cookie。**政策裡逐一點名，沒有多寫。**
+2. **`HATC_FACTS.md`** 的公司資料。
+
+**刻意不寫（未經業主確認＝不得發明）**：資料保存期限、具名的資料處理者／主機商、
+管轄法律／仲裁條款、任何「符合法規」保證。**不得用法律範本把版面填滿。**
+
+**重用站上已核可文案**：風險提示與「不接受第三方付款」（`platforms.disclaimer` 原句）、
+學院中性教育聲明（`academy.disclaimer`）、本輪新增的交易手續費範圍細則。免責聲明另載明
+**供應商示範畫面**（第五十二輪放寬的 MT5 官方畫面）所示商品不代表 HATC 產品、HATC 的三個 CFD 品種，
+以及 MetaTrader 5 為 MetaQuotes Ltd. 商標。
+
+**聯絡卡**：電郵／電話讀 CMS `SiteSettings`（營運資料紅線），**未設定即不渲染該列**；
+公司名稱／註冊地址改用**在地化**的 `common.brandFull`／`footer.address`
+（⚠ 第一版誤用 `content/company.ts` 的繁中常數，英文頁出現中文地址，已修）。
+**⚠ 上線前必須在後台填入電郵／電話**（FACTS 已核可：`info@hatchk.com`／`(852) 2322 2888`）；
+本機 DB 已填入以驗證該兩列渲染。
+
+**SEO**：新增 `metadata.{privacy,disclaimer}`（三語，title／description＋canonical／hreflang），
+`sitemap.ts` 的 `staticPaths` 加入 `/privacy`、`/disclaimer`（三語共 24 條含 alternates）。
+i18n 三語 **728 鍵**。`legal.updatedAt` 是**手動維護**的日期字串（`2026-10-11`）——
+**改法律文字時必須同時更新。**
+
+### 四、驗證
+
+- `lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／`i18n:check` 三語
+  **728 鍵**／`migrate:check` 無漂移（**未動 schema**，故無新 migration）／`rm -rf .next` 後 `build` 綠，
+  `/privacy`、`/disclaimer` 三語皆 **● SSG**。
+- 靜態 HTML 直接比對：四個交易條件頁都含 `0.01 手`／`0.01 lots` 與「交易手續費」，
+  **全站已無舊的「最低手數、手續費、執行方式」待公佈字樣**。
+- `npm start`（port 3130）＋獨立 headless Chrome：三語 `/privacy`、`/disclaimer` 全 200；
+  `/products`（卡片＋條件表）、`/accounts`、`/trading`、`/products/all`、兩個法律頁與聯絡卡
+  在 1440／834／390 逐一看過。`/products/all` 7 欄在 1440 不需捲動、手機沿用既有橫向捲動＋提示。
+
+### 五、下一棒候選（本輪未動）
+
+- **執行方式**＝FACTS 唯一剩下的待提供交易條件。
+- 是否把「交易手續費全免」做成 `/accounts` 賣點卡（`account-benefits` 是 CMS 集合 → 要連
+  `scripts/seed-accounts.ts` 與後台資料一起改）。本輪刻意只動事實表格，沒碰行銷區塊。
+- 兩個法律頁**需業主／法務逐條審核**，並決定是否補管轄法律、保存期限、具名資料處理者等條款。
+- 第五十五輪留下的行銷文案清單（「只講金銀、漏公斤條」7 個鍵）**仍未改**；
+  `trading.services.items.mt5.desc` 的「支援快速下單」速度宣稱也還在。
 
 ## 🟢 第五十五輪（實作，2026-10-11）：三語 SEO 描述修正 —— 退役「平台視覺為示意」＋補齊三個 CFD 品種
 

@@ -748,9 +748,28 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  `rel="noopener noreferrer"`（開戶／模擬／客服／header mega 橫幅／平台 CTA／外部消息卡）。
  **新增 CTA 不得再加回去**（另記於「Content governance」）。`noopener` 對同窗導覽本來就無作用，
  `noreferrer` 會砍掉 referrer，故兩個屬性一起移除。
+ - **隱私權政策 `/privacy` ＋ 免責聲明 `/disclaimer` 上線**（原本是 `ComingSoon` 佔位，footer 早已連過去）。
+ 業主選「我先依網站實況草擬保守版三語全文，業主／法務審核後定稿」。共用元件
+ **`src/components/legal/LegalPage.tsx`**（麵包屑＋navy/gold 標題帶＋編號章節＋聯絡卡＋互連），
+ 內文＝i18n **`legal.{privacy,disclaimer}.sections[]`**（`t.raw` 讀，`heading`＋`body[]`）。
+ **🚩 法律頁內容紅線（新增）**：這兩頁的文字**只能**來自兩個來源——① 網站**實際**行為；
+ ② `HATC_FACTS.md`。本輪據此寫出的事實基礎：**未啟用任何分析／廣告追蹤**
+ （`components/Analytics` 是回傳 null 的佔位、工具未定）、**前台沒有任何會送出資料的表單**
+ （學院電子報是 `preventDefault` 佔位）、cookie 實測只有前台 `NEXT_LOCALE` 與後台
+ `payload-lng`＋登入 cookie。**刻意不寫**（未經業主確認＝不得發明）：資料保存期限、具名的
+ 資料處理者／主機商、管轄法律／仲裁條款、任何「符合法規」保證。**不得用法律範本填版面。**
+ 重用站上已核可文案：風險提示（`platforms.disclaimer`）、不接受第三方付款（同上）、
+ 學院中性教育聲明（`academy.disclaimer`）、交易手續費範圍細則（本輪新增）。
+ - 聯絡卡的**電郵／電話讀 CMS `SiteSettings`**（營運資料紅線，未設定即不渲染該列）→
+ **上線前必須在後台填入**；公司名稱／註冊地址用在地化的 `common.brandFull`／`footer.address`
+ （**不要**用 `content/company.ts` 的繁中常數，英文頁會出現中文地址）。
+ - `metadata.{privacy,disclaimer}`（三語，含 canonical／hreflang）＋ `sitemap.ts` 已加兩條路徑。
+ i18n 三語 **728 鍵**。
  - **待業主（本輪新增）**：(a) **執行方式**＝FACTS 唯一剩下的待提供交易條件；(b) 是否把「交易手續費
  全免」做成 `/accounts` 賣點卡（`account-benefits` 為 CMS 集合，改動要連種子腳本與後台資料一起處理）
- ——本輪刻意只做事實表格，沒碰行銷區塊。
+ ——本輪刻意只做事實表格，沒碰行銷區塊；(c) **兩個法律頁需業主／法務逐條審核**，並決定是否補上
+ 管轄法律、資料保存期限、具名資料處理者等條款；(d) 後台填入客服電郵／電話（法律頁的資料查閱
+ 窗口靠它）；(e) `legal.updatedAt` 是手動維護的日期字串，**改法律文字時必須同時更新**。
 
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾

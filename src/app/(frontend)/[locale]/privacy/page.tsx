@@ -1,7 +1,30 @@
+import type {Metadata} from 'next';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
-import ComingSoon from '@/components/ComingSoon/ComingSoon';
+import LegalPage from '@/components/legal/LegalPage';
+import {localeAlternates, siteUrl} from '@/lib/seo';
 
-// Footer legal link stub (隱私權政策). Awaiting owner-supplied legal copy.
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{locale: string}>;
+}): Promise<Metadata> {
+  const {locale} = await params;
+  const t = await getTranslations({locale, namespace: 'metadata.privacy'});
+
+  return {
+    title: t('title'),
+    description: t('description'),
+    alternates: {
+      canonical: `${siteUrl}/${locale}/privacy`,
+      languages: localeAlternates('/privacy')
+    }
+  };
+}
+
+/**
+ * Privacy policy. Copy lives in `legal.privacy` and is a conservative draft —
+ * see the governance note in components/legal/LegalPage.tsx before editing.
+ */
 export default async function PrivacyPage({
   params
 }: {
@@ -9,6 +32,6 @@ export default async function PrivacyPage({
 }) {
   const {locale} = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('home.footerV2');
-  return <ComingSoon title={t('privacy')} />;
+
+  return <LegalPage doc="privacy" />;
 }

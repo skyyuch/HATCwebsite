@@ -10,7 +10,10 @@
   入金與出金 `/funding`、**交易平台 `/platforms`**（Figma `89:4`；CMS `trading-platforms`
   ＋ faqs `platforms` 分類）、最新消息 `/news`（CMS `home-activities`）、
   黃金學院 `/academy`（Figma `98:4` 改版：hero＋分類篩選/排序/分頁＋電子報）
-  ＋`/academy/[slug]`（CMS `academy-articles`，本機現有 49 篇原創長文；封面為佔位圖）
+  ＋`/academy/[slug]`（CMS `academy-articles`，本機現有 49 篇原創長文；封面為佔位圖）、
+  **隱私權政策 `/privacy` 與免責聲明 `/disclaimer`**（第五十六輪；共用
+  `src/components/legal/LegalPage.tsx`，內文在 i18n `legal.{privacy,disclaimer}`。
+  ⚠ 文字為**依網站實況撰寫的保守版草稿，待業主／法務審核**——治理註記寫在該元件檔頭）
 - CMS：Phase 0–4 完成（infra／FAQ／新聞活動／學堂／行銷 globals＋示意表）
 - 後續階段（待規劃）：交易平台細節、Credentials 獨立頁、Contact 獨立頁（如需）
 
@@ -41,6 +44,14 @@
   ＋排序＋分頁＋電子報誠實佔位〕＋`/[locale]/academy/[slug]` 詳情；Payload `academy-articles`
   本機現有 49 篇原創長文；無 DB／空 CMS → i18n 種子 a1–a3；篩選分類＝固定 6 類
   `academy.categories`，可用 `?category=<slug>` 深連，見下方「導覽與版面」）
+- 隱私權政策 ✅（`/[locale]/privacy`）／免責聲明 ✅（`/[locale]/disclaimer`）
+  - 兩頁共用 `components/legal/LegalPage.tsx`（麵包屑＋navy/gold 標題帶＋編號章節＋聯絡卡）。
+  - 內文來源：**只有兩樣**——① 網站**實際**行為（未啟用任何分析追蹤、前台無會送出資料的表單、
+    cookie 僅 `NEXT_LOCALE` 與後台 `payload-lng`／登入 cookie）；② `HATC_FACTS.md` 的公司資料。
+    **刻意不寫**保存期限、具名的資料處理者／主機商、管轄法律／仲裁條款與任何合規保證。
+  - 聯絡卡的電郵／電話讀 CMS `SiteSettings`（營運資料紅線），**未設定即不顯示該列** →
+    **上線前必須在後台填入**（值為 FACTS 已核可的 `info@hatchk.com`／`(852) 2322 2888`）。
+    公司名稱與註冊地址用在地化的 `common.brandFull`／`footer.address`，三語各自正確。
 - 資質與證書 Credentials 【後續】
   - 真實證書展示（About 已有牌照牆）
 - 聯絡我們 Contact 【後續】
