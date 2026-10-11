@@ -38,6 +38,26 @@
 >   `pkill -f "next start"; pkill -f "next-server"`**，失敗後要再 `rm -rf .next` 才能恢復。
 >   另外 `npm start` 與 `chrome-headless-shell` 都**必須以背景 Shell 任務執行**（用 `&` 起會被收掉，
 >   症狀是 curl 回 `000`、截圖變成錯誤頁）。
+> - 細節見下方「🟢 第五十八輪」。
+>
+> **下一輪候選（皆非阻塞，請先問業主要做哪一項，一次做一件）**
+> - **(a) 補齊 About 區段錨點，再修 Footer「關於我們」欄**（第五十七輪業主暫不處理的保留項）。
+>   該欄 l1–l3 全指 `/about` 且 **About 改版後完全沒有任何區段 id**；標籤「安全與監管 /
+>   Security & supervision」容易被讀成 HATC 自身受監管。要做必須先在 `src/components/about/*`
+>   補 id ＋ `scroll-mt`，並重寫該標籤。
+> - **(b) EA／自動化交易支援轉為核可事實**（業主 2026-10-11 表示 MT5 伺服器確實允許 EA、會正式確認）。
+>   確認後：寫入 `HATC_FACTS.md`「Trading platforms」、把 `platforms.faq.items[3]` 與 **CMS `faqs`
+>   id=12** 的措辭對齊，並檢查是否要在 `/platforms` 賣點補一條。**未正式確認前不得在別處新增 EA 文案。**
+> - **(c) 首頁 MT5 展示區換真實截圖**：`home/MT5Showcase` 仍用 `public/figma/raw/raw_3.png`
+>   ＝Figma AI 算圖的假 MT5 畫面，與第五十一／五十二輪確立的「站上不放假平台截圖」紅線衝突。
+>   可改走 `resolvePlatformVisual()`／`PlatformVisualPanel`，或用 `public/platforms/mt5-desktop.png`
+>   （業主已放寬的供應商示範畫面，但**顯示它的版面必須印 `platforms.types.vendorNote`**）。
+> - **(d) 正式站上線前的營運設定盤點**：本機 DB 已填核可的客服電郵／電話（法律頁的資料查閱窗口讀它）
+>   與開戶連結；**正式站是空庫，必須重新填**。模擬帳戶連結與本輪新增的會員登入連結**業主尚未提供**，
+>   未填即不渲染（這是設計行為，不是 bug）。
+> - **(e) 兩個法律頁（`/privacy`、`/disclaimer`）仍待業主／法務逐條審核**，並決定是否補管轄法律、
+>   資料保存期限、具名資料處理者。**改法律文字必須同時更新 `legal.updatedAt`。**
+> - **(f) FACTS 唯一剩下的待提供交易條件＝執行方式**（本輪起官網不再提及；業主提供後才新增正式內容）。
 
 > **✅ 第五十七輪（2026-10-11）完成：全站行銷文案補齊第三個 CFD 品種「人民幣公斤條」，Footer
 > 交易服務欄改由 `CFD_PRODUCTS` 生成；順手拆掉兩個會讓文案修正「看不見」的陷阱。**
@@ -584,6 +604,69 @@
 2. **第十八輪 `/trading` 暫緩 UI／驗收項**（多數需業主拍板）：淺色系是否推廣、帳戶分級真偽、
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
+
+## 🟢 第五十八輪（實作，2026-10-11）：移除「執行方式待公佈」佔位 ＋ 登入按鈕改 CMS 設定
+
+業主指示：「去除其餘交易條件（執行方式等）。另外，先隱藏登入按鈕」。兩個方向級問題先問齊再動手。
+
+### 業主決策
+
+| 問題 | 業主選擇 |
+| --- | --- |
+| 「執行方式將另行公佈」抽到多乾淨？ | **四處全部移除，含 `/disclaimer` 那句**（我同步確認 `legal.updatedAt` 已是改動日） |
+| 登入按鈕怎麼「先隱藏」？ | **改成 CMS 可設定（`SiteSettings` 新欄位），未填即不渲染** —— 不是直接刪按鈕 |
+
+### 1) 移除「待公佈」佔位
+
+四處：`products/TradingConditions` 的全寬列、`trading/AccountComparison` 的 `Row`、
+`accounts.tiers.note` 的「執行方式將另行公佈。」、`legal.disclaimer.sections[3].body[2]`（三語）。
+刪鍵 `products.conditions.pendingLabel`；**`pending`（將另行公佈）保留**——`/products/all` 用它填
+「CMS 自建但無核可條件」的格子（`lib/instruments.ts`）。順手刪掉 `AccountComparison` 的 `Row muted`
+prop（唯一使用者就是那一列，已成死碼）。
+
+**🚩 紅線解讀**：移除「將另行公佈」**不代表執行方式變成事實**。FACTS 仍列它為「仍待業主提供
+（不得虛構）」，只是不對外標示為待公佈；已在 FACTS 加註本輪決定，**不要再加回佔位列**。
+
+### 2) 順手修掉一句與 FACTS 衝突的舊文案
+
+`/trading` FAQ「HATC 的交易時間是？」原答「華安泰昌的**實際交易時段將另行公佈**」，但交易時段
+早在第四十七輪就是已核可事實 → 與 `/products`、`/products/all` 列出的夏令／冬令時段直接矛盾。
+已三語改寫為核可時段（香港時間 GMT+8；夏令 週一 06:00–週六 04:45、冬令 週一 07:00–週六 05:45，
+週二至週五每日休市一小時），**依紅線不標轉換日期**。`faqs(category='trading')` DB 無列 → 走 i18n
+fallback，改 messages 即生效。
+
+**慣例**：日後任何條件由「待公佈」轉成「已核可」時，必須全站搜一次舊的「將另行公佈／to be
+announced」句子，別讓同一條件在兩頁講相反的話。
+
+### 3) 登入 ＝ 第四個 CMS 營運連結
+
+新欄位 **`SiteSettings.memberLoginUrl`**（網站營運設定 → 帳戶入口 → 會員登入連結；
+＋`NEXT_PUBLIC_MEMBER_LOGIN_URL` fallback）＋ 解析器 **`memberLoginHref()`**。`Header.tsx` 桌機
+連結與 `HeaderMobileMenu.tsx` 抽屜連結**未設定即不渲染**（`loginLabel`／`loginHref` 改
+`string | null`），比照第四十四輪的 `demoAccountHref()`。原先硬指 `/account`「即將推出」＝對真
+客戶是死路。`/account` 佔位頁**保留但已無連結指向、也不在 sitemap**（檔頭已註明）。
+
+⚠ **schema 變更** → migration `20261011_122325_add_member_login_url`（`.ts`＋`.json`＋`index.ts`
+已一起 commit）。本機 dev 另手動 `ALTER TABLE site_settings ADD COLUMN member_login_url varchar`
+——**`build` 會讀這個 global，欄位不存在會讓整個 build 掛掉，不是安靜走 fallback。**
+
+### 驗收
+
+`lint` 0 error（僅 `seed-academy.ts` 1 既有 warning）／`tsc --noEmit`／`i18n:check` 三語 **716 鍵**
+（718 − `pendingLabel` − 免責那句）／`migrate:check` 無漂移／`rm -rf .next` 冷建綠且全頁 ● SSG。
+實測 **CMS 填值→登入出現（桌機＋手機抽屜、zh-Hant／en）／清空→消失**；`/products`、`/trading`、
+`/accounts`、`/products/all`、`/disclaimer` 渲染後 markup 已無「其餘交易條件」，殘留的「將另行公佈」
+只有 `/accounts` FAQ 講模擬帳戶那句（仍屬實）。殘留的「執行方式」只在**學院文章**（中性 MT5 教學
+解釋規格欄位）＝刻意保留。
+
+### ⚠ 本輪踩到的環境雷
+
+`lsof -ti:3000 | xargs kill` **只殺監聽程序，`npm start` 外層還活著**；緊接著
+`rm -rf .next && npm run build` 會與它搶 `.next` → 冷建失敗並噴看似無關的
+`next/font/google queries have exactly one entry`（Google Fonts 其實連得到，**不要去查網路**）。
+**建置前請 `pkill -f "next start"; pkill -f "next-server"`**，失敗後要再 `rm -rf .next` 才恢復。
+`npm start` 與 `chrome-headless-shell` 都必須以**背景 Shell 任務**執行（用 `&` 會被收掉，症狀是
+curl 回 `000`、截圖變成錯誤頁）。
 
 ## 🟢 第五十七輪（實作，2026-10-11）：行銷文案補齊第三個 CFD 品種 ＋ Footer 交易服務欄生成式
 
