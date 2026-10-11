@@ -1,7 +1,11 @@
 import 'server-only';
 
 import {createDecipheriv, createHash} from 'node:crypto';
-import {MARKET_SYMBOLS, type LiveQuote} from './marketQuoteTypes';
+import {
+  MARKET_SYMBOLS,
+  type LiveQuote,
+  type MarketBar
+} from './marketQuoteTypes';
 
 /**
  * Live quote reader for the MT5 quote gateway (mt5-tcp-quote-gateway-node).
@@ -20,11 +24,20 @@ import {MARKET_SYMBOLS, type LiveQuote} from './marketQuoteTypes';
  */
 
 export {MARKET_SYMBOLS};
-export type {LiveQuote};
+export type {LiveQuote, MarketBar};
 
 const CONTEXT_RENEW_MARGIN_MS = 60_000;
 const QUOTE_CACHE_TTL_MS = 2_000;
+const BAR_CACHE_TTL_MS = 60_000;
 const REQUEST_TIMEOUT_MS = 8_000;
+
+/** Daily bars kept for the homepage chart. */
+const BAR_COUNT = 30;
+/**
+ * The gateway's `limit` bounds the requested time *window*, not the bar count,
+ * so ask for enough calendar days to cover BAR_COUNT trading sessions.
+ */
+const BAR_WINDOW_LIMIT = 60;
 
 type GatewayConfig = {baseUrl: string; secret: string};
 
@@ -253,5 +266,94 @@ export async function getLiveQuotes(): Promise<LiveQuote[] | null> {
     return null;
   } finally {
     quoteInflight = null;
+  }
+}
+
+function toBar(entry: unknown): MarketBar | null {
+  if (typeof entry !== 'object' || entry === null) return null;
+  const row = entry as Record<string, unknown>;
+  const time = toNumber(row.time);
+  const open = toNumber(row.open);
+  const high = toNumber(row.high);
+  const low = toNumber(row.low);
+  const close = toNumber(row.close);
+
+  if (time === null || open === null || high === null) return null;
+  if (low === null || close === null) return null;
+  if (open <= 0 || high <= 0 || low <= 0 || close <= 0) return null;
+
+  return {time, open, high, low, close};
+}
+
+const barCache = new Map<string, {ts: number; bars: MarketBar[]}>();
+const barInflight = new Map<string, Promise<MarketBar[]>>();
+
+async function loadBars(
+  config: GatewayConfig,
+  symbol: string
+): Promise<MarketBar[]> {
+  const context = await resolveGuestContext(config);
+  if (!context.allowedSymbols.includes(symbol)) return [];
+
+  const query = new URLSearchParams({
+    symbol,
+    resolution: '1D',
+    priceType: 'bid',
+    limit: String(BAR_WINDOW_LIMIT),
+    contextToken: context.token
+  });
+  const body = await gatewayFetch(config, `/v1/market/bars?${query}`);
+  const rows = (body as {bars?: unknown}).bars;
+  if (!Array.isArray(rows)) return [];
+
+  const bars: MarketBar[] = [];
+  for (const row of rows) {
+    const bar = toBar(row);
+    if (bar) bars.push(bar);
+  }
+  return bars.slice(-BAR_COUNT);
+}
+
+/**
+ * Recent daily OHLC bars for one homepage symbol, or null when no real series
+ * is available. Callers must then draw nothing — a sample candlestick series
+ * next to real prices would misrepresent the market.
+ *
+ * Only the homepage symbols are served: the guest whitelist also contains FX
+ * and index symbols, which are not HATC products and must never surface here.
+ */
+export async function getDailyBars(
+  symbol: string
+): Promise<MarketBar[] | null> {
+  const config = gatewayConfig();
+  if (!config) return null;
+  if (!MARKET_SYMBOLS.some((entry) => entry.symbol === symbol)) return null;
+
+  const cached = barCache.get(symbol);
+  if (cached && Date.now() - cached.ts < BAR_CACHE_TTL_MS) {
+    return cached.bars.length > 0 ? cached.bars : null;
+  }
+  const inflight = barInflight.get(symbol);
+  if (inflight) {
+    const bars = await inflight;
+    return bars.length > 0 ? bars : null;
+  }
+
+  const pending = loadBars(config, symbol);
+  barInflight.set(symbol, pending);
+  try {
+    const bars = await pending;
+    barCache.set(symbol, {ts: Date.now(), bars});
+    return bars.length > 0 ? bars : null;
+  } catch (error) {
+    // A chart outage must never break the page; log once and draw nothing.
+    console.warn(
+      `[marketQuotes] daily bars unavailable for ${symbol}:`,
+      error instanceof Error ? error.message : String(error)
+    );
+    barCache.set(symbol, {ts: Date.now(), bars: []});
+    return null;
+  } finally {
+    barInflight.delete(symbol);
   }
 }

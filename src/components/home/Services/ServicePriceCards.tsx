@@ -1,53 +1,35 @@
-'use client';
-
 import {
   formatChangePercent,
   formatPrice,
-  MARKET_SYMBOLS,
   type LiveQuote
 } from '@/lib/marketQuoteTypes';
-import {useLiveQuote} from '@/components/market/LiveQuotesProvider';
 import {SAMPLE_PRICE_CARDS} from '../sampleMarketData';
-
-const [GOLD, SILVER] = MARKET_SYMBOLS;
 
 /**
  * Loco gold/silver price cards. Real gateway quotes when the feed is up, the
- * labelled sample figures otherwise.
+ * labelled sample figures otherwise. The section-level label
+ * (ServiceMarketPanel) states which of the two is on screen.
  */
 export default function ServicePriceCards({
   names,
-  sampleLabel,
-  liveLabel
+  quotes
 }: {
   names: {gold: string; silver: string};
-  sampleLabel: string;
-  liveLabel: string;
+  quotes: {gold: LiveQuote | null; silver: LiveQuote | null};
 }) {
-  // Fixed symbol set, so these hooks always run in the same order.
-  const goldQuote = useLiveQuote(GOLD.symbol);
-  const silverQuote = useLiveQuote(SILVER.symbol);
-  const quoteByKey = {gold: goldQuote, silver: silverQuote};
-  const live = Boolean(goldQuote || silverQuote);
-
   return (
-    <>
-      <div className="grid gap-5 sm:grid-cols-2">
-        {SAMPLE_PRICE_CARDS.map((card) => (
-          <PriceCard
-            key={card.symbol}
-            symbol={card.symbol}
-            name={names[card.nameKey]}
-            quote={quoteByKey[card.nameKey]}
-            sampleValue={card.value}
-            sampleChange={card.change}
-          />
-        ))}
-      </div>
-      <p className="text-[11px] text-[var(--fig-text-muted)]">
-        {live ? liveLabel : sampleLabel}
-      </p>
-    </>
+    <div className="grid gap-5 sm:grid-cols-2">
+      {SAMPLE_PRICE_CARDS.map((card) => (
+        <PriceCard
+          key={card.symbol}
+          symbol={card.symbol}
+          name={names[card.nameKey]}
+          quote={quotes[card.nameKey]}
+          sampleValue={card.value}
+          sampleChange={card.change}
+        />
+      ))}
+    </div>
   );
 }
 

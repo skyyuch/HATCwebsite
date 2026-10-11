@@ -28,6 +28,19 @@ export type LiveQuote = {
   ts: number;
 };
 
+/**
+ * One OHLC bar from the gateway's chart feed. Daily buckets start at Hong Kong
+ * midnight, so bar dates must be formatted in `Asia/Hong_Kong`.
+ */
+export type MarketBar = {
+  /** Bucket start, epoch ms. */
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+};
+
 /** Fixed-decimal price string; en-US grouping keeps the ticker font aligned. */
 export function formatPrice(value: number, digits: number): string {
   return value.toLocaleString('en-US', {

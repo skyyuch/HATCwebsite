@@ -1,11 +1,31 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-11（第四十八輪：migration 基線上線＋漂移防呆；公斤條單位／夏令冬令切換日期結案）
+> 最後更新：2026-10-11（第四十九輪：首頁服務區 K 線接上真實日 K，示意蠟燭只剩降級狀態）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
 ## ▶ 下一步（下一位 agent）
 
+> **✅ 第四十九輪（2026-10-11）完成：首頁服務區（gold-services）的 K 線由「Figma 示意蠟燭」
+> 改為**自家 MT5 行情閘道的真實日 K**；示意蠟燭降級為「完全沒有行情時」才出現。**
+>
+> 業主本輪選定此項，並決定**閘道維持 UAT**（生產遊客交易組仍未配產品，那件事仍在業主側）。
+> - **實測更正第四十六輪的紀錄**：`/v1/market/bars` 的 `1D`／`60`／`240` **全部可用**（當時判定
+>   「回空」是 resolution 寫法問題）。`limit` 是**時間窗不是根數**（`limit=60` → 52 根日 K）；
+>   回應**沒有** `result` 包裝；日 K 的 `time` 落在**香港午夜**。
+> - **三狀態（紅線落地）**：有日 K →「日 K 線（MT5 行情）」＋綠點；完全沒行情 → 原示意蠟燭＋
+>   「示意數據 (設計佔位)」；**有即時報價但日 K 取不到 → 一根都不畫**，只留格線＋
+>   「圖表資料暫時無法取得」。三種狀態都已用 `npm start` 實機截圖驗過（桌機／平板／手機／英文）。
+> - **順手修掉一個既有的誤導標籤**：K 線框原本**永遠**顯示綠點＋「實時交易中」，卻同時掛「示意數據」
+>   → 鍵 `home.goldServices.live` 已刪（三語），改由上述三狀態標籤表達；報價卡真實時，區塊註記
+>   也補上免責（`liveLabel · sourceNote`）。
+> - **代理鎖品種**：閘道遊客白名單有 29 個代號（含 26 個外匯/指數），`/api/market/bars` 只接受
+>   金／銀／公斤條，其餘回 `{ok:false}`。
+> - **🚩 本輪發現、尚未處理（需業主定）**：`home.goldServices.features` 的
+>   **「24小時雙向不間斷交易」**（與核可交易時段的每日休市牴觸）與**「極速訂單執行通道」**
+>   （執行方式在 FACTS 明列「仍待業主提供」，且平台能力紅線禁止速度宣稱）。未擅自改文案。
+> - 細節見下方「🟢 第四十九輪」。
+>
 > **✅ 第四十八輪（2026-10-11）完成：migration 基線上線 — 累積三輪的「正式站 migration」債一次清掉，
 > 並加上防止再犯的漂移閘門。另結案業主兩項事實確認。**
 >
@@ -317,6 +337,100 @@
 2. **第十八輪 `/trading` 暫緩 UI／驗收項**（多數需業主拍板）：淺色系是否推廣、帳戶分級真偽、
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
+
+## 🟢 第四十九輪（實作，2026-10-11）：首頁 K 線接真實日 K
+
+### 業主決策
+
+- 本輪做「首頁 Services 的 K 線接真實日 K」；其餘候選（`/accounts` 平台區換真實截圖、
+  `/trading` 合作夥伴佔位與金色統一、push 落後 commit）**未選**。
+- 行情閘道**維持 UAT**（`QUOTE_GATEWAY_URL`＝UAT）；生產遊客交易組配好產品後再切，官網不需改碼。
+
+### 閘道實測（更正第四十六輪的紀錄）
+
+- **`/v1/market/bars` 三種 resolution 都正常**：`1D`／`60`／`240` 皆回 200 且有資料
+  （第四十六輪判定的「回空」是 resolution 寫法問題）。合法值 `1/5/15/30/60/240/1D/1W`，
+  必帶 `priceType=bid` ＋ `contextToken`。
+- 回應＝`{ts, env, symbol, resolution, priceType, bucketMs, bars[], currentBar,
+  previousCompletedBar, meta}`，**沒有 `result` 包裝**（與 `symbol-detail` 相同；只有
+  `context/resolve` 包在 `result` 裡）。bar 欄位＝`{time,open,high,low,close,volume,
+  tickVolume,spread}`。
+- **`limit` 界定的是時間窗、不是根數**：`limit=20`→18 根、`30`→26、`45`→39、`60`→**52**、
+  `200`→171（UAT 日 K 最多 218 根，自 2026-01-28 起）。本實作用 `limit=60` 再取最後 30 根。
+- **日 K 的 `time` 落在香港午夜**（`meta.chartTimeOffsetHours:-3` 正規化後），所以日期標籤
+  用 `timeZone:'Asia/Hong_Kong'` 格式化才不會差一天。
+- `meta.currentBarCompleted` / `currentBar` 可判斷當日 bar 是否還在跑（週末為 `null`＋`true`）。
+- **⚠ 冷啟動降級**：第一次請求可能落到**tick 推導**來源，只回 1–2 根且 `open=high=low=close`
+  （數值與 `official_chart_get_bid` 不同）。→ client 以 **`MIN_BARS = 5`** 擋掉。
+  **不要**改用 `meta.source` 字串判斷（耦合閘道內部實作）。
+- **🚩 遊客白名單有 29 個代號**，其中 26 個是外匯／指數（EURUSD、HK50、TECH100…）。
+  因此代理端**必須**鎖定品種，否則官網會變成外匯/指數行情代理（違反「不得列外匯/指數為
+  HATC 產品」）。`getDailyBars` 只接受 `MARKET_SYMBOLS`。
+
+### 實作
+
+- **`src/lib/marketQuotes.ts`**（server-only）新增 **`getDailyBars(symbol)`**：複用既有
+  `resolveGuestContext`／`gatewayFetch`（含 AES 信封解封），`resolution=1D`＋`priceType=bid`＋
+  `limit=60`，取最後 **`BAR_COUNT = 30`** 根；**60 秒**快取、per-symbol inflight 去重、
+  非 `MARKET_SYMBOLS` 直接 null、失敗 `console.warn` → null。
+- **`src/lib/marketQuoteTypes.ts`**：新增 `MarketBar` 型別（**刻意不含 server-only**，供 client 共用）。
+- **`src/app/api/market/bars/route.ts`**：`force-dynamic`，`{ok:false}` 是正常答案
+  （無閘道／取不到／非首頁品種都走這條）。
+- **`src/components/market/useDailyBars.ts`**：client hook，**60 秒**輪詢（日 K 只有當根會動，
+  不需跟著 5 秒報價走）、`document.hidden` 暫停、`visibilitychange` 立即補抓、`MIN_BARS=5`。
+- **`src/components/home/Services/ServiceChart.tsx`**：純渲染＋幾何計算
+  （`buildCandles` 把 OHLC 映到 300×160 viewBox，`barAxisLabels` 產 6 個日期刻度；
+  平盤序列走中線、doji 保留 1px 實體）。
+- **`src/components/home/Services/ServiceMarketPanel.tsx`**（client）：K 線＋報價卡＋**單一**
+  來源標籤（兩個元件吃同一個閘道，標籤只該出現一次）。
+- **`ServicePriceCards.tsx`** 退為純展示元件（quotes 由 panel 傳入，hooks 上移）；
+  `Services.tsx` 右欄由 70 行 inline SVG 變成一個 `<ServiceMarketPanel>`。
+
+### 標籤與治理
+
+- **三狀態**：① 有日 K →「日 K 線（MT5 行情）」＋綠點；② 完全沒行情 → Figma 示意蠟燭＋
+  「示意數據 (設計佔位)」（無綠點）；③ **有即時報價但日 K 取不到 → 不畫任何蠟燭**，
+  只留格線＋「圖表資料暫時無法取得」。
+  ③ 是紅線「真價格旁不放假走勢／假 K 線」的直接落地（與 hero sparkline 的 `MIN_SPARKLINE_POINTS`
+  同一原則）。
+- **刪掉一個既有誤導**：K 線框原本**永遠**顯示綠點＋「實時交易中」，同時又標「示意數據」
+  → `home.goldServices.live` 三語**刪除**；新增 `chartDaily`／`chartUnavailable`（三語 **666 鍵**）。
+- 報價卡真實時，區塊底部註記由單純「即時報價」改為 **`liveLabel · sourceNote`**（補上免責，
+  與 hero 卡、`/trading` 條件表一致）。
+- **真實報價／K 線仍不是已核可事實**：未寫入 `HATC_FACTS.md`、與交易條件無關
+  （核可點差／槓桿仍只在 `products/tradingConditions.ts`）。
+- `docs/FIGMA_HOMEPAGE_SPEC.md` 已加注記：該檔的「示意 K 線」規格現在只適用於降級狀態。
+
+### 驗證
+
+- `lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／
+  `i18n:check` 三語 **666 鍵**齊／`migrate:check` 無漂移（本輪未動 schema）／
+  `build` 綠且頁面維持 **● SSG**、`/api/market/{quotes,bars}` 為 **ƒ**。
+- **三狀態都用 `npm start` 實機截圖驗過**（桌機 1440／平板 834／手機 390／英文版）：
+  真實日 K（30 根、日期軸 9/7–10/10）、無閘道的示意蠟燭（10:00–15:00 軸）、
+  有報價無 K 線的空圖＋說明（版面高度不塌）。
+- API 閘門實測：`XAUUSD`→30 根、`XAGUSD`→30 根、`EURUSD`／`HK50`／空字串→`{ok:false}`。
+
+### ⚠ 驗證環境踩到的坑（下一棒照抄）
+
+- `chrome-headless-shell` 必須加 **`--no-sandbox`** 與 **`--run-all-compositor-stages-before-draw`**，
+  否則 `--dump-dom` 只回 `<html><head></head><body></body></html>`、截圖一片白
+  （`--window-size` 仍要排最前面）。`--virtual-time-budget` 無法取代等待，但加著無害。
+- `nohup npm start &` 起的 server 會在該次 Shell 呼叫結束後被收掉 → 要用**背景 Shell 任務**跑。
+- `pkill -f next-server` 會**連 dev server 一起殺**（本輪已重啟）。
+- 驗 client 行為一律 `npm run build && npm start`（`next dev` ＋ 無頭瀏覽器會 ERR_ABORTED）。
+
+### 待業主 / 下一棒
+
+- **🚩 文案紅線衝突（本輪未改，等業主定）**：`home.goldServices.features`
+  - `f2`「24小時雙向不間斷交易」— 與核可交易時段（週二至週五每日休市 1 小時、週末收市）牴觸。
+  - `f3`「極速訂單執行通道」— 執行方式在 FACTS 明列「仍待業主提供」，且平台能力紅線禁止速度宣稱。
+  - 另 `body`／`subheading` 仍只提倫敦金/銀，未含**人民幣公斤條**（已是第三個 CFD 產品）。
+- 生產遊客交易組配好產品後：把 `QUOTE_GATEWAY_URL`／`QUOTE_HTTP_CRYPT_SECRET` 換成 **prd**
+  （密鑰只能在主機環境變數設，不得進本倉）。官網不需改碼。
+- 其他未選的候選仍在：`/accounts` 平台區真實截圖、`/trading` 合作夥伴佔位與 `--trd-gold` 統一、
+  交易端繁中/英文截圖、`/products/all` 的最低手數／手續費／執行方式。
+- `origin/main` 仍落後（`28ec3bb`、`9eb4201`，加上本輪的 commit）。
 
 ## 🟢 第四十八輪（實作，2026-10-11）：migration 基線 ＋ 漂移防呆
 

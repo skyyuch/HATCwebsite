@@ -478,6 +478,45 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  1 公斤）＝已核可事實，非推定；② **夏令／冬令切換日期不對外公布** → 官網只列兩組時段，
  **不得標示轉換日期、不得比照美國夏令時間自行推導**。前台與 `tradingConditions.ts` 本已符合，無需改碼。
 
+- **2026-10-11 (第四十九輪): 首頁服務區 K 線接上真實日 K（示意蠟燭只剩降級狀態）。**
+ 業主選定本輪做此項、閘道維持 **UAT**（生產遊客組仍未配產品）。沿用第四十三輪的 **server BFF**：
+ 瀏覽器一律**不得**直連閘道（CORS 白名單＋AES 信封密鑰＋contextToken 都是 server-only）。
+ - **實測更正第四十六輪的紀錄**：`/v1/market/bars` **`1D`／`60`／`240` 全部可用**（當時「回空」是
+ resolution 寫法問題）。回應結構＝`{bars:[{time,open,high,low,close,volume,tickVolume,spread}],
+ currentBar, previousCompletedBar, meta}`，**沒有** `result` 包裝（與 `symbol-detail` 一致，只有
+ `context/resolve` 有）。`limit` 界定的是**時間窗、不是根數**（`limit=60` → 52 根日 K）。
+ 日 K 的 `time` 落在**香港午夜**（＝`meta.chartTimeOffsetHours:-3` 正規化後），故日期要用
+ `timeZone: 'Asia/Hong_Kong'` 格式化。
+ - **⚠ 閘道偶發降級**：冷啟動時第一次請求可能回**tick 推導**的 1–2 根（`open=high=low=close`、
+ 數值與 `official_chart_get_bid` 不同）。因此 client 以 **`MIN_BARS = 5`** 門檻擋掉退化序列，
+ **不要**改用 `meta.source` 字串判斷（耦合閘道內部）。
+ - **檔案**：`lib/marketQuotes.ts` 加 `getDailyBars(symbol)`（`resolution=1D`＋`priceType=bid`，
+ 取最後 **30** 根，**60 秒** server 快取、per-symbol inflight 去重、失敗 warn→null）；
+ `lib/marketQuoteTypes.ts` 加 `MarketBar`；新路由 `src/app/api/market/bars/route.ts`
+ （`force-dynamic`、`{ok:false}` 是正常答案）；新 hook `src/components/market/useDailyBars.ts`
+ （60 秒輪詢、`document.hidden` 暫停）；`home/Services/` 新增 `ServiceChart.tsx`（幾何計算＋
+ 三狀態渲染）與 client `ServiceMarketPanel.tsx`（K 線＋報價卡＋**單一**來源標籤）。
+ `ServicePriceCards.tsx` 退為純展示（quotes 由 panel 傳入）。
+ - **🚩 代理必須鎖品種**：閘道遊客白名單有 **29 個代號**（含 EURUSD、HK50、TECH100 等 26 個外匯/
+ 指數）。`getDailyBars` 只接受 `MARKET_SYMBOLS`（金／銀／公斤條），其餘回 `{ok:false}` →
+ 官網不會變成外匯/指數的行情代理（紅線：不得列外匯/指數為 HATC 產品）。
+ - **三狀態標籤（紅線落地）**：① 有日 K →「日 K 線（MT5 行情）」＋綠點；② 沒行情也沒日 K →
+ 原 Figma 示意蠟燭＋「示意數據 (設計佔位)」；③ **有即時報價但日 K 取不到 → 不畫任何蠟燭**，
+ 只留格線＋「圖表資料暫時無法取得」（真價格旁不放假 K 線）。報價卡真實時，區塊底部註記改為
+ `home.market.liveLabel · home.market.sourceNote`（原本只有「即時報價」沒有免責）。
+ - **刪除誤導標籤**：原本 K 線框**永遠**顯示綠點＋「實時交易中」卻配示意數據 → 鍵
+ `home.goldServices.live` **已刪**（三語），改由上述三狀態標籤表達。新增
+ `home.goldServices.{chartDaily,chartUnavailable}`（三語，666 鍵）。
+ - **SSG 不變**：server 永遠輸出示意，client 取到才替換；無閘道也能 build（已實測 `QUOTE_GATEWAY_URL=`
+ 空值跑 `next start` → 完整回到示意狀態）。
+ - **⚠ 驗證方式**：即時/K 線行為**必須** `npm run build && npm start` 驗（`next dev` ＋ 無頭瀏覽器
+ 會 client chunk ERR_ABORTED）。另外 **`chrome-headless-shell` 要加 `--no-sandbox`
+ ＋`--run-all-compositor-stages-before-draw`**，且 `nohup … &` 起的 server 會被收掉，請用背景
+ Shell 任務跑 `npm start`。
+ - **待業主**：`home.goldServices.features` 仍寫著**「24小時雙向不間斷交易」**（與核可交易時段的
+ 每日休市牴觸）與**「極速訂單執行通道」**（執行方式＝FACTS 明列「仍待業主提供」，且平台能力紅線
+ 禁止速度宣稱）——**本輪未改**（不擅自改既有中文文案），已回報業主待定。
+
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾
  顯示退役的黃金 27／白銀 30 且缺公斤條。已改為條件欄位全部由 `tradingConditions.ts` 產生、

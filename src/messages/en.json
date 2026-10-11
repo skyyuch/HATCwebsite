@@ -173,7 +173,8 @@
       },
       "cta": "Explore gold trading",
       "chartSymbol": "XAU/USD (Loco London Gold)",
-      "live": "Live trading",
+      "chartDaily": "Daily candles (MT5 feed)",
+      "chartUnavailable": "Chart data unavailable",
       "chartSample": "Sample data (design placeholder)",
       "loco": {
         "gold": "Loco London Gold",

@@ -173,7 +173,8 @@
       },
       "cta": "了解黃金交易服務",
       "chartSymbol": "XAU/USD (倫敦金)",
-      "live": "實時交易中",
+      "chartDaily": "日 K 線（MT5 行情）",
+      "chartUnavailable": "圖表資料暫時無法取得",
       "chartSample": "示意數據 (設計佔位)",
       "loco": {
         "gold": "倫敦金",
