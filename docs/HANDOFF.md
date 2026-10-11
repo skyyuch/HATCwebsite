@@ -23,6 +23,11 @@
 > 公斤條 902.14）。**`/v1/market/bars` 連 UAT 都仍回空陣列**（`status 200, bars: []`）→ follow-up (c)
 > 真 K 線同樣**還不能動**。下一位 agent 若要碰行情，**先用 `/tmp` 探針或 `curl` 複驗這兩項**，別直接改碼。
 >
+> **📦 第四十三輪已 commit＋push**（`10ada33`，origin/main）＝工作區乾淨，**無未 commit 清單**。
+> 同時移除 `docs/HANDOFF.md` 內誤寫的 **prd 閘道明文密鑰**（倉庫會 push 到 GitHub）；慣例已寫進
+> `.cursor/rules/hatc-website.mdc`：**密鑰值不得出現在本倉任何檔案**，只留「去閘道專案
+> `deploy/env/*.env` 取」的指引。
+>
 > **✅ 第四十二輪（2026-09-01）完成：業主 GitBook 知識庫已搬入黃金學院 `/academy`（22 篇、三語）。**
 > 來源＝**GitBook Content API**（業主提供 token＋space；存 `.env` `GITBOOK_API_TOKEN`/`GITBOOK_SPACE_ID`，
 > 不進 git）。腳本 `scripts/seed-academy-from-gitbook.ts`（抓目錄樹→每頁 Markdown→Payload 內建
