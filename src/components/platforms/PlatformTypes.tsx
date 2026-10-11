@@ -3,13 +3,10 @@ import SectionTitle from '@/components/home/SectionTitle';
 import {getTradingPlatforms} from '@/lib/tradingPlatforms';
 import {getSiteSettings, primaryContactHref} from '@/lib/siteSettings';
 import type {Locale} from '@/i18n/routing';
-import PlatformTabsClient, {type PlatformVisual} from './PlatformTabsClient';
-import {resolveTerminalVisual} from './terminalScreenshots';
+import PlatformTabsClient from './PlatformTabsClient';
+import {resolvePlatformVisual} from './platformVisuals';
 
 type Bullet = {title: string; desc: string};
-
-const MOCKUP_PHONE = '/figma/platforms/detail-phone.png';
-const MOCKUP_DEVICES = '/figma/platforms/hero-devices.png';
 
 /**
  * Platform-types section (Figma 92:28 + 92:50). Tab cards come from the CMS
@@ -18,10 +15,8 @@ const MOCKUP_DEVICES = '/figma/platforms/hero-devices.png';
  * converged to gold/silver and softened per governance. The detail CTA is an
  * operational open-account link resolved via CMS (falls back to /register).
  *
- * Visual precedence: CMS upload → real terminal screenshot (see
- * terminalScreenshots.ts; Simplified Chinese only) → Figma device mockup. The
- * caption below the panel follows the same order, so a mockup is always
- * labelled「示意」and a screenshot never is.
+ * Panel images follow the shared precedence in `platformVisuals.ts`; the
+ * point-in-time caption only shows for real terminal captures.
  */
 export default async function PlatformTypes() {
   const locale = (await getLocale()) as Locale;
@@ -35,15 +30,7 @@ export default async function PlatformTypes() {
   const settings = await getSiteSettings();
   const openAccountHref = primaryContactHref(settings);
 
-  const visuals: PlatformVisual[] = platforms.map((platform) => {
-    const real = resolveTerminalVisual(platform, locale);
-    if (real) return real;
-
-    const isApp = /app|應用|应用/i.test(
-      `${platform.panelLabel} ${platform.name}`
-    );
-    return {src: isApp ? MOCKUP_PHONE : MOCKUP_DEVICES, kind: 'mockup'};
-  });
+  const visuals = platforms.map((platform) => resolvePlatformVisual(platform));
 
   return (
     <section id="platform-types" className="scroll-mt-20 bg-white">
@@ -57,7 +44,6 @@ export default async function PlatformTypes() {
           platforms={platforms}
           visuals={visuals}
           bullets={bullets}
-          visualNote={t('visualNote')}
           screenshotNote={t('screenshotNote')}
           ctaLabel={nav('openAccount')}
           ctaHref={openAccountHref ?? '/register'}

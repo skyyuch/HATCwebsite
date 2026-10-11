@@ -682,14 +682,12 @@
       "titleTail": " and HATC's own platforms",
       "subtitle": "Whether you are an experienced professional trader or a newcomer just getting started, HATC's full suite of trading tools has you covered — across multiple devices, so you can follow the market anytime, anywhere.",
       "ctaLearn": "Learn more",
-      "ctaDemo": "Open a demo account",
-      "visualLabel": "HATC trading platform"
+      "ctaDemo": "Open a demo account"
     },
     "types": {
       "kicker": "PLATFORM ECOSYSTEM",
       "heading": "Full control — choose your trading platform",
       "subheading": "A multi-platform ecosystem tailored to traders of every experience level and strategy.",
-      "visualNote": "Platform visuals are illustrative; actual features and screens follow the official release.",
       "screenshotNote": "An actual screen from the HATC terminal; the quotes shown were the market prices at the time of capture and are for reference only.",
       "items": [
         {

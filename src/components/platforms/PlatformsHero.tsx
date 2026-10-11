@@ -1,35 +1,31 @@
-import Image from 'next/image';
-import {getLocale, getTranslations} from 'next-intl/server';
+import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
-import type {Locale} from '@/i18n/routing';
 import {getPlatformsMarketing} from '@/lib/platformsMarketing';
 import {demoAccountHref, getSiteSettings} from '@/lib/siteSettings';
-import {TERMINAL_HERO, hasTerminalScreenshots} from './terminalScreenshots';
-
-const HERO_MOCKUP = '/figma/platforms/hero-devices.png';
+import PlatformVisualPanel from './PlatformVisualPanel';
+import {TERMINAL_HERO, type PlatformVisual} from './platformVisuals';
 
 /**
  * Dark hero for `/platforms` (Figma 92:4). Shares the homepage dark/gold system;
  * the Figma orange accent is mapped to HATC gold.
  *
- * Visual precedence matches PlatformTypes: CMS upload → real terminal
- * screenshot (Simplified Chinese only, see terminalScreenshots.ts) → the Figma
- * template's generic multi-device render, which is the only one that carries
- * the「示意」label. The primary CTA scrolls to platform-types; the demo CTA only
- * renders once the owner configures a demo-account URL in the CMS.
+ * The hero picture follows the same precedence as the rest of the site: an
+ * owner upload from the CMS, otherwise the real terminal home screen. The
+ * primary CTA scrolls to platform-types; the demo CTA only renders once the
+ * owner configures a demo-account URL in the CMS.
  */
 export default async function PlatformsHero() {
-  const locale = (await getLocale()) as Locale;
   const t = await getTranslations('platforms.hero');
+  const terminal = await getTranslations('platforms.types');
   const nav = await getTranslations('nav');
   const demoHref = demoAccountHref(await getSiteSettings());
 
   const {heroImage} = await getPlatformsMarketing();
-  const terminalSrc = hasTerminalScreenshots(locale) ? TERMINAL_HERO : null;
-  const heroSrc = heroImage ?? terminalSrc ?? HERO_MOCKUP;
-  const isSample = !heroImage && !terminalSrc;
+  const visual: PlatformVisual = heroImage
+    ? {kind: 'upload', src: heroImage}
+    : {kind: 'screenshot', asset: TERMINAL_HERO};
 
   return (
     <section className="relative overflow-hidden bg-[var(--fig-ink)] text-white">
@@ -94,36 +90,18 @@ export default async function PlatformsHero() {
           </div>
         </div>
 
-        <div className="relative">
-          <div
-            className="relative flex h-[320px] items-center justify-center overflow-hidden rounded-[16px] border border-[var(--fig-border)] sm:h-[400px]"
-            style={{
-              background:
-                'radial-gradient(120% 120% at 70% 10%, rgba(212,175,55,0.18), transparent 55%), linear-gradient(150deg, #111625 0%, #070a14 100%)'
-            }}
-          >
-            <span
-              aria-hidden
-              className="pointer-events-none absolute inset-0 opacity-[0.12]"
-              style={{
-                backgroundImage:
-                  'linear-gradient(rgba(212,175,55,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.4) 1px, transparent 1px)',
-                backgroundSize: '40px 40px'
-              }}
-            />
-            <Image
-              src={heroSrc}
-              alt=""
-              fill
-              sizes="(min-width: 1024px) 40vw, 100vw"
-              priority
-              className="object-contain p-4"
-            />
-          </div>
-          {isSample ? (
-            <span className="absolute bottom-3 right-3 rounded-full bg-black/55 px-3 py-1 text-[11px] font-semibold tracking-wide text-white/85 backdrop-blur-sm">
-              {t('visualLabel')}
-            </span>
+        <div className="flex flex-col gap-3">
+          <PlatformVisualPanel
+            visual={visual}
+            label={t('breadcrumb')}
+            alt={t('breadcrumb')}
+            priority
+            className="h-[380px] rounded-[16px] border border-[var(--fig-border)] sm:h-[460px]"
+          />
+          {visual.kind === 'screenshot' ? (
+            <p className="text-xs leading-[1.6] text-[var(--fig-text-dim)]">
+              {terminal('screenshotNote')}
+            </p>
           ) : null}
         </div>
       </div>

@@ -24,7 +24,11 @@
 - 產品／交易條件 ✅（`/[locale]/products`）／所有交易產品 ✅（`/[locale]/products/all`）
 - 交易帳戶 ✅（`/[locale]/accounts`）／入金與出金 ✅（`/[locale]/funding`）
 - 交易平台 ✅（`/[locale]/platforms`，Figma `89:4`；分頁 MT5＋HATC App＋網頁交易端＝
-  業主確認之平台，Payload `trading-platforms`＋faqs `platforms`；平台截圖為漸層佔位待業主素材）
+  業主確認之平台，Payload `trading-platforms`＋faqs `platforms`）
+  - 平台圖（`/platforms` hero＋分頁、`/accounts` 卡片）一律經
+    `components/platforms/{platformVisuals.ts,PlatformVisualPanel.tsx}`：
+    CMS 上傳 → HATC 交易端真實截圖（三語，第五十一輪）→ 官方 MetaTrader 5 標誌 → 自家品牌面板。
+    通用範本裝置圖已退役；**永不放假截圖**。MT5 的真實截圖待業主提供測試帳號。
 - 最新消息 ✅（`/[locale]/news`，Payload `home-activities`；無內容時中性空狀態）
 - 黃金學院 ✅（`/[locale]/academy` 列表〔Figma `98:4`：navy/gold hero＋分類篩選 sidebar
   ＋排序＋分頁＋電子報誠實佔位〕＋`/[locale]/academy/[slug]` 詳情；Payload `academy-articles`

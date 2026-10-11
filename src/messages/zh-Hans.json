@@ -682,14 +682,12 @@
       "titleTail": " 与 HATC 专属平台",
       "subtitle": "不论您是经验丰富的专业交易者，还是刚起步的新手，HATC 全方位交易工具皆能满足您的需求，支持多种设备，让您随时随地查看行情。",
       "ctaLearn": "了解更多",
-      "ctaDemo": "申请模拟账户",
-      "visualLabel": "HATC 交易平台"
+      "ctaDemo": "申请模拟账户"
     },
     "types": {
       "kicker": "PLATFORM ECOSYSTEM",
       "heading": "全面掌控，选择您的交易平台类型",
       "subheading": "为不同经验与策略的交易者量身打造的多元平台生态。",
-      "visualNote": "平台界面为示意，实际功能与画面以正式发布为准。",
       "screenshotNote": "实际交易端画面；图中报价为截图当时的市场价格，仅供参考。",
       "items": [
         {

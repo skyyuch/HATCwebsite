@@ -1,10 +1,35 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-11（第五十輪：文案紅線清除 ＋ `/accounts` 真實交易端截圖 ＋ push 補上）
+> 最後更新：2026-10-11（第五十一輪：平台視覺統一 — 真實截圖三語上線、官方 MT5 標誌、裝置外框）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
 ## ▶ 下一步（下一位 agent）
+
+> **✅ 第五十一輪（2026-10-11）完成：平台視覺全面統一 —— `/platforms` 與 `/accounts` 的平台圖現在
+> 三語都有圖，且全部是「誠實可用」的素材（自家真實交易端截圖 ／ 官方 MT5 標誌），通用範本裝置圖全數退役。**
+>
+> 起因：業主反映「所有交易平台的圖都要有圖，現時 `/accounts`、`/platforms` 都沒有」，並給了一份 Figma
+> （`uYnvWpHrVTx8POlR1eYxKT` node `146:63190`）說「如果真實截圖不好看，不如用這個來改」。
+> - **🚩 那份 Figma 不能照抄**：它是**競品的行銷海報**——橘色品牌、競品 App logo，手機裡是**競品的外匯報價**
+>   （EURUSD／GBPNZD／AUDNZD），文案寫「涵蓋外匯、貴金屬、股指、原油等**上百種**」。同時違反三條紅線
+>   （冒用他家截圖、列外匯/股指/原油為 HATC 產品、未確認的「上百種」宣稱）。**只借呈現手法**＝
+>   手機外框 ＋ 品牌漸層背景，框內放我們自己的真實截圖。
+> - **業主兩項拍板**：① 真實交易端截圖**三語都顯示**（推翻第四十七輪的「只上簡中」——交易端 uni-app
+>   專案**完全沒有 i18n 層**，等繁中版＝永不放圖）；② MT5 用 **MetaQuotes 官方素材**。
+> - **MT5 用官方 logo 而非官方截圖**：`public/platforms/metatrader5-logo-white.png` 來自
+>   **MetaQuotes Media Gallery**（明文授權券商網站免費使用）。**他們的 MT5 截圖一張都不能用**——
+>   每一張都帶外匯 Market Watch。
+> - **架構**：`terminalScreenshots.ts` → **`platformVisuals.ts`**，`resolveTerminalVisual(p, locale)` →
+>   **`resolvePlatformVisual(p)`**，優先序 **CMS 上傳 → 真實截圖 → 官方品牌標誌 → `null`**；新增共用呈現
+>   元件 **`PlatformVisualPanel.tsx`**（hero／tabs／accounts 卡**三處共用**）。**日後任何要畫平台的頁面
+>   一律用這兩支。** 站上**已不存在「示意」平台圖**（`kind:'mockup'` 連同
+>   `public/figma/platforms/*` 一併刪除）。
+> - **i18n**：刪 `platforms.types.visualNote`／`platforms.hero.visualLabel`（三語）→ **664 鍵**。
+> - **⚠ 新發現的部署雷（非本輪造成）**：`next build` 會重用 `.next/cache` 的 CMS 讀取結果 →
+>   **CMS 改過後直接重建可能把舊值烤進 SSG**（實測 `demoAccountUrl` 已設定卻沒渲染，`rm -rf .next`
+>   重建才正確）。本機驗 CMS 相關畫面前請先清 `.next`。
+> - 細節見下方「🟢 第五十一輪」。
 
 > **✅ 第五十輪（2026-10-11）完成：首頁／平台頁的文案紅線衝突清除、示意跑馬燈收斂成三個真實產品、
 > `/accounts` 平台卡換上真實交易端截圖、落後的 commit 已 push。**
@@ -365,6 +390,91 @@
 2. **第十八輪 `/trading` 暫緩 UI／驗收項**（多數需業主拍板）：淺色系是否推廣、帳戶分級真偽、
    hero／夥伴佔位素材、`--trd-gold` vs `#d4af37` 是否統一。
 3. 其他前台 polish：Figma 佔位圖替換、Footer／mega `#` 連結填實、demo 帳戶流程等（待業主素材）。
+
+## 🟢 第五十一輪（實作，2026-10-11）：平台視覺統一（真實截圖三語 ＋ 官方 MT5 標誌 ＋ 裝置外框）
+
+### 業主決策
+
+- 起點是業主的一句話：「所有交易平台的圖，都要有圖。現時都沒有圖，包括 `/account`, `/platforms`。
+  如果真實截圖不好看，不如你用 〔Figma 連結〕來改」。
+- **讀完 Figma 後回報並擋下**：`uYnvWpHrVTx8POlR1eYxKT` node `146:63190` 是**競品行銷海報**
+  （橘色品牌＋競品 App logo＋競品外匯報價 EURUSD/GBPNZD/AUDNZD＋「涵蓋外匯、貴金屬、股指、原油等
+  上百種」）。不可照抄；**只借版面手法**（手機外框＋品牌漸層＋立體陰影）。
+- **AskQuestion 兩題，業主拍板**：
+  1. 真實交易端截圖 → **三語都顯示**（推翻第四十七輪「只上簡中版」）。依據：交易端
+     `~/Desktop/mt5-web/mt5-uniappx` **沒有任何 i18n／locale 檔**，只有簡體介面 → 「等它支援繁中」
+     等於永遠不放真圖；它是 HATC 的真實產品，配 `platforms.types.screenshotNote` 即為誠實呈現。
+  2. MT5 → **用 MetaQuotes 官方素材**。
+
+### 現況診斷（業主說「沒有圖」的真正成因）
+
+| 位置 | 改前 |
+|---|---|
+| `/platforms` 繁中／英文 | Figma 範本的**通用裝置渲染圖**＋「示意」標；`detail-phone.png` 裡還是**美股代號 AAPL/GOOGL/TSLA** |
+| `/platforms` 簡中 | 有真實截圖，但白底長方形直接浮在深色框裡（業主說的「不好看」） |
+| `/accounts` 三語 | 三張卡全是金色漸層＋文字，**完全沒有圖** |
+| MT5（任何語系、任何頁） | 沒有任何圖 |
+
+### MT5 素材的取得與取捨
+
+- 來源＝**MetaQuotes Media Gallery**（`https://www.metaquotes.com/en/media-gallery`），頁面明文：
+  免費提供給券商網站／文章使用。使用條款要求**不得改色、不得改字體、不得改變版面比例、不得在標誌上
+  加元素** → 因此採用**未經任何修改的白色原檔**，只是置中放在我們自己的深色面板上。
+- 落地檔案：`public/platforms/metatrader5-logo-white.png`（官方 `MetaTrader 5/Logo/metatrader5-white.png`，
+  1024×176）。
+- **🚩 刻意不用 MetaQuotes 的 MT5 截圖**：下載並逐張檢視了 Desktop／Laptop／Screenshots／iOS／Android
+  全套，**每一張都帶著外匯 Market Watch（EURUSD、GBPUSD…）**，放上官網等於把外匯呈現為 HATC 產品
+  （紅線）。標誌沒有這個問題。
+- 真正的 MT5 真實截圖**需要 HATC MT5 伺服器的測試帳號**（登入 MetaTrader 5 網頁版截自家伺服器）→
+  已列為待業主項。
+
+### 落地
+
+- **`src/components/platforms/terminalScreenshots.ts` → `platformVisuals.ts`**
+  （`resolveTerminalVisual(platform, locale)` → **`resolvePlatformVisual(platform)`**，不再吃 locale）。
+  優先序 **CMS 上傳 → 真實截圖 → 官方品牌標誌 → `null`**；`null` ＝「沒有誠實可用的圖」。
+  截圖現在帶 `width`/`height`（`ImageAsset`），供外框算比例。原有的截圖治理註解全數保留。
+- **新元件 `src/components/platforms/PlatformVisualPanel.tsx`**（純展示、server/client 皆可用）＝
+  深色金漸層＋格線底，依 `kind` 渲染：`screenshot`→**裝置外框**／`brand`→置中標誌／`upload`→
+  `object-contain`／`null`→品牌面板顯示 `panelLabel`。**`/platforms` hero＋tabs 與 `/accounts` 卡片
+  三處共用同一個元件**，版式不會再各走各的。
+- **裝置外框刻意依截圖的原始比例**，而非固定手機比例：這些截圖已經在交易端買賣價列上方裁切過
+  （見 `platformVisuals.ts` 檔頭紅線），再 `object-cover` 裁一次會切掉底部指標列。
+- **退役**：`public/figma/platforms/{hero-devices,detail-phone}.png`、`kind:'mockup'`、
+  i18n `platforms.types.visualNote`＋`platforms.hero.visualLabel`（三語）。**站上已不存在標「示意」
+  的平台圖**——要嘛真實截圖（標 `screenshotNote`），要嘛官方標誌，要嘛自家品牌面板。
+- `AccountPlatforms` 視覺區 260→**340px**；`/platforms` hero 320/400→**380/460px**。
+
+### ⚠ 實作踩到的坑（下一棒照抄）
+
+- **百分比高度在 flex 項目上會算成 `auto`**：外框第一版用 `h-full` + flex-column + `flex-1`，
+  `<Image className="h-full w-auto">` 的 `height:100%` 無法解析 → 圖片以原生 **860px 寬**溢出卡片，
+  變成一條橫帶（截圖留在 git 歷史外，但現象很像「破圖」）。正解＝外層 sizer
+  `style={{aspectRatio: w/h}}` + `h-full`，bezel `absolute inset-0`，螢幕 `object-contain`。
+- **`next dev` + 無頭瀏覽器點不動分頁**（client chunk ERR_ABORTED，第四十五／四十九輪已記）→
+  MT5 分頁是用 `npm start` ＋ CDP `Runtime.evaluate` 點擊後再查 `aria-selected` 驗的；
+  ⚠ `.click()` 之後要**另一次 evaluate** 才讀得到更新後的狀態（React setState 非同步）。
+- **🚩 `next build` 會重用 `.next/cache` 的 CMS 讀取結果**（本輪意外發現，非本輪造成）：
+  DB 的 `site_settings.demo_account_url` 明明有值，build 出來的 `/platforms` 卻沒有模擬帳戶 CTA；
+  `rm -rf .next` 重建後正確。⇒ **CMS 改過後在本機驗畫面，先清 `.next`**；CI 全新 runner 無此問題，
+  但正式站若用有快取的增量建置要留意。
+
+### 驗證
+
+- `lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／
+  `i18n:check` 三語 **664 鍵**（刪 2 鍵）／`migrate:check` 無漂移（未動 schema）／`build` 綠且
+  `/platforms`、`/accounts` 維持 ● SSG。
+- `npm start`（port 3110）實測：三語 `/platforms`、`/accounts` 皆 200；桌機 1440／平板 834／
+  手機 390 截圖逐一檢查；MT5 分頁以 CDP 點擊驗過（官方標誌置中、無 caption）。
+
+### 待業主 / 下一棒
+
+- **HATC MT5 伺服器的測試／模擬帳號** → 用 MetaTrader 5 網頁版截自家伺服器的真實畫面，取代官方標誌。
+- 交易端若日後支援繁中／英文，重截對應語系（截圖紅線見 `platformVisuals.ts` 檔頭，必照做）。
+- 英文站目前顯示**簡體介面**的截圖＝業主已知並同意；若日後覺得不妥，解法是交易端做 i18n，不是放假圖。
+- 第五十輪留下的候選仍在：`/trading` 合作夥伴標誌佔位、淺色 `--trd-gold #c9a84c` 與深色 `#d4af37`
+  是否統一、Footer「MT5平台」欄是否改名／改指 `/platforms`、`/products/all` 的最低手數／手續費／
+  執行方式、正式站上線前檢查 CMS global `home-page` 是否存有舊文案。
 
 ## 🟢 第五十輪（實作，2026-10-11）：文案紅線清除 ＋ `/accounts` 真實截圖
 
