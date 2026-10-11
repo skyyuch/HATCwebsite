@@ -10,8 +10,14 @@
  *    numbers.
  * ⚠️ RETIRED 2026-10-11 and must never reappear anywhere on the site: the old
  *    average spreads (gold 27 / silver 30), leverage 1:500 and 1:1000, and all
- *    per-lot commission figures (the commission is now confirmed to be nil —
- *    see TRADING_COMMISSION_FREE — so any non-zero figure is fabricated).
+ *    per-lot commission figures (the trading commission is now confirmed to be
+ *    nil, so any non-zero figure is fabricated).
+ * ⚠️ NO TRADING COMMISSION — SCOPE IS DELIBERATELY NARROW (owner 2026-10-11,
+ *    第五十六輪). The owner confirmed the *trading* fee only; overnight
+ *    financing (swap) and deposit/withdrawal charges are NOT covered. Copy
+ *    renders products.conditions.feeFree under the label colFee
+ *    (「交易手續費」/ "Trading commission") and the three table notes spell the
+ *    exclusions out. Never shorten it to「免任何費用」/ "no fees at all".
  * ⚠️ Still owner-pending — never fabricate: execution mode. The UI renders it
  *    as "將另行公佈 / To be announced" (products.conditions.pending).
  *
@@ -31,17 +37,6 @@ export const MAX_LEVERAGE = '1:100';
  * products.conditions.minLotValue.
  */
 export const MIN_LOT = 0.01;
-
-/**
- * The owner charges no trading commission / dealing fee on any product or tier
- * (owner 2026-10-11, 第五十六輪) — rendered as products.conditions.feeFree.
- *
- * ⚠️ SCOPE IS DELIBERATELY NARROW. The owner confirmed the *trading* fee only.
- *    Overnight financing (swap) and deposit/withdrawal charges are NOT covered,
- *    so copy must always say「交易手續費」/ "trading commission" and must never
- *    claim「免任何費用」/ "no fees at all" / "zero cost".
- */
-export const TRADING_COMMISSION_FREE = true;
 
 /** Contract-size unit — picks the products.conditions.contractSize* message. */
 export type ContractUnit = 'oz' | 'gram';

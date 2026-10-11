@@ -18,7 +18,7 @@
 >   「免任何費用」「零成本」。第四十四輪那條限制**到此解除**，但非零佣金金額仍屬虛構。
 >   FACTS「仍待業主提供」現在**只剩「執行方式」**。
 > - **事實仍留在程式**：`products/tradingConditions.ts` 新增 `MIN_LOT = 0.01` 與
->   `TRADING_COMMISSION_FREE`（含範圍限制註解）。五個元件同源顯示：`/products` 產品卡（2×2）與條件表、
+>   `MIN_LOT = 0.01`（手續費不建常數，範圍限制寫在檔頭 ⚠ 區塊）。五個元件同源顯示：`/products` 產品卡（2×2）與條件表、
 >   `/trading` 帳戶比較表、`/accounts` 帳戶卡、`/products/all` 表格（新增兩欄、`min-w` 720→920px）。
 > - **外部連結同窗**：業主選擇**套用到全站**（不只開戶）→ 移除 22 處 `target="_blank"`＋
 >   `rel="noopener noreferrer"`。新增 CTA 不得再加回去（已寫進規則「Content governance」）。
@@ -543,9 +543,9 @@
 「交易手續費全免僅指交易時不收取手續費或佣金，不包含隔夜利息及入金／出金相關費用。」
 **不得**把它寫成「免任何費用」「零成本」，也不得暗示沒有隔夜利息。
 
-**程式**：`src/components/products/tradingConditions.ts` 新增 `MIN_LOT = 0.01` ＋
-`TRADING_COMMISSION_FREE`（後者的值不被 UI 使用，用途是把事實與其範圍限制留在程式註解裡，
-與 `MAX_LEVERAGE` 同層級）。事實照舊**留在程式、不進 CMS**。
+**程式**：`src/components/products/tradingConditions.ts` 新增 `MIN_LOT = 0.01`。手續費**刻意不建常數**
+（值是「不收取」，沒有數字可放，加個永遠為 true 的布林＝死碼）——**範圍限制寫在該檔檔頭的 ⚠ 區塊**，
+與退役值警告並列，改這塊文案前一定會看到。事實照舊**留在程式、不進 CMS**。
 
 **五處同源顯示**：
 

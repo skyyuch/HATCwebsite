@@ -734,8 +734,9 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  **「交易手續費」**並在同版面以細則交代排除範圍；**不得**寫「免任何費用」「零成本」或暗示無隔夜利息。
  第四十四輪「不得聲稱零佣金」的限制**到此解除**（當時原因是設定表沒有佣金欄位），但**任何非零佣金
  金額仍屬虛構**。FACTS「仍待業主提供」現在只剩 **執行方式**。
- - **程式**：`products/tradingConditions.ts` 新增 **`MIN_LOT = 0.01`** 與 **`TRADING_COMMISSION_FREE`**
- （後者只是把事實與其範圍限制寫在程式註解裡，UI 讀 i18n `feeFree`）。事實照舊**留在程式、不進 CMS**。
+ - **程式**：`products/tradingConditions.ts` 新增 **`MIN_LOT = 0.01`**；手續費沒有對應常數（值是
+ 「不收取」，UI 讀 i18n `feeFree`），**其範圍限制寫在該檔檔頭的 ⚠ 區塊**，與退役值警告並列。
+ 事實照舊**留在程式、不進 CMS**。
  - **UI（五處同源）**：`products/ProductList`（卡片 dl 由 2 格變 2×2）／`products/TradingConditions`
  （新增兩列全寬列，`pendingLabel` 收斂為「其餘交易條件（執行方式等）」）／`trading/AccountComparison`
  （新增兩列 Row）／`accounts/AccountTiers`（卡片規格清單）／`products/AllInstruments/AllInstrumentsTable`
