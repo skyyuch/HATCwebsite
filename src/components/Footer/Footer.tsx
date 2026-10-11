@@ -1,6 +1,10 @@
 import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {company} from '@/content/company';
+import {
+  ACADEMY_CATEGORY_SLUGS,
+  academyCategoryHref
+} from '@/lib/academyCategories';
 import BrandLogo from '../BrandLogo';
 
 // main-footer (Figma 4:296): dark global footer.
@@ -16,6 +20,7 @@ const COLS = ['about', 'trading', 'platforms', 'academy'] as const;
 const LINKS = ['l1', 'l2', 'l3', 'l4'] as const;
 
 type Col = (typeof COLS)[number];
+type StaticCol = Exclude<Col, 'academy'>;
 type LinkKey = (typeof LINKS)[number];
 
 // Centralised link map — fill these in when the owner supplies a full link table.
@@ -30,7 +35,10 @@ type LinkKey = (typeof LINKS)[number];
 // exist (client download, mobile guide) plus an unconfirmed platform capability
 // (EA / algo support). It now resolves to the real `/platforms` page and its
 // section anchors, matching the header rename done in 第三十八輪.
-const FOOTER_LINKS: Record<Col, Record<LinkKey, string>> = {
+//
+// 2026-10-11 (第五十四輪): the academy column is built separately — see
+// FOOTER_ACADEMY_CATEGORIES below.
+const FOOTER_LINKS: Record<StaticCol, Record<LinkKey, string>> = {
   about: {l1: '/about', l2: '/about', l3: '/about', l4: '/news'},
   trading: {
     l1: '/products#gold',
@@ -43,14 +51,18 @@ const FOOTER_LINKS: Record<Col, Record<LinkKey, string>> = {
     l2: '/platforms#platform-types',
     l3: '/platforms#platform-types',
     l4: '/platforms#platform-faq'
-  },
-  academy: {
-    l1: '/academy',
-    l2: '/academy',
-    l3: '/academy',
-    l4: '/academy'
   }
 };
+
+// 2026-10-11 (第五十四輪): the academy column used to carry four labels
+// (基礎課程 / 進階分析 / 巨集觀基本面 / 技術指標解讀) that match none of the six
+// canonical categories on `/academy`, with all four pointing at the unfiltered
+// list. It now links the academy index plus three real categories, deep-linked
+// through the `?category=` filter. Labels are read from `academy.categories`
+// rather than duplicated into footer keys, so they can never drift from the
+// filter options. The owner kept the column at four rows (2026-10-11), so three
+// of the six categories are represented; the rest are reachable on `/academy`.
+const FOOTER_ACADEMY_CATEGORIES = [0, 1, 2] as const;
 
 const LEGAL_LINKS = {privacy: '/privacy', disclaimer: '/disclaimer'} as const;
 
@@ -58,6 +70,25 @@ export default async function Footer() {
   const t = await getTranslations();
   const f = await getTranslations('home.footerV2');
   const year = new Date().getFullYear();
+  const categories = t.raw('academy.categories') as string[];
+
+  const columns = COLS.map((col) => ({
+    key: col,
+    title: f(`cols.${col}.title`),
+    links:
+      col === 'academy'
+        ? [
+            {href: '/academy', label: f('cols.academy.l1')},
+            ...FOOTER_ACADEMY_CATEGORIES.map((index) => ({
+              href: academyCategoryHref(ACADEMY_CATEGORY_SLUGS[index]),
+              label: categories[index]
+            }))
+          ]
+        : LINKS.map((l) => ({
+            href: FOOTER_LINKS[col as StaticCol][l],
+            label: f(`cols.${col}.${l}`)
+          }))
+  }));
 
   return (
     <footer className="border-t border-[var(--fig-border)] bg-[var(--fig-ink)] text-[var(--fig-text-dim)]">
@@ -70,18 +101,18 @@ export default async function Footer() {
             </p>
           </div>
 
-          {COLS.map((col) => (
-            <nav key={col} className="flex flex-col gap-2.5">
+          {columns.map((column) => (
+            <nav key={column.key} className="flex flex-col gap-2.5">
               <h3 className="mb-1 text-[13px] font-bold text-gold">
-                {f(`cols.${col}.title`)}
+                {column.title}
               </h3>
-              {LINKS.map((l) => (
+              {column.links.map((link, index) => (
                 <Link
-                  key={l}
-                  href={FOOTER_LINKS[col][l]}
+                  key={index}
+                  href={link.href}
                   className="text-xs transition-colors hover:text-white"
                 >
-                  {f(`cols.${col}.${l}`)}
+                  {link.label}
                 </Link>
               ))}
             </nav>

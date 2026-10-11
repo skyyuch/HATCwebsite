@@ -10,7 +10,7 @@
   入金與出金 `/funding`、**交易平台 `/platforms`**（Figma `89:4`；CMS `trading-platforms`
   ＋ faqs `platforms` 分類）、最新消息 `/news`（CMS `home-activities`）、
   黃金學院 `/academy`（Figma `98:4` 改版：hero＋分類篩選/排序/分頁＋電子報）
-  ＋`/academy/[slug]`（CMS `academy-articles`，目前 27 篇原創長文；封面為佔位圖）
+  ＋`/academy/[slug]`（CMS `academy-articles`，本機現有 49 篇原創長文；封面為佔位圖）
 - CMS：Phase 0–4 完成（infra／FAQ／新聞活動／學堂／行銷 globals＋示意表）
 - 後續階段（待規劃）：交易平台細節、Credentials 獨立頁、Contact 獨立頁（如需）
 
@@ -39,7 +39,8 @@
 - 最新消息 ✅（`/[locale]/news`，Payload `home-activities`；無內容時中性空狀態）
 - 黃金學院 ✅（`/[locale]/academy` 列表〔Figma `98:4`：navy/gold hero＋分類篩選 sidebar
   ＋排序＋分頁＋電子報誠實佔位〕＋`/[locale]/academy/[slug]` 詳情；Payload `academy-articles`
-  目前 27 篇原創長文；無 DB／空 CMS → i18n 種子 a1–a3；篩選分類＝固定 6 類 `academy.categories`）
+  本機現有 49 篇原創長文；無 DB／空 CMS → i18n 種子 a1–a3；篩選分類＝固定 6 類
+  `academy.categories`，可用 `?category=<slug>` 深連，見下方「導覽與版面」）
 - 資質與證書 Credentials 【後續】
   - 真實證書展示（About 已有牌照牆）
 - 聯絡我們 Contact 【後續】
@@ -156,9 +157,21 @@
   （鍵 `home.footerV2.cols.platforms`），四個連結分別指 `/platforms`、`#platform-types`（×2）、
   `#platform-faq`，取代原本全部指向首頁 `/#mt5` 且含「MT5客戶端下載／EA程序化支持」等不存在
   或未經確認的項目。
-  - 仍待整理（下一棒候選）：交易服務欄缺**人民幣公斤條**；黃金學院欄四個標籤與
-    `academy.categories` 的真實六分類不符且無法深連（篩選是 client state，無 URL 參數）；
-    關於我們欄 l1–l3 都指 `/about` 沒有錨點。
+  - 第五十四輪已把**黃金學院欄**改成真實目的地：全部文章 → `/academy`，另外三格＝
+    `academy.categories` 的前三類（黃金基礎／交易策略／技術分析），以
+    `/academy?category=<slug>` 深連到分類篩選。**標籤直接讀 `academy.categories`**，不另開
+    footer 文案鍵，所以永遠不會和篩選選項不一致（業主 2026-10-11 決定該欄維持 4 格，
+    其餘三類在 `/academy` 頁內篩選）。
+  - 仍待整理（下一棒候選）：交易服務欄缺**人民幣公斤條**；關於我們欄 l1–l3 都指 `/about`
+    沒有錨點。
+- **黃金學院分類深連**＝`/academy?category=<slug>`（可逗號分隔多選，如
+  `?category=gold-basics,portfolio`）。slug 清單在
+  [`src/lib/academyCategories.ts`](../src/lib/academyCategories.ts)，**順序必須對齊
+  `src/messages/*` 的 `academy.categories`**（slug 是穩定的英文代號，分類顯示名改字不會斷連結；
+  未知 slug 會被忽略＝退回不篩選）。`AcademyExplorer` 兩向同步：進站時套用網址參數，頁內套用／
+  重設篩選時以 `history.replaceState` 回寫網址（排序與頁碼刻意**不**進網址）。
+  讀網址的 `useSearchParams` 被隔離在一個不渲染內容的 `<Suspense>` 子元件裡，**文章格維持
+  預先渲染**、`/academy` 仍是 ● SSG；代價是篩選在 hydration 後才套用（首幀仍是完整清單）。
 - 全站導覽項目：【待確認】
 - 頁尾內容（公司名稱、會員編號等，依 `HATC_FACTS.md`）：【待確認】
 - 客服 / 聯絡連結：由 CMS 配置讀取，不得寫死於程式碼

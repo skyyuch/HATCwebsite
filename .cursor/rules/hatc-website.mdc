@@ -278,6 +278,9 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  a2 技術分析／a3 市場動態，三語同步，homepage 深色卡同步一致），故 seed 資料下篩選即可運作。`category` 欄**仍為
  自由文字**（未改 schema），僅在 `AcademyArticles.ts` 欄位說明加註「請用固定分類之一，未列者不會出現在篩選」。
  ⚠ **follow-up**：若要嚴格保證，未來可將 `category` 改 `select`（受控 enum）＝需 schema migration，待業主定案。
+ ⚠ **第五十四輪起**：這 6 類另有一份 locale-independent slug 清單
+ `src/lib/academyCategories.ts`（供 `?category=` 深連與 footer 用）。**增刪或調整順序時三語
+ `academy.categories` 與該檔必須同一次改動一起改。**
  - **readMinutes**：reader `academyArticles.ts` 新增 `readMinutes`（走訪 Lexical body 取純文字，~350 字/分
  估算；seed 無 body 用 excerpt）＝**內容長度衍生的 UI 估算，非捏造事實**；卡片有值才顯示。日期用 `publishedAt`
  有值才顯示（seed 無 → 不顯示，優雅降級）。
@@ -669,9 +672,37 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  - **慣例**：footer 連結標籤必須對得上站上真實存在的頁面或區段；沒有目的地就不要列，**更不可**用
  標籤去承諾未確認的功能（下載點、操作指南、EA／量化）。
  - **未處理但已記錄的同類問題（下一棒候選，見 HANDOFF 第五十三輪）**：交易服務欄只有倫敦金/銀、
- **缺人民幣公斤條**；學院欄四個標籤與 `academy.categories` 的真實六分類對不上且無法深連；關於我們欄
- 三個連結都指 `/about` 無錨點；`metadata.platforms.description`（三語）仍寫「平台視覺為示意」——
- 第五十一／五十二輪換成真實截圖後已不實。
+ **缺人民幣公斤條**；~~學院欄四個標籤與 `academy.categories` 對不上且無法深連~~（第五十四輪已做）；
+ 關於我們欄三個連結都指 `/about` 無錨點；`metadata.platforms.description`（三語）仍寫
+ 「平台視覺為示意」——第五十一／五十二輪換成真實截圖後已不實。
+
+- **2026-10-11 (第五十四輪): Footer「黃金學院」欄接上真實分類 ＋ `/academy` 支援 `?category=` 深連。**
+ 業主選定此項。原本四個標籤（基礎課程／進階分析／巨集觀基本面／技術指標解讀）**對不上
+ `academy.categories` 的真實六分類**，且四格全指未篩選的 `/academy`——與第五十三輪 footer 欄位同一個
+ 根因（Figma 佔位標籤從未對照站上真實內容）。
+ - **分類 slug ＝ 新的單一來源 [`src/lib/academyCategories.ts`](src/lib/academyCategories.ts)**
+ （`ACADEMY_CATEGORY_SLUGS` gold-basics／trading-strategy／technical-analysis／market-moves／
+ risk-management／portfolio ＋ `academyCategoryHref`／`parseCategorySlugs`／`labelsFromSlugs`／
+ `slugsFromLabels`）。**順序必須對齊 `src/messages/*` 的 `academy.categories`**；slug 是穩定的
+ locale-independent 代號，分類顯示名改字不會斷連結。⚠ **改分類＝同一次改動要同時改這支檔**
+ （`i18n:check` 只保證三語之間一致，看不到這支檔）。**不含 `server-only`**：server 的 Footer 與
+ client 的 AcademyExplorer 共用。
+ - **深連格式**：`/academy?category=<slug>`，可逗號分隔多選（`?category=gold-basics,portfolio`），
+ 也吃重複參數；未知 slug 忽略＝退回不篩選。
+ - **🚩 SSG 保衛戰（新慣例，日後做任何 URL 狀態同步都照這個做）**：`useSearchParams` 會讓**最近的
+ `<Suspense>` 邊界以內**改為 client render。若直接加在 `AcademyExplorer` 上，49 篇文章的卡片會
+ 整批從靜態 HTML 消失（SEO 回歸）。正解＝把讀網址的邏輯抽成**不渲染任何東西**的
+ `CategoryQuerySync`，單獨包一層 `<Suspense fallback={null}>` → 文章格維持預先渲染、`/academy`
+ 仍是 ● SSG（已於 `.next/server/app/*/academy.html` 驗證仍含 9 張卡與 49 篇計數）。
+ 代價＝篩選在 hydration 後才套用（首幀是完整清單）。
+ - **兩向同步**：進站套用網址參數；頁內「套用篩選／重設篩選」以 **`window.history.replaceState`**
+ 回寫（Next 原生支援，會同步進 `useSearchParams`，不觸發導覽）。用 `replaceState` 不是 `pushState`，
+ 篩選微調不塞滿上一頁堆疊。**排序與頁碼刻意不進網址**（留作後續）。
+ - **Footer 標籤直接讀 `academy.categories`**，不另開 footer 文案鍵（符合 i18n「相同文字不開新鍵」，
+ 也讓標籤永遠不可能與篩選選項不一致）。因此 **`home.footerV2.cols.academy.l2/l3/l4` 三個鍵刪除**、
+ `l1` 改為「全部文章／全部文章／All articles」→ 三語 **662 鍵**。`Footer.tsx` 的 `FOOTER_LINKS`
+ 改為只涵蓋另外三欄（`StaticCol`），學院欄由 `FOOTER_ACADEMY_CATEGORIES = [0,1,2]` 生成。
+ - **業主決策**：該欄**維持 4 格**（全部文章＋三類），不擴成 6／7 格；其餘三類在 `/academy` 頁內篩選。
 
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾

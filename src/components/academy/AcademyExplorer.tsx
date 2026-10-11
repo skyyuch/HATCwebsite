@@ -1,7 +1,8 @@
 'use client';
 
-import {useMemo, useState} from 'react';
+import {Suspense, useCallback, useEffect, useMemo, useState} from 'react';
 import Image from 'next/image';
+import {useSearchParams} from 'next/navigation';
 import {
   ArrowRight,
   Check,
@@ -13,6 +14,13 @@ import {
 import {useLocale, useTranslations} from 'next-intl';
 import {Link} from '@/i18n/navigation';
 import type {AcademyArticle} from '@/lib/academyArticles';
+import {
+  ACADEMY_CATEGORY_PARAM,
+  labelsFromSlugs,
+  parseCategorySlugs,
+  slugsFromLabels,
+  type AcademyCategorySlug
+} from '@/lib/academyCategories';
 
 const PAGE_SIZE = 9;
 
@@ -90,6 +98,31 @@ function ArticleCover({
 }
 
 /**
+ * Applies the `?category=` deep link (used by the footer's Gold Academy column)
+ * to the explorer.
+ *
+ * Renders nothing and sits in its own `<Suspense>` boundary on purpose:
+ * `useSearchParams` makes the client tree up to the nearest boundary
+ * client-rendered, so isolating it keeps the whole article grid in the
+ * prerendered HTML and `/academy` stays SSG. The trade-off is that a filtered
+ * link applies its filter right after hydration rather than on first paint.
+ */
+function CategoryQuerySync({
+  onChange
+}: {
+  onChange: (slugs: AcademyCategorySlug[]) => void;
+}) {
+  const searchParams = useSearchParams();
+  const raw = searchParams.getAll(ACADEMY_CATEGORY_PARAM).join(',');
+
+  useEffect(() => {
+    onChange(parseCategorySlugs([raw]));
+  }, [raw, onChange]);
+
+  return null;
+}
+
+/**
  * Interactive Gold Academy list (Figma 98:38) — HATC light system.
  * Client-side category filter (multi-select + apply/reset), sort and
  * pagination over the full article set, so the page stays SSG. Orange →
@@ -135,21 +168,55 @@ export default function AcademyExplorer({
     );
   };
 
+  /**
+   * Mirror the selection into the query string so a filtered view can be
+   * shared. The native history API is enough — Next syncs it into
+   * `useSearchParams` without a navigation — and `replaceState` keeps filter
+   * tweaks out of the history stack. Sort and page stay client-only state.
+   */
+  const syncUrl = (selected: string[]) => {
+    const params = new URLSearchParams(window.location.search);
+    const slugs = slugsFromLabels(selected, categories);
+    if (slugs.length > 0) params.set(ACADEMY_CATEGORY_PARAM, slugs.join(','));
+    else params.delete(ACADEMY_CATEGORY_PARAM);
+    const query = params.toString();
+    window.history.replaceState(
+      null,
+      '',
+      query ? `?${query}` : window.location.pathname
+    );
+  };
+
+  const applyFromQuery = useCallback(
+    (slugs: AcademyCategorySlug[]) => {
+      const labels = labelsFromSlugs(slugs, categories);
+      setDraft(labels);
+      setApplied(labels);
+      setPage(1);
+    },
+    [categories]
+  );
+
   const applyFilters = () => {
     setApplied(draft);
     setPage(1);
+    syncUrl(draft);
   };
 
   const resetFilters = () => {
     setDraft([]);
     setApplied([]);
     setPage(1);
+    syncUrl([]);
   };
 
   const allActive = draft.length === 0;
 
   return (
     <section className="bg-[var(--fig-light)]">
+      <Suspense fallback={null}>
+        <CategoryQuerySync onChange={applyFromQuery} />
+      </Suspense>
       <div className="mx-auto flex max-w-[1440px] flex-col gap-8 px-6 py-14 sm:px-10 lg:flex-row lg:gap-12 lg:px-[120px] lg:py-16">
         {/* Filter sidebar */}
         <aside className="lg:w-[240px] lg:shrink-0">
