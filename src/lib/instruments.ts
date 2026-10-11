@@ -2,6 +2,7 @@ import 'server-only';
 
 import {unstable_cache} from 'next/cache';
 
+import {CFD_PRODUCTS, type ProductKey} from '@/components/products/tradingConditions';
 import type {Locale} from '@/i18n/routing';
 import {CACHE_TAGS} from '@/lib/cacheTags';
 import {getPayloadClient, hasDb} from '@/lib/payload';
@@ -22,21 +23,13 @@ export type Instrument = {
   name: string;
   symbol: string;
   category: InstrumentCategory;
-  contractSize: string;
-  spread: string;
-  leverage: string;
-  tradingHours: string;
+  /**
+   * Key into CFD_PRODUCTS when this row is one of the approved products, so
+   * the table can render its APPROVED contract size / spread / leverage /
+   * hours. `null` for a CMS-only row, whose conditions render as pending.
+   */
+  productKey: ProductKey | null;
   order: number;
-};
-
-type SampleRow = {
-  symbol: string;
-  name: string;
-  category?: InstrumentCategory;
-  contractSize?: string;
-  spread?: string;
-  leverage?: string;
-  tradingHours?: string;
 };
 
 function toCategory(value: unknown): InstrumentCategory {
@@ -46,76 +39,102 @@ function toCategory(value: unknown): InstrumentCategory {
 }
 
 /**
- * i18n seed fallback. These are clearly SAMPLE rows (the UI keeps the「示意數據」
- * label). No approved facts are duplicated here — approved spreads/leverage live
- * in `tradingConditions.ts`.
+ * The approved products, in code order. Names come from the shared
+ * `products.items.*` messages so `/products` and `/products/all` never drift.
  */
-async function getInstrumentsFallback(locale: Locale): Promise<Instrument[]> {
+async function getApprovedRows(locale: Locale): Promise<Instrument[]> {
   const messages = (await import(`../messages/${locale}.json`)).default as {
-    productsAll?: {sample?: {rows?: SampleRow[]}};
+    products?: {items?: Record<string, {name?: string}>};
   };
+  const items = messages.products?.items ?? {};
 
-  const rows = messages.productsAll?.sample?.rows ?? [];
-
-  return rows
-    .filter((row) => row.symbol && row.name)
-    .map((row, index) => ({
-      id: `seed-${index}`,
-      name: row.name,
-      symbol: row.symbol,
-      category: toCategory(row.category),
-      contractSize: row.contractSize ?? '',
-      spread: row.spread ?? '',
-      leverage: row.leverage ?? '',
-      tradingHours: row.tradingHours ?? '',
-      order: index
-    }));
+  return CFD_PRODUCTS.map((product, index) => ({
+    id: `product-${product.key}`,
+    name: items[product.key]?.name ?? product.symbol,
+    symbol: product.symbol,
+    category: 'metals' as const,
+    productKey: product.key,
+    order: index
+  }));
 }
 
-async function fetchInstrumentsFromDb(locale: Locale): Promise<Instrument[]> {
-  try {
-    const payload = await getPayloadClient();
-    const res = await payload.find({
-      collection: 'instruments',
-      locale,
-      where: {enabled: {equals: true}},
-      sort: 'order',
-      limit: 200
-    });
+/**
+ * Applies the CMS overlay. The collection owns presentation only — display
+ * name, grouping, order and whether a row shows at all. It deliberately
+ * cannot carry contract size / spread / leverage / hours, because those are
+ * approved facts (docs/HATC_FACTS.md) and live in tradingConditions.ts.
+ */
+async function applyCmsOverlay(
+  locale: Locale,
+  approved: Instrument[]
+): Promise<Instrument[]> {
+  const payload = await getPayloadClient();
+  const res = await payload.find({
+    collection: 'instruments',
+    locale,
+    sort: 'order',
+    limit: 200
+  });
 
-    if (res.docs.length === 0) {
-      return getInstrumentsFallback(locale);
+  const bySymbol = new Map(approved.map((row) => [row.symbol, row]));
+  const extras: Instrument[] = [];
+
+  res.docs.forEach((doc, index) => {
+    const symbol = (doc.symbol as string) || '';
+    const enabled = doc.enabled !== false;
+    const base = bySymbol.get(symbol);
+
+    if (base) {
+      if (!enabled) {
+        bySymbol.delete(symbol);
+        return;
+      }
+      bySymbol.set(symbol, {
+        ...base,
+        name: (doc.name as string) || base.name,
+        category: toCategory(doc.category),
+        order: (doc.order as number) ?? base.order
+      });
+      return;
     }
 
-    return res.docs.map((doc) => ({
+    // A product the owner added in the CMS. It has no approved conditions, so
+    // the table renders those cells as "將另行公佈" rather than inventing any.
+    if (!enabled || !symbol || !doc.name) return;
+    extras.push({
       id: String(doc.id),
-      name: (doc.name as string) || '',
-      symbol: (doc.symbol as string) || '',
+      name: doc.name as string,
+      symbol,
       category: toCategory(doc.category),
-      contractSize: (doc.contractSize as string) || '',
-      spread: (doc.spread as string) || '',
-      leverage: (doc.leverage as string) || '',
-      tradingHours: (doc.tradingHours as string) || '',
-      order: (doc.order as number) ?? 0
-    }));
-  } catch {
-    return getInstrumentsFallback(locale);
-  }
+      productKey: null,
+      order: (doc.order as number) ?? approved.length + index
+    });
+  });
+
+  return [...bySymbol.values(), ...extras].sort((a, b) => a.order - b.order);
 }
 
 const getInstrumentsCached = unstable_cache(
-  async (locale: Locale) => fetchInstrumentsFromDb(locale),
+  async (locale: Locale) => {
+    const approved = await getApprovedRows(locale);
+    try {
+      return await applyCmsOverlay(locale, approved);
+    } catch {
+      return approved;
+    }
+  },
   ['instruments'],
   {tags: [CACHE_TAGS.instruments]}
 );
 
 /**
- * All tradeable products for `/products/all`. DB when configured; otherwise the
- * i18n SAMPLE seed. Empty CMS list also falls back to the seed.
+ * Rows for the `/products/all` table. The approved products always appear
+ * (facts from code); the CMS only adjusts how they are presented and may add
+ * further products that have no approved conditions yet.
  */
 export async function getInstruments(locale: Locale): Promise<Instrument[]> {
   if (!hasDb()) {
-    return getInstrumentsFallback(locale);
+    return getApprovedRows(locale);
   }
   return getInstrumentsCached(locale);
 }

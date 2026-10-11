@@ -14,7 +14,7 @@
     },
     "productsAll": {
       "title": "所有交易产品",
-      "description": "华安泰昌可交易产品一览与交易规格说明。点差与杠杆为已确认交易条件；合约规模与交易时段为示意数据，实际以官方公告与 MT5 平台即时报价为准。"
+      "description": "华安泰昌可交易产品一览与交易规格说明：黄金、白银与人民币公斤条的合约规模、点差、杠杆与交易时段。"
     },
     "accounts": {
       "title": "交易账户",
@@ -494,6 +494,11 @@
       "colPlatform": "交易平台",
       "pointsUnit": "点",
       "platformValue": "MetaTrader 5",
+      "contractSizeOz": "{value, number} 盎司",
+      "contractSizeGram": "{value, number} 克",
+      "hoursSummer": "夏令 周一 {open} 至周六 {close}",
+      "hoursWinter": "冬令 周一 {open} 至周六 {close}",
+      "hoursNote": "交易时段为香港时间（GMT+8）。夏令时段于周二至周五每日休市 {summerFrom}–{summerTo}，冬令时段为 {winterFrom}–{winterTo}。",
       "pendingLabel": "其余交易条件（最低手数、手续费、执行方式等）",
       "pending": "将另行公布",
       "note": "点差依账户类型而异，表列为最低值（尊尚账户）；各账户类型的完整点差见交易账户页。实际成交点差以 MT5 平台即时报价为准；杠杆交易可能同时放大盈利与亏损，请于交易前充分了解相关风险。",
@@ -521,7 +526,7 @@
       "kicker": "ALL PRODUCTS",
       "heading": "可交易产品一览",
       "sampleLabel": "示意数据",
-      "sampleNote": "点差与杠杆为华安泰昌已确认之交易条件（点差依账户类型而异，表列为最低值）；合约规模与交易时段为示意数据，实际以官方公告与 MT5 平台即时报价为准。",
+      "note": "下列合约规模、点差、杠杆与交易时段均为华安泰昌已确认之交易条件。点差依账户类型而异，表列为最低值；实际成交点差以 MT5 平台即时报价为准。",
       "colProduct": "产品",
       "colContractSize": "合约规模",
       "colSpread": "点差",
@@ -536,37 +541,6 @@
       "indices": "指数",
       "energy": "能源",
       "other": "其他"
-    },
-    "sample": {
-      "rows": [
-        {
-          "symbol": "XAU/USD",
-          "name": "伦敦金",
-          "category": "metals",
-          "contractSize": "100 盎司",
-          "spread": "20 点起",
-          "leverage": "1:100",
-          "tradingHours": "周一至周五 24 小时"
-        },
-        {
-          "symbol": "XAG/USD",
-          "name": "伦敦银",
-          "category": "metals",
-          "contractSize": "5000 盎司",
-          "spread": "30 点起",
-          "leverage": "1:100",
-          "tradingHours": "周一至周五 24 小时"
-        },
-        {
-          "symbol": "RKG/CNH",
-          "name": "人民币公斤条",
-          "category": "metals",
-          "contractSize": "将另行公布",
-          "spread": "35 点起",
-          "leverage": "1:100",
-          "tradingHours": "周一至周五 24 小时"
-        }
-      ]
     }
   },
   "accounts": {
@@ -715,6 +689,7 @@
       "heading": "全面掌控，选择您的交易平台类型",
       "subheading": "为不同经验与策略的交易者量身打造的多元平台生态。",
       "visualNote": "平台界面为示意，实际功能与画面以正式发布为准。",
+      "screenshotNote": "实际交易端画面；图中报价为截图当时的市场价格，仅供参考。",
       "items": [
         {
           "name": "HATC 交易应用程序",

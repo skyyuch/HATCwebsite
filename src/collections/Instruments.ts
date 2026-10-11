@@ -8,13 +8,16 @@ import {ADMIN_GROUPS, adminLabel} from '@/payload/adminLabels';
  * Owner-editable "all tradeable products" table shown on `/products/all`
  * (Vantage-style instrument list). Each document is one row.
  *
- * ⚠️ Governance: the numeric columns (contract size, spread, leverage, trading
- * hours) are **SAMPLE / illustrative** display values — the front-end keeps the
- * 「示意數據」label and they are NOT approved facts. Approved spreads/leverage
- * (gold 27 / silver 30 / 1:100) live in `src/components/products/tradingConditions.ts`
- * and are surfaced on `/products` — do not treat these editable cells as fact.
- * When the database is not configured, the reader falls back to i18n seeds
- * (`productsAll.sample.rows`).
+ * ⚠️ Governance (owner 2026-10-11): contract size, spread, leverage and trading
+ * hours are APPROVED FACTS (docs/HATC_FACTS.md) and therefore are NOT fields on
+ * this collection — they come from `src/components/products/tradingConditions.ts`
+ * so the admin UI cannot edit them. This collection owns presentation only:
+ * display name, grouping, order and whether a row shows.
+ *
+ * The three approved products always render, with or without a document here;
+ * a document matching an approved symbol just overrides its presentation. A
+ * document with any other symbol is treated as a product whose conditions are
+ * not approved yet, and its condition cells render "將另行公佈".
  */
 export const Instruments: CollectionConfig = {
   slug: 'instruments',
@@ -28,9 +31,9 @@ export const Instruments: CollectionConfig = {
     defaultColumns: ['name', 'symbol', 'category', 'order', 'enabled'],
     group: ADMIN_GROUPS.operations,
     description: adminLabel(
-      '⚠️ SAMPLE product table for /products/all. Contract size / spread / leverage / hours are illustrative (front-end keeps the sample label), NOT approved facts. Approved figures live in tradingConditions.ts. Empty / no DB = i18n seed fallback.',
-      '⚠️ /products/all 的示意產品表。合約規模／點差／槓桿／時段皆為示意數據（前台保留「示意數據」標示），非核可事實。核可數字在程式碼 tradingConditions.ts。無資料庫或留空＝i18n 預設。',
-      '⚠️ /products/all 的示意产品表。合约规模／点差／杠杆／时段皆为示意数据（前台保留「示意数据」标示），非核可事实。核可数字在程序 tradingConditions.ts。无数据库或留空＝i18n 默认。'
+      'Presentation of the /products/all table. Contract size, spread, leverage and trading hours are approved facts held in code and cannot be edited here. The three approved products (XAU/USD, XAG/USD, RKG/CNH) always appear; a document with a matching symbol only overrides its name, grouping and order. A document with any other symbol renders its conditions as "to be announced" until the owner approves them.',
+      '/products/all 表格的顯示設定。合約規模／點差／槓桿／交易時段為已核可事實，由程式碼管理，無法在此編輯。三個核可產品（XAU/USD、XAG/USD、RKG/CNH）一律顯示；符號相同的文件只會覆寫其名稱、分類與排序。使用其他符號新增的產品，其交易條件會顯示「將另行公佈」，直到業主核可。',
+      '/products/all 表格的显示设置。合约规模／点差／杠杆／交易时段为已核可事实，由程序管理，无法在此编辑。三个核可产品（XAU/USD、XAG/USD、RKG/CNH）一律显示；符号相同的文档只会覆写其名称、分类与排序。使用其他符号新增的产品，其交易条件会显示「将另行公布」，直到业主核可。'
     )
   },
   defaultSort: 'order',
@@ -50,7 +53,14 @@ export const Instruments: CollectionConfig = {
       name: 'symbol',
       type: 'text',
       required: true,
-      label: adminLabel('Symbol / code', '代號（如 XAU/USD）', '代号（如 XAU/USD）')
+      label: adminLabel('Symbol / code', '代號（如 XAU/USD）', '代号（如 XAU/USD）'),
+      admin: {
+        description: adminLabel(
+          'Use XAU/USD, XAG/USD or RKG/CNH to restyle an approved product. Any other symbol creates a product with no approved trading conditions.',
+          '填 XAU/USD、XAG/USD 或 RKG/CNH 即為調整該核可產品的顯示方式；填其他代號則會新增一個尚無核可交易條件的產品。',
+          '填 XAU/USD、XAG/USD 或 RKG/CNH 即为调整该核可产品的显示方式；填其他代号则会新增一个尚无核可交易条件的产品。'
+        )
+      }
     },
     {
       name: 'category',
@@ -72,27 +82,6 @@ export const Instruments: CollectionConfig = {
         {label: adminLabel('Energy', '能源', '能源'), value: 'energy'},
         {label: adminLabel('Other', '其他', '其他'), value: 'other'}
       ]
-    },
-    {
-      name: 'contractSize',
-      type: 'text',
-      label: adminLabel('Contract size (sample)', '合約規模（示意）', '合约规模（示意）')
-    },
-    {
-      name: 'spread',
-      type: 'text',
-      label: adminLabel('Avg spread (sample)', '平均點差（示意）', '平均点差（示意）')
-    },
-    {
-      name: 'leverage',
-      type: 'text',
-      label: adminLabel('Leverage (sample)', '槓桿（示意）', '杠杆（示意）')
-    },
-    {
-      name: 'tradingHours',
-      type: 'text',
-      localized: true,
-      label: adminLabel('Trading hours (sample)', '交易時段（示意）', '交易时段（示意）')
     },
     {
       name: 'order',

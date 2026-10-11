@@ -14,7 +14,7 @@
     },
     "productsAll": {
       "title": "All trading products",
-      "description": "Every product HATC offers, with its trading specifications. Spreads and leverage are confirmed trading conditions; contract size and trading hours are illustrative — actual conditions follow official announcements and live MetaTrader 5 quotes."
+      "description": "Every product HATC offers, with its trading specifications: contract size, spread, leverage and trading hours for gold, silver and the RMB kilobar."
     },
     "accounts": {
       "title": "Trading accounts",
@@ -494,6 +494,11 @@
       "colPlatform": "Platform",
       "pointsUnit": "points",
       "platformValue": "MetaTrader 5",
+      "contractSizeOz": "{value, number} oz",
+      "contractSizeGram": "{value, number} g",
+      "hoursSummer": "Summer: Mon {open} – Sat {close}",
+      "hoursWinter": "Winter: Mon {open} – Sat {close}",
+      "hoursNote": "Trading hours are Hong Kong time (GMT+8). The market closes daily from {summerFrom} to {summerTo} Tuesday through Friday on the summer schedule, and from {winterFrom} to {winterTo} on the winter schedule.",
       "pendingLabel": "Other conditions (minimum lot size, fees, execution mode, etc.)",
       "pending": "To be announced",
       "note": "Spreads vary by account type; the table shows the lowest (VIP account), and the trading-accounts page lists every type. Actual execution spreads follow live MetaTrader 5 quotes. Leveraged trading can amplify both profits and losses — make sure you understand the risks before trading.",
@@ -521,7 +526,7 @@
       "kicker": "ALL PRODUCTS",
       "heading": "Tradeable products",
       "sampleLabel": "Sample data",
-      "sampleNote": "Spreads and leverage are HATC's confirmed trading conditions (spreads vary by account type; the table shows the lowest). Contract size and trading hours are illustrative — actual conditions follow official announcements and live MetaTrader 5 quotes.",
+      "note": "The contract sizes, spreads, leverage and trading hours below are HATC's confirmed trading conditions. Spreads vary by account type and the table shows the lowest; actual execution spreads follow live MetaTrader 5 quotes.",
       "colProduct": "Product",
       "colContractSize": "Contract size",
       "colSpread": "Spread",
@@ -536,37 +541,6 @@
       "indices": "Indices",
       "energy": "Energy",
       "other": "Other"
-    },
-    "sample": {
-      "rows": [
-        {
-          "symbol": "XAU/USD",
-          "name": "Loco London Gold",
-          "category": "metals",
-          "contractSize": "100 oz",
-          "spread": "from 20 points",
-          "leverage": "1:100",
-          "tradingHours": "Mon–Fri, 24 hours"
-        },
-        {
-          "symbol": "XAG/USD",
-          "name": "Loco London Silver",
-          "category": "metals",
-          "contractSize": "5,000 oz",
-          "spread": "from 30 points",
-          "leverage": "1:100",
-          "tradingHours": "Mon–Fri, 24 hours"
-        },
-        {
-          "symbol": "RKG/CNH",
-          "name": "RMB Kilobar",
-          "category": "metals",
-          "contractSize": "To be announced",
-          "spread": "from 35 points",
-          "leverage": "1:100",
-          "tradingHours": "Mon–Fri, 24 hours"
-        }
-      ]
     }
   },
   "accounts": {
@@ -715,6 +689,7 @@
       "heading": "Full control — choose your trading platform",
       "subheading": "A multi-platform ecosystem tailored to traders of every experience level and strategy.",
       "visualNote": "Platform visuals are illustrative; actual features and screens follow the official release.",
+      "screenshotNote": "An actual screen from the HATC terminal; the quotes shown were the market prices at the time of capture and are for reference only.",
       "items": [
         {
           "name": "HATC trading app",

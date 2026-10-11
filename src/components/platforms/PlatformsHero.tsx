@@ -1,30 +1,35 @@
 import Image from 'next/image';
-import {getTranslations} from 'next-intl/server';
+import {getLocale, getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
+import type {Locale} from '@/i18n/routing';
 import {getPlatformsMarketing} from '@/lib/platformsMarketing';
 import {demoAccountHref, getSiteSettings} from '@/lib/siteSettings';
+import {TERMINAL_HERO, hasTerminalScreenshots} from './terminalScreenshots';
 
-const HERO_FALLBACK = '/figma/platforms/hero-devices.png';
+const HERO_MOCKUP = '/figma/platforms/hero-devices.png';
 
 /**
  * Dark hero for `/platforms` (Figma 92:4). Shares the homepage dark/gold system;
- * the Figma orange accent is mapped to HATC gold. The device visual prefers the
- * CMS-uploaded hero image (`platforms-page` global) and falls back to the Figma
- * template's multi-device mockup (owner: 「圖先用 Figma 的」) — a generic charts
- * render, NOT a real HATC platform screenshot; labelled 示意 until replaced. The
- * primary CTA scrolls to platform-types; the demo CTA only renders once the
- * owner configures a demo-account URL in the CMS (no demo flow exists yet).
+ * the Figma orange accent is mapped to HATC gold.
+ *
+ * Visual precedence matches PlatformTypes: CMS upload → real terminal
+ * screenshot (Simplified Chinese only, see terminalScreenshots.ts) → the Figma
+ * template's generic multi-device render, which is the only one that carries
+ * the「示意」label. The primary CTA scrolls to platform-types; the demo CTA only
+ * renders once the owner configures a demo-account URL in the CMS.
  */
 export default async function PlatformsHero() {
+  const locale = (await getLocale()) as Locale;
   const t = await getTranslations('platforms.hero');
   const nav = await getTranslations('nav');
   const demoHref = demoAccountHref(await getSiteSettings());
 
   const {heroImage} = await getPlatformsMarketing();
-  const heroSrc = heroImage ?? HERO_FALLBACK;
-  const isSample = !heroImage;
+  const terminalSrc = hasTerminalScreenshots(locale) ? TERMINAL_HERO : null;
+  const heroSrc = heroImage ?? terminalSrc ?? HERO_MOCKUP;
+  const isSample = !heroImage && !terminalSrc;
 
   return (
     <section className="relative overflow-hidden bg-[var(--fig-ink)] text-white">

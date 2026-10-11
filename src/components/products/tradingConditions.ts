@@ -11,9 +11,9 @@
  * ⚠️ RETIRED 2026-10-11 and must never reappear anywhere on the site: the old
  *    average spreads (gold 27 / silver 30), leverage 1:500 and 1:1000, and all
  *    per-lot commission figures.
- * ⚠️ Still owner-pending — never fabricate: minimum lot size, fees, execution
- *    mode, trading hours, and the kilobar contract size. The UI renders those as
- *    "將另行公佈 / To be announced" (products.conditions.pending).
+ * ⚠️ Still owner-pending — never fabricate: minimum lot size, fees and
+ *    execution mode. The UI renders those as "將另行公佈 / To be announced"
+ *    (products.conditions.pending).
  *
  * Platform is MetaTrader 5. MT4 is NOT offered (owner 2026-10-11).
  * Labels/units come from i18n; every value below is locale-neutral.
@@ -25,6 +25,20 @@ export type ProductKey = 'gold' | 'silver' | 'kilobar';
 /** Leverage is the same for every tier and every product. */
 export const MAX_LEVERAGE = '1:100';
 
+/** Contract-size unit — picks the products.conditions.contractSize* message. */
+export type ContractUnit = 'oz' | 'gram';
+
+/**
+ * Trading hours, identical for all three products (owner 2026-10-11).
+ * Times are Hong Kong time (GMT+8); "summer"/"winter" follow the market's
+ * daylight-saving schedule — the owner has not supplied switch dates, so the
+ * UI must not state them. Each trading day pauses for the daily break.
+ */
+export const TRADING_HOURS = {
+  summer: {open: '06:00', close: '04:45', breakFrom: '05:00', breakTo: '06:00'},
+  winter: {open: '07:00', close: '05:45', breakFrom: '06:00', breakTo: '07:00'}
+} as const;
+
 export type CfdProduct = {
   /** message key under products.items.* */
   key: ProductKey;
@@ -34,6 +48,12 @@ export type CfdProduct = {
   gatewaySymbol: string;
   /** price decimals — 1 point = 10^-digits (gold 0.01, silver 0.001) */
   digits: number;
+  /**
+   * Contract size per lot (owner 2026-10-11). Silver is 5,000 oz per the
+   * owner, which deliberately overrides the 1,000 the quote gateway reports.
+   */
+  contractSize: number;
+  contractUnit: ContractUnit;
   /**
    * Lowest spread across account tiers, in points (= the VIP tier). Pages that
    * cannot show the per-tier breakdown render this as "X 點起" and link to
@@ -49,6 +69,8 @@ export const CFD_PRODUCTS: ReadonlyArray<CfdProduct> = [
     symbol: 'XAU/USD',
     gatewaySymbol: 'XAUUSD',
     digits: 2,
+    contractSize: 100,
+    contractUnit: 'oz',
     spreadFrom: 20,
     leverage: MAX_LEVERAGE
   },
@@ -57,6 +79,8 @@ export const CFD_PRODUCTS: ReadonlyArray<CfdProduct> = [
     symbol: 'XAG/USD',
     gatewaySymbol: 'XAGUSD',
     digits: 3,
+    contractSize: 5000,
+    contractUnit: 'oz',
     spreadFrom: 30,
     leverage: MAX_LEVERAGE
   },
@@ -65,6 +89,8 @@ export const CFD_PRODUCTS: ReadonlyArray<CfdProduct> = [
     symbol: 'RKG/CNH',
     gatewaySymbol: 'RKGCNH',
     digits: 2,
+    contractSize: 1000,
+    contractUnit: 'gram',
     spreadFrom: 35,
     leverage: MAX_LEVERAGE
   }

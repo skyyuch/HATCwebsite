@@ -11,44 +11,49 @@ import type {TradingPlatform} from '@/lib/tradingPlatforms';
 type Bullet = {title: string; desc: string};
 
 /**
+ * One resolved panel image, chosen server-side in PlatformTypes.
+ * - `upload`    — owner-uploaded via the CMS, shown without a caption.
+ * - `screenshot`— a real capture of HATC's own terminal; captioned to say the
+ *                 quotes in it are a point in time, never labelled「示意」.
+ * - `mockup`    — the Figma template's generic device render, always「示意」.
+ */
+export type PlatformVisual = {
+  src: string;
+  kind: 'upload' | 'screenshot' | 'mockup';
+};
+
+/**
  * Interactive platform tabs (Figma 92:28 + 92:50). Selecting a tab swaps the
- * detail panel; the value-prop bullets are shared across platforms. Device
- * visuals use the Figma template mockups as development placeholders (owner:
- * 「圖先用 Figma 的」) — app-style tabs show the phone mockup, others show the
- * multi-device render. These are generic charts renders (示意), NOT real HATC
- * platform screenshots, and are asset-replaceable later. `ctaHref` is an
- * operational open-account link resolved server-side (CMS), falling back to
- * /register.
+ * detail panel; the value-prop bullets are shared across platforms. `ctaHref`
+ * is an operational open-account link resolved server-side (CMS), falling back
+ * to /register.
  */
 export default function PlatformTabsClient({
   platforms,
+  visuals,
   bullets,
   visualNote,
+  screenshotNote,
   ctaLabel,
   ctaHref,
   ctaExternal
 }: {
   platforms: TradingPlatform[];
+  visuals: PlatformVisual[];
   bullets: Bullet[];
   visualNote: string;
+  screenshotNote: string;
   ctaLabel: string;
   ctaHref: string;
   ctaExternal: boolean;
 }) {
   const [active, setActive] = useState(0);
   const current = platforms[active] ?? platforms[0];
+  const visual = visuals[active] ?? visuals[0];
 
-  if (!current) return null;
+  if (!current || !visual) return null;
 
-  const isApp = /app|應用|应用/i.test(
-    `${current.panelLabel} ${current.name}`
-  );
-  const fallbackSrc = isApp
-    ? '/figma/platforms/detail-phone.png'
-    : '/figma/platforms/hero-devices.png';
-  // Prefer the CMS-uploaded per-platform screenshot; else the Figma sample mockup.
-  const visualSrc = current.visual ?? fallbackSrc;
-  const isSample = !current.visual;
+  const isPortrait = visual.kind === 'screenshot';
 
   return (
     <div className="flex flex-col gap-12">
@@ -80,34 +85,48 @@ export default function PlatformTabsClient({
       </div>
 
       <div className="grid items-center gap-10 lg:grid-cols-2">
-        <div
-          className="relative flex h-[360px] items-center justify-center overflow-hidden rounded-[16px] border border-[var(--fig-border)] sm:h-[440px]"
-          style={{
-            background:
-              'radial-gradient(120% 120% at 30% 0%, rgba(212,175,55,0.18), transparent 55%), linear-gradient(150deg, #111625 0%, #070a14 100%)'
-          }}
-        >
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-[0.12]"
+        <div className="flex flex-col gap-3">
+          <div
+            className={cn(
+              'relative flex items-center justify-center overflow-hidden rounded-[16px] border border-[var(--fig-border)]',
+              // Terminal captures are phone-shaped, so they need a taller frame
+              // to stay readable; the device mockups are landscape renders.
+              isPortrait
+                ? 'h-[460px] sm:h-[620px]'
+                : 'h-[360px] sm:h-[440px]'
+            )}
             style={{
-              backgroundImage:
-                'linear-gradient(rgba(212,175,55,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.4) 1px, transparent 1px)',
-              backgroundSize: '40px 40px'
+              background:
+                'radial-gradient(120% 120% at 30% 0%, rgba(212,175,55,0.18), transparent 55%), linear-gradient(150deg, #111625 0%, #070a14 100%)'
             }}
-          />
-          <Image
-            key={visualSrc}
-            src={visualSrc}
-            alt={isSample ? '' : current.name}
-            fill
-            sizes="(min-width: 1024px) 40vw, 100vw"
-            className="object-contain p-4"
-          />
-          {isSample ? (
-            <span className="absolute bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/45 px-3 py-1 text-[11px] text-white/75 backdrop-blur-sm">
-              {visualNote}
-            </span>
+          >
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 opacity-[0.12]"
+              style={{
+                backgroundImage:
+                  'linear-gradient(rgba(212,175,55,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.4) 1px, transparent 1px)',
+                backgroundSize: '40px 40px'
+              }}
+            />
+            <Image
+              key={visual.src}
+              src={visual.src}
+              alt={visual.kind === 'mockup' ? '' : current.name}
+              fill
+              sizes="(min-width: 1024px) 40vw, 100vw"
+              className="object-contain p-4"
+            />
+            {visual.kind === 'mockup' ? (
+              <span className="absolute bottom-4 left-1/2 max-w-[90%] -translate-x-1/2 rounded-full bg-black/45 px-3 py-1 text-center text-[11px] text-white/75 backdrop-blur-sm">
+                {visualNote}
+              </span>
+            ) : null}
+          </div>
+          {visual.kind === 'screenshot' ? (
+            <p className="text-xs leading-[1.6] text-[var(--fig-text-muted)]">
+              {screenshotNote}
+            </p>
           ) : null}
         </div>
 

@@ -10,8 +10,8 @@ import {ADMIN_GROUPS, adminLabel} from '@/payload/adminLabels';
 
 /**
  * Owner-editable /products marketing copy. Approved trading conditions
- * (gold 27 / silver 30 / 1:100) stay in `tradingConditions.ts` — this global
- * must never override those numbers.
+ * (spreads, leverage, contract size, trading hours) stay in
+ * `tradingConditions.ts` — this global must never override those numbers.
  */
 export const ProductsPage: GlobalConfig = {
   slug: 'products-page',

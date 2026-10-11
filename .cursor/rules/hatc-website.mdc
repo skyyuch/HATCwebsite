@@ -410,11 +410,48 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  **慣例**：退役集合/global 後**必須**「清 `.next` ＋ 手動清 DB 殘留物件」兩件一起做；日後懷疑 CMS 掛掉，
  先打 `/api/users/me` 帶 timeout（hang＝卡在 push 提問），別只看前台狀態碼。
 
-- **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（尚未實作）。**
- - **🚨 P0**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 前台**正在顯示退役的
- 黃金 27／白銀 30**，且缺公斤條。**退役值復活＝紅線違規，下一棒最優先修**。修法擇一（須業主定）：
- 把 `instruments` 改成只放「非事實」欄位（合約規模/時段）而點差槓桿改讀 `tradingConditions.ts`，
- 或整張表改由 code 產生、`instruments` 僅供未來新增品種。
+- **2026-10-11 (第四十七輪): `/products/all` 退役值 P0 修復 ＋ 合約規模/交易時段入 FACTS ＋
+ 交易端真實截圖（簡中）。SUPERSEDES 第三十輪把 `instruments` 當「示意表」的設計。**
+ 業主先選「只把點差槓桿改 code 注入」，但同一輪又確認**合約規模與交易時段為已核可事實** →
+ 依「事實不進 CMS」原則落地為：**`/products/all` 表格的所有條件欄位全部來自
+ `products/tradingConditions.ts`**，CMS `instruments` **瘦身成純顯示層**（名稱／分類／排序／啟用）。
+ - **新核可事實**（`HATC_FACTS.md`「Contract size & trading hours」）：合約規模 金 **100 盎司**／
+ 銀 **5,000 盎司**／公斤條 **1,000 克**；交易時段三品種相同（香港時間 GMT+8）＝夏令 週一 06:00–
+ 週六 04:45、冬令 週一 07:00–週六 05:45，週二至週五每日休市 夏令 05:00–06:00／冬令 06:00–07:00。
+ **切換日期業主未給，不得標示。** ⚠ **白銀 5,000 是業主裁定值，刻意覆蓋行情閘道回報的 1000**——
+ 日後不得依閘道「訂正」。FACTS「仍待業主提供」縮為 **最低手數／手續費／執行方式**。
+ - **程式**：`tradingConditions.ts` 新增 `contractSize`／`contractUnit`('oz'|'gram')／`TRADING_HOURS`；
+ i18n 新增 `products.conditions.{contractSizeOz,contractSizeGram,hoursSummer,hoursWinter,hoursNote}`。
+ - **`lib/instruments.ts` 重寫**＝以 `CFD_PRODUCTS` 為基底、CMS 依 `symbol` 做 **overlay**
+ （停用才消失；未知代號＝無核可條件的產品，條件欄渲染「將另行公佈」）。名稱 fallback 改用共用的
+ `products.items.*`。`Instruments` 集合**移除** `contractSize`/`spread`/`leverage`/`tradingHours`
+ 四欄。`AllInstrumentsTable` **移除「示意數據」badge**；`productsAll.table.sampleNote`→**`note`**，
+ **刪除 `productsAll.sample.rows`**。**`scripts/seed-instruments.ts` 已刪除**（會種回 27/30）。
+ - ⚠ **DB（本機已手動做，正式站須 migration）**：`DELETE FROM instruments` ＋
+ `ALTER TABLE instruments DROP COLUMN contract_size, spread, leverage` ＋
+ `ALTER TABLE instruments_locales DROP COLUMN trading_hours`。沿用第四十六輪慣例：改/退役 schema
+ 後「清 `.next`」＋「手動清 DB」兩件一起做。
+ - **交易端真實截圖（業主拍板：UAT 先截／只截遊客可見頁／只上簡中版）**：素材
+ `public/platforms/terminal-{home,gold-chart,silver-chart}.png`（來源 `h5.666678910.com`，
+ uni-app x H5 build＝網頁交易端，與 App 同一套 UI）。接線＝
+ `src/components/platforms/terminalScreenshots.ts`，依非 localized `panelLabel` 對應
+ （`HATC App`→金 K 線、`Web Trading`→銀 K 線；**MT5 無真實截圖，維持 mockup＋「示意」**）。
+ 視覺優先序 **CMS 上傳 → 真實截圖 → Figma mockup**，`PlatformsHero`／`PlatformTypes`／
+ `PlatformTabsClient` 共用同一判斷，**只有 mockup 標「示意」**；真實截圖改標新鍵
+ `platforms.types.screenshotNote`（圖中報價為截圖當時價格）。手機比例截圖的面板加高
+ `h-[460px] sm:h-[620px]`，說明文字移到面板下方。
+ - **截圖紅線（重截必照做）**：① **裁掉底部買賣價列**（交易端遊客點差 金 32／銀 38 與核可分級點差
+ 不符，不可辨讀）；② 不截瀏覽器外框 → UAT 網域不入鏡；③ 只用**數值自洽**的畫面（分時頁曾出現
+ 今開 4616 對現價 4194，已棄用）；④ **遊客「交易」分頁不可截**——它寫著「开户领$50奖励」
+ 「30分钟出入金」「5×24小时专属客服」「资金独立存取账户0风险」「4+热门贵金属产品」，全是官網
+ 被禁止的未確認宣稱（已回報業主）。
+ - **待業主**：公斤條合約規模單位是否為克；夏令/冬令切換日期；生產遊客組配好產品後改用生產環境
+ 重截；交易端支援繁中/英文後補另外兩語；需登入頁的測試帳號；MT5 真實截圖。
+
+- **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
+ - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾
+ 顯示退役的黃金 27／白銀 30 且缺公斤條。已改為條件欄位全部由 `tradingConditions.ts` 產生、
+ `instruments` 只剩顯示層；**正式站仍須清這張表並補 migration**。
  - **合約規模／交易時段／最小手數可從自家閘道取得**：`POST /v1/context/resolve` 回應的
  `result.products[]` 內含 `contractSize`／`digits`／`volumeMin|Max|Step`／`stopsLevel`／
  `currencyProfit`／`swapLong|Short`／`sessions`（後端已換算 GMT+8）。官網 `src/lib/marketQuotes.ts`

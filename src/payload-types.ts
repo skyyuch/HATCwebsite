@@ -401,7 +401,7 @@ export interface AcademyArticle {
   createdAt: string;
 }
 /**
- * ⚠️ SAMPLE product table for /products/all. Contract size / spread / leverage / hours are illustrative (front-end keeps the sample label), NOT approved facts. Approved figures live in tradingConditions.ts. Empty / no DB = i18n seed fallback.
+ * Presentation of the /products/all table. Contract size, spread, leverage and trading hours are approved facts held in code and cannot be edited here. The three approved products (XAU/USD, XAG/USD, RKG/CNH) always appear; a document with a matching symbol only overrides its name, grouping and order. A document with any other symbol renders its conditions as "to be announced" until the owner approves them.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "instruments".
@@ -409,15 +409,14 @@ export interface AcademyArticle {
 export interface Instrument {
   id: number;
   name: string;
+  /**
+   * Use XAU/USD, XAG/USD or RKG/CNH to restyle an approved product. Any other symbol creates a product with no approved trading conditions.
+   */
   symbol: string;
   /**
    * Rows are grouped by category on the page.
    */
   category: 'metals' | 'forex' | 'indices' | 'energy' | 'other';
-  contractSize?: string | null;
-  spread?: string | null;
-  leverage?: string | null;
-  tradingHours?: string | null;
   /**
    * Lower numbers appear first.
    */
@@ -779,10 +778,6 @@ export interface InstrumentsSelect<T extends boolean = true> {
   name?: T;
   symbol?: T;
   category?: T;
-  contractSize?: T;
-  spread?: T;
-  leverage?: T;
-  tradingHours?: T;
   order?: T;
   enabled?: T;
   updatedAt?: T;
