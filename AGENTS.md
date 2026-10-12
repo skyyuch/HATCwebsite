@@ -8,9 +8,10 @@ Before planning, designing or changing code, read:
 4. `docs/DESIGN_DIRECTION.md`
 
 For anything touching deployment, environment variables, migrations or the
-hand-off to the dev/ops team, read `docs/DEPLOYMENT.md` as well. The repo is
-delivered to the dev team via Gitee (`gitee` remote); GitHub `origin` is kept as
-a backup, so **push both**.
+hand-off to the dev/ops team, read `docs/DEPLOYMENT.md` as well. GitHub
+`origin` is the source of truth. The dev team currently receives a **zip
+snapshot** built with `git archive` (see DEPLOYMENT.md §9) because pushing to
+Gitee fails — the `gitee` remote is configured but still empty.
 
 ## Working rules
 

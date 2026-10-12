@@ -71,8 +71,8 @@ DATABASE_URI=postgres://user:password@host:5432/hatc
 ## 3. 首次部署步驟
 
 ```bash
-# 1. 取得程式碼
-git clone <gitee repo> hatc-web && cd hatc-web
+# 1. 取得程式碼（目前以 zip 快照交付，解開後進入 hatc-web/）
+unzip hatc-web-<日期>-<sha>.zip && cd hatc-web
 npm ci
 
 # 2. 設定環境變數（見第 2 節）
@@ -200,3 +200,30 @@ npm run payload -- run scripts/seed-funding.ts         # 出入金渠道（示�
   不得自行加入管轄法律、資料保存期限或合規保證。
 
 有疑問請回報業主確認，不要自行填寫。
+
+---
+
+## 9. 程式碼如何交付（給業主／維護者看）
+
+目前以 **zip 快照**交付給開發團隊：
+
+```bash
+git archive --format=zip -9 --prefix=hatc-web/ \
+  -o ~/Desktop/hatc-web-$(date +%Y%m%d)-$(git rev-parse --short HEAD).zip \
+  HEAD -- . ':!lp.zip'
+```
+
+- 內容＝版控在 `HEAD` 的檔案，**自動排除** `node_modules`、`.next`、本機 `.env` 與 `.git`；
+  另外刻意排除 `lp.zip`（4 MB 設計素材，部署不需要）。約 33 MB／435 個檔案。
+- 產生後請用 `unzip -tq <檔名>` 驗證完整性。
+- ⚠ 快照**不含 `.git`**，開發端無法 `git pull`。**每次有更新都要重新產包並重發。**
+
+**為什麼不用 Gitee：** 曾嘗試推到 `git@gitee.com:spingpeng/homeindex.git` 兩次都失敗——
+第一次 69 分鐘後連線中斷，第二次加了 SSH 保活仍在 57 分鐘被 Gitee 伺服器端時限砍掉
+（`Grpc Receive Pack error: DeadlineExceeded`）。原因是 **39 MiB 的 pack 搭配 3–13 KiB/s
+的上行頻寬**，塞不進 Gitee 的 receive-pack 時限；而體積集中在圖片素材，分段推送或壓縮歷史
+都無法改善。
+
+若日後要恢復 git 交付，建議走 **Gitee 網頁「倉庫鏡像管理 → 拉取」直接從 GitHub 同步**
+（`https://github.com/skyyuch/HATCwebsite.git`，公開倉、免憑證），由 Gitee 伺服器對 GitHub
+拉取，完全不經過本地上行頻寬。

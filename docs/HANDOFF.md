@@ -7,9 +7,26 @@
 
 ## ▶ 交付狀態：程式碼交給開發團隊部署（2026-10-11）
 
-> 業主決定**把程式碼交給開發團隊部署到伺服器**，倉庫走 **Gitee**：
-> `https://gitee.com/spingpeng/homeindex.git`（remote 名稱 `gitee`；原本的 GitHub
-> `origin` 保留為備份，兩邊都要推）。
+> 業主決定**把程式碼交給開發團隊部署到伺服器**。**GitHub `origin` 是唯一來源**；
+> 交付方式＝**zip 快照**（業主 2026-10-12 決定，因為 Gitee 推不上去，見下）。
+>
+> - **產生交付包**：
+>   `git archive --format=zip -9 --prefix=hatc-web/ -o ~/Desktop/hatc-web-<date>-<sha>.zip HEAD -- . ':!lp.zip'`
+>   → 33 MB／435 檔。自動排除 `node_modules`／`.next`／本機 `.env`／`.git`，並刻意排除
+>   `lp.zip`（4 MB 設計素材，部署不需要，仍留在倉庫）。已驗證 `unzip -tq` 無損、
+>   三個 migration（含 snapshot 共 7 檔）與 `docs/DEPLOYMENT.md` 都在內。
+>   ⚠ 開發端拿到的是**快照、沒有 `.git`**，無法 `git pull` → **每次更新都要重新產包並重發**。
+> - 🚩 **Gitee 推送已證實行不通，不要再重試**。remote `gitee`
+>   （`git@gitee.com:spingpeng/homeindex.git`）已設定但**仍是空倉**。兩次失敗：① 69 分鐘後
+>   client 端 `Operation timed out / Broken pipe`；② 加 SSH 保活（新建 `~/.ssh/config`：
+>   `ServerAliveInterval 20`／`TCPKeepAlive`／`Compression`，已驗證生效）後仍在 **57 分鐘**被
+>   **Gitee 伺服器端時限**砍掉：`Grpc Receive Pack error: DeadlineExceeded`。根因＝
+>   **39.1 MiB pack 配 3–13 KiB/s 上行**（重傳率約 17%），塞不進 Gitee 的 receive-pack deadline。
+>   **依 commit 數分段無效**：39.1 MiB 裡 **35.9 MiB 集中在前 8 個 commit**（幾乎全在最初
+>   commit 的圖片素材），後三段加起來只有 3 MiB。**壓成單一 commit 也沒用**——現行工作樹本身
+>   就 39 MB，體積是現有 PNG／zip，不是歷史版本。
+>   若日後要恢復 git 交付，正解＝**Gitee 網頁「倉庫鏡像管理 → 拉取」從 GitHub 同步**
+>   （機房對機房，不經業主上行；GitHub 倉公開、免憑證）。
 >
 > - **部署交接文件＝[`docs/DEPLOYMENT.md`](DEPLOYMENT.md)**（給開發／維運讀，繁中）：
 >   環境需求、環境變數（哪些是 server-only 密鑰）、**空庫 → `npm run migrate` → build →
