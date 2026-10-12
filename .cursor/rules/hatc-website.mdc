@@ -897,9 +897,28 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  `seed-academy.ts` 1 既有 warning）／`tsc --noEmit`／`i18n:check` 730 鍵／冷建綠且兩條路由 ● SSG；
  `npm start` 實測三語列表與詳情 200、未知 slug 404、`/admin`＋`/api/users/me` 200、sitemap 齊。
  **互動以三筆臨時公告驗完即刪**（現 DB 只有兩個分類、零公告）。
- - **待業主**：(a) 發佈第一則公告；(b) 是否在 Footer 也加公告入口（本輪只加 header）；
- (c) `/news`（`home-activities`，目前 0 筆）與公告定位重疊——業主選兩者併存，若日後只用公告，
- `/news` 與首頁 `LatestNews` 可一併退役。
+ - **待業主**：(a) 發佈第一則公告（業主第六十一輪表示**自己發**）；(b) ~~Footer 公告入口~~
+ 第六十一輪已加；(c) `/news`（`home-activities`，目前 0 筆）與公告定位重疊——業主選兩者併存，
+ 若日後只用公告，`/news` 與首頁 `LatestNews` 可一併退役。
+
+- **2026-10-12 (第六十一輪): Footer 加公告入口（`關於我們`欄第 4 列）＋ Footer 靜態欄改成
+ 可變長度條目清單。**業主從待辦 0–8 選了「Footer 也加公告入口」。
+ - **位置＝`關於我們`欄，插在`安全與監管`與`最新新聞`之間**（該欄 5 列，其餘仍 4 列）。
+ **刻意不開第五個導覽欄**：格線是 `md:grid-cols-[327fr_repeat(4,153fr)]`，`md`(768px) 時每欄
+ 已只有 ~81px（英文標籤本來就換行），第五欄會壓到 ~70px；Header 才剛為第五個頂層項目被迫把
+ 斷點推到 `min-[1360px]`，footer 不要重蹈。放這一欄的理由＝該欄已有`最新新聞`，同屬通知類版面。
+ - **🚩 刻意不做分類深連**（學院欄有做）：公告分類在 CMS，深連進**全域** footer 會讓每個靜態頁
+ 都依賴 `announcementCategories` tag，而該 tag 只 revalidate `/announcements` → 業主改分類後
+ 其他頁的 footer 會是舊的。學院欄可以做是因為 slug 是程式常數（`academyCategories.ts`）。
+ - **`FOOTER_LINKS` 型別改了**：`Record<StaticCol, Record<'l1'…'l4', string>>` →
+ `Record<StaticCol, readonly {href, labelKey}[]>`（`LINKS`／`LinkKey` 刪除）。**`labelKey` 是完整
+ message 路徑**，所以一列可**借用目的地頁面的標籤鍵**而不必再開 footer 專用鍵——公告列用
+ `announcements.hero.title`（該頁 h1），**i18n 鍵數不變 730**。這與`交易服務`欄讀
+ `products.items.*.name`、`黃金學院`欄讀 `academy.categories` 是同一慣例：**footer 標籤從目的地
+ 的正本取**，就不可能漂移。欄位長度也不再被型別綁死成 4 列。
+ - **驗收**：`lint` 0 error／`tsc`／`i18n:check` 730 鍵／冷建綠 ● SSG；以
+ `.next/server/app/<locale>/*.html` 的 footer `<nav>` 確認三語連結在**靜態 HTML 裡**，
+ 版面截 footer 區塊看過 1440／1024／834／390 × 英文＋繁中。未動 schema → 免 `generate:types`。
 
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾

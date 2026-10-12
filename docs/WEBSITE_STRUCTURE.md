@@ -191,7 +191,11 @@
   **刻意保留但已無任何連結指向**（也不在 sitemap），不要再把登入指回去。
 - **Footer 連結對照表**＝`src/components/Footer/Footer.tsx` 的 `FOOTER_LINKS`（內容導覽連結，
   非營運連結，可用站內路徑）。**標籤必須對得上站上真實存在的頁面或區段**；沒有目的地就不列，
-  也不得用標籤承諾未確認的功能。第五十三輪已把「MT5平台」欄改為 **「交易平台」**
+  也不得用標籤承諾未確認的功能。
+  - 每一列是 `{href, labelKey}`，**`labelKey` 是完整的 message 路徑**，所以一列可以借用它指向的
+    頁面自己的標籤鍵，不必為同一段文字再開 footer 專用鍵（第六十一輪）。這與`交易服務`欄讀
+    `products.items.*.name`、`黃金學院`欄讀 `academy.categories` 是同一個慣例：**標籤盡量從
+    目的地的正本取，就不可能漂移。**第五十三輪已把「MT5平台」欄改為 **「交易平台」**
   （鍵 `home.footerV2.cols.platforms`），四個連結分別指 `/platforms`、`#platform-types`（×2）、
   `#platform-faq`，取代原本全部指向首頁 `/#mt5` 且含「MT5客戶端下載／EA程序化支持」等不存在
   或未經確認的項目。
@@ -207,7 +211,14 @@
     跟上、不可能再漏品種。取代原本四個寫死標籤（倫敦黃金交易／倫敦白銀交易／市場交易細則／
     合約保證金）——那組缺人民幣公斤條、l3 與 l4 指向同一個 `#conditions`，而「合約保證金」
     承諾了站上不存在的保證金內容。i18n `home.footerV2.cols.trading` 現在只剩 `title`。
-  - 仍待整理（下一棒候選）：關於我們欄 l1–l3 都指 `/about` **沒有錨點**（第十三輪 About 改版
+  - 第六十一輪（業主指示）在**關於我們欄**加了 **`官方公告` → `/announcements`**，插在
+    `安全與監管`與`最新新聞`之間（該欄 5 列，其餘 4 列），標籤借用該頁 h1 的
+    `announcements.hero.title`。**刻意不開第五個導覽欄**——格線是
+    `md:grid-cols-[327fr_repeat(4,153fr)]`，`md`(768px) 時每欄只剩 ~81px，第五欄會壓到 ~70px。
+    **也刻意不做分類深連**：公告分類在 CMS，深連進全域 footer 會讓每個靜態頁都依賴
+    `announcementCategories` tag（它只 revalidate `/announcements`），業主改分類後其他頁的
+    footer 就會是舊的；學院欄能深連是因為它的 slug 是程式常數。
+  - 仍待整理（下一棒候選）：關於我們欄前三列都指 `/about` **沒有錨點**（第十三輪 About 改版
     後舊的 `#milestones`／`#credentials` 等區段 id 全部消失，全站也沒有東西連過去），
     且 l3 標籤「安全與監管 / Security & supervision」容易被讀成 HATC 本身受監管；
     業主 2026-10-11 第五十七輪決定該欄暫不處理。

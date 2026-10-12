@@ -15,14 +15,15 @@ import BrandLogo from '../BrandLogo';
 // content-navigation links — operational customer-service links still resolve via
 // getSiteSettings() — so internal route paths are fine.
 const COLS = ['about', 'trading', 'platforms', 'academy'] as const;
-const LINKS = ['l1', 'l2', 'l3', 'l4'] as const;
 
 type Col = (typeof COLS)[number];
 type StaticCol = Exclude<Col, 'trading' | 'academy'>;
-type LinkKey = (typeof LINKS)[number];
 
-// Columns with footer-only labels. The 交易服務 and 黃金學院 columns are generated
-// from their canonical sources instead — see the branches in the component below.
+// Columns whose rows are declared here. The 交易服務 and 黃金學院 columns are
+// generated from their canonical sources instead — see the branches in the
+// component below. `labelKey` is a full message path so a row can borrow the label
+// of the page it points at rather than duplicating the string into a footer-only
+// key (the i18n rule: identical text never gets a second key).
 //
 // 2026-10-11 (第五十三輪): the former `mt5` column is now `platforms` — it pointed
 // every link at the homepage `#mt5` teaser and advertised destinations that don't
@@ -30,18 +31,44 @@ type LinkKey = (typeof LINKS)[number];
 // (EA / algo support). It now resolves to the real `/platforms` page and its
 // section anchors, matching the header rename done in 第三十八輪.
 //
-// ⚠️ The about column's l1–l3 all land on `/about` with no anchor: the section ids
-// the old warm-white About had (#milestones / #credentials / #office) disappeared
-// in the 第十三輪 rebuild and were never restored. Fixing it means adding ids to
-// src/components/about/* first; the owner deferred this in 第五十七輪.
-const FOOTER_LINKS: Record<StaticCol, Record<LinkKey, string>> = {
-  about: {l1: '/about', l2: '/about', l3: '/about', l4: '/news'},
-  platforms: {
-    l1: '/platforms',
-    l2: '/platforms#platform-types',
-    l3: '/platforms#platform-types',
-    l4: '/platforms#platform-faq'
-  }
+// 2026-10-12 (第六十一輪): the owner asked for an announcements entry in the footer
+// as well (the header got its top-level item in 第六十輪). It lives in the about
+// column, directly above 最新新聞, because both are notice surfaces and a fifth nav
+// column would squeeze all of them to roughly 70px at the `md` breakpoint. It is a
+// single link to the index on purpose: announcement categories live in the CMS, and
+// deep-linking them from the global footer would make every static page depend on
+// the `announcementCategories` cache tag (which only revalidates /announcements).
+//
+// ⚠️ The about column's first three rows all land on `/about` with no anchor: the
+// section ids the old warm-white About had (#milestones / #credentials / #office)
+// disappeared in the 第十三輪 rebuild and were never restored. Fixing it means
+// adding ids to src/components/about/* first; the owner deferred this in 第五十七輪.
+const FOOTER_LINKS: Record<
+  StaticCol,
+  readonly {href: string; labelKey: string}[]
+> = {
+  about: [
+    {href: '/about', labelKey: 'home.footerV2.cols.about.l1'},
+    {href: '/about', labelKey: 'home.footerV2.cols.about.l2'},
+    {href: '/about', labelKey: 'home.footerV2.cols.about.l3'},
+    {href: '/announcements', labelKey: 'announcements.hero.title'},
+    {href: '/news', labelKey: 'home.footerV2.cols.about.l4'}
+  ],
+  platforms: [
+    {href: '/platforms', labelKey: 'home.footerV2.cols.platforms.l1'},
+    {
+      href: '/platforms#platform-types',
+      labelKey: 'home.footerV2.cols.platforms.l2'
+    },
+    {
+      href: '/platforms#platform-types',
+      labelKey: 'home.footerV2.cols.platforms.l3'
+    },
+    {
+      href: '/platforms#platform-faq',
+      labelKey: 'home.footerV2.cols.platforms.l4'
+    }
+  ]
 };
 
 // 2026-10-11 (第五十四輪): the academy column used to carry four labels
@@ -87,9 +114,9 @@ export default async function Footer() {
         {href: '/products#conditions', label: t('products.conditions.heading')}
       ];
     } else {
-      links = LINKS.map((l) => ({
-        href: FOOTER_LINKS[col][l],
-        label: f(`cols.${col}.${l}`)
+      links = FOOTER_LINKS[col].map((row) => ({
+        href: row.href,
+        label: t(row.labelKey)
       }));
     }
 
