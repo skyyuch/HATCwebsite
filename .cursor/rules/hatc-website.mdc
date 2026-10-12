@@ -962,7 +962,11 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  （開發端拿到的是快照、沒有 `.git`，無法 `git pull`）。
 - **2026-10-12 更新：開發已把 zip 內容 push 上 Gitee**，落在 **`master`** 分支（`cd2692b`），
  **與本倉 `main` 是獨立歷史（無共同祖先）**。業主要求「之後直接 push 到 git 地址上改」→
- 下一輪動手前要先對齊分支（以 `gitee/master` 為基線，或 force-push 我們的 `main`），業主拍板。
+ **已比對：開發沒有新增任何檔案**（無 Dockerfile／nginx／CI 改動；318 vs 319 檔，差別只有
+ 刻意排除的 `lp.zip`）→ **force-push `main:master` 不會弄丟東西，為建議做法**。
+ ⚠ **zip 交付丟失執行權限**：開發端 `.githooks/pre-commit` 與 `scripts/check-migrations.sh`
+ 已無 `+x`（守門與 `migrate:check` 會失效），改走 git 後自然修復。
+ **慣例：日後若再用 zip 交付，必須提醒對方 `chmod +x` 這兩個檔。**
  **大包已在對端 → 之後的 push 只送 delta（KB 級），不再撞 receive-pack 時限**，所以下面那條
  「不要再重試」**只適用於首次 39 MiB 整包**。從 Gitee fetch 仍很慢（實測 >10 分鐘）。
 - 🚩 **首次整包推送已證實行不通**：remote `gitee`

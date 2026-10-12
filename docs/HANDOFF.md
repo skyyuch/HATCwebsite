@@ -42,12 +42,22 @@
 >
 > ### 3. 之後直接 push 到 Gitee
 >
-> **開發已經把 zip 內容 push 上 Gitee，但落在 `master` 分支（`cd2692b`），與本倉 `main`
-> 是獨立歷史（無共同祖先）。** 所以不能直接 `git push gitee main`，必須先對齊，請業主選：
-> - **(a) 以開發的 `master` 為新基線**：本機建一條追蹤 `gitee/master` 的分支，把我們之後的
->   改動 commit 在它上面。GitHub 保留完整 33 commit 歷史作備份。
-> - **(b) 把我們的 `main` 強推成 Gitee 的主幹**（`--force`，會蓋掉開發那個 commit）。
->   需先確認開發**沒有**在上面加過部署用檔案（Dockerfile／nginx／CI 等）。
+> **開發已經把 zip 內容 push 上 Gitee，但落在 `master` 分支（`cd2692b`，「feat：hatc web
+> 初始化项目」），與本倉 `main` 是獨立歷史（無共同祖先）**，所以不能直接 `git push gitee main`。
+>
+> **✅ 已比對完畢（2026-10-12）：開發沒有新增任何檔案** —— 無 Dockerfile／nginx／CI 改動。
+> `gitee/master` 318 檔 vs `main` 319 檔，唯一差別是我們刻意排除的 `lp.zip`；內容差異只有
+> 我們之後那兩次文件更新（規則檔／`AGENTS.md`／`DEPLOYMENT.md`／`HANDOFF.md`）。
+> → **因此 force-push 我們的 `main` 不會弄丟任何東西，是建議做法**（保留 33 commit 完整歷史）：
+> ```bash
+> git push gitee main:master --force      # 或改推成 main 並在 Gitee 改預設分支
+> ```
+> 若業主偏好保留開發的 commit 當起點，才改以 `gitee/master` 為基線往上接。
+>
+> ⚠ **zip 交付丟失了執行權限**：開發那邊的 `.githooks/pre-commit` 與
+> `scripts/check-migrations.sh` 已失去 `+x`（diff 顯示 0 行變更＝只有 mode 改變）
+> → 他們的 pre-commit 守門與 `npm run migrate:check` 會失效。改走 git 後自然修復
+> （git 記錄 file mode），切換前若要跑檢查需先 `chmod +x`。
 >
 > ⚠ **前一輪「Gitee 不要再重試」的結論只適用於首次 39 MiB 整包。** 大包現在已經在對端，
 > 之後的 push 只送 delta（KB 級），**不再會撞到 receive-pack 時限** → 走 git 交付是可行的。
