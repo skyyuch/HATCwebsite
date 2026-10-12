@@ -1,14 +1,21 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-12（第五十九輪：**CMS 資料庫由 PostgreSQL 改為 MongoDB，庫名 `hatc-cms`**；
-> migration 機制整套退役；交付改走 **Gitee 增量同步**（`sh scripts/sync-gitee.sh`），zip 退役。）
+> 最後更新：2026-10-12（第六十輪：**官方公告 `/announcements` 上線**，CMS `announcements`
+> ＋業主可自建的 `announcement-categories`；Header 加第五個頂層項目並把桌機斷點改 `min-[1360px]`。）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
 ## ▶ 下一輪任務（待業主指定）
 
-> 第五十九輪三項（DB 引擎／庫名／Gitee）**全部完成**。以下是本輪產生或仍未結案的事項，
-> 下一棒可挑，但**都要先問業主**：
+> 第六十輪（公告系統）**已完成**。以下是歷輪產生、仍未結案的事項，下一棒可挑，
+> 但**都要先問業主**：
+>
+> 0. **公告內容** —— `/announcements` 已可用但**資料庫裡一則公告都沒有**（公司對外聲明
+>    不得由程式捏造）。業主需到 `/admin → 公告` 發佈第一則；分類已備好兩個
+>    （重要公告／交易安排），可自行增刪。另外兩件待業主決定：**(i)** 要不要在 Footer 也加
+>    公告入口（本輪只依指示加了 header 頂層項目）；**(ii)** `/news`（最新消息，CMS
+>    `home-activities`，目前 0 筆）與公告定位重疊 —— 業主選擇兩者併存，若日後只用公告，
+>    `/news` 連同首頁 `LatestNews` 區塊可一起退役。
 >
 > 1. **交易條件「執行方式」** —— `HATC_FACTS.md` 唯一仍待業主提供的交易條件（官網目前
 >    刻意完全不提，**不要加回「將另行公佈」佔位列**，第五十八輪決定）。
@@ -47,6 +54,75 @@
 >   （填入就會永久覆蓋內建三語文案，日後修正看不見）；③ **按鈕沒有目的地就不顯示**
 >   （模擬帳戶、會員登入）是設計行為不是 bug；④ **交易條件刻意不開放後台編輯**（治理設計）。
 ## ▶ 下一步（下一位 agent）
+
+> **✅ 第六十輪（2026-10-12）完成：官方公告 `/announcements` 上線（CMS 可新增、分類可自建）。**
+>
+> 業主指示：「我想加一個公告位在官網，在 CMS 要有地方加，分重要公告及交易安排（要有分類）」。
+> 四個方向級問題先問齊，業主拍板：**① 獨立新頁 `/announcements`（`/news` 保留不動）；
+> ② 需要詳情頁（可放長文、清單、表格）；③ 分類要能在後台自由增刪；④ 頂部菜單加一個獨立項目。**
+>
+> ### 1. 資料模型：兩個新集合（分類是集合，不是自由文字）
+>
+> - **`announcements`**（`src/collections/Announcements.ts`）：標題／網址代稱（唯一、index）／
+>   分類（relationship → `announcement-categories`，可空）／摘要／內文 richText／發佈日
+>   （預設今天）／**置頂**／啟用。標題、摘要、內文為 localized。
+> - **`announcement-categories`**（業主自建）：名稱（localized）／網址代稱／排序／啟用。
+>   **刻意做成集合而不是學院那種自由文字 `category` 欄** —— 自由文字打錯字就會從前台篩選
+>   消失（第三十九輪的已知債），relationship 不可能漂移，而且業主新增分類後前台篩選自動長出來。
+> - 🚩 **不種任何公告。** `scripts/seed-announcements.ts` 只建立業主指定的兩個分類
+>   （`important` 重要公告／`trading-arrangement` 交易安排，三語，冪等）。公告是公司對外聲明，
+>   比照 news／見證的紅線：**空就顯示中性空狀態，不造假資料**。
+> - 分類被刪除時，原本屬於它的公告**自動變成「未分類」**（reader 的 `mapCategory` 容錯），
+>   不會 500、也不會從列表消失。
+>
+> ### 2. 前台：列表 ＋ 詳情，維持 ● SSG
+>
+> - `/announcements`＝`AnnouncementsHero`（沿用學院的 navy→gold 標題帶＋白色麵包屑）
+>   ＋ server `AnnouncementsList`（`Promise.all` 取公告與分類）＋ client `AnnouncementFeed`
+>   （分類 chip 篩選＋每頁 10 筆分頁）。`/announcements/[slug]`＝`AnnouncementView`
+>   （Lexical `RichText`，沿用學院 prose 樣式**並補上表格樣式** `[&_table]/[&_th]/[&_td]`，
+>   因為交易安排公告大多是時段表）。
+> - **排序＝置頂優先，其次發佈日新→舊**（無日期排最後）。
+> - 🚩 **`useSearchParams` 必須關在一個不渲染內容的 `<Suspense>` 子元件裡**（`CategoryQuerySync`），
+>   否則整個列表會變成 client render、公告從靜態 HTML 消失（＝SEO 回歸）。這是第五十四輪
+>   `/academy` 的既有慣例，本輪照做並已驗證三語 `announcements.html` 內含公告卡片。
+>   寫回網址用 `history.replaceState`。
+> - **分類深連＝`/announcements?category=<slug>`**，slug 來自 CMS（不是程式常數，因為業主要
+>   自由增刪），未知值忽略＝退回不篩選。
+> - **通用文案沿用 `academy.*` 既有鍵**（「全部」、分頁的上一頁／下一頁／第 N 頁），不重複開鍵。
+>   順手把 `/academy` 與 `/announcements` 重複的日期格式化與分頁頁碼計算抽成
+>   `src/lib/dates.ts`、`src/lib/pagination.ts`（行為不變）。
+>
+> ### 3. 🚩 Header 斷點：加第五個頂層項目後 `lg` 不夠用了（本輪最花時間的坑）
+>
+> 加「公告」之後，**英文版在 1024px 與 1280px 都會把 logo 擠成 0 寬、導覽標籤換行**。
+> 在 1920px 實測不換行所需寬度＝**1411px**（含業主尚未設定、設定後會出現的「登入」連結）。
+> 處置：導覽間距收為 `gap-6`（`2xl` 才 `gap-8`）、header 內距收為 `lg:px-12`（`2xl:px-20`）
+> → 需求降到 **1307px**，於是把桌機橫列的斷點改成 **`min-[1360px]`**（餘裕 53px），
+> 未達者走手機抽屜（`HeaderMobileMenu` 改 `min-[1360px]:hidden`）。
+> **不要把導覽改回 `lg`／`xl`**；量測數字寫在 `Header.tsx` 的註解裡。
+> 日後再加頂層項目必須重新量測，或改採收納式設計。
+>
+> ### 4. 接線
+>
+> `payload.config`／`permissions/registry`（create/update/delete ＋ `slug`、`enabled` 欄位權限）／
+> `cacheTags`（`announcements`、`announcementCategories`）／`revalidateContent`
+> （兩者都 revalidate `/${locale}/announcements` 的 `'layout'`，所以詳情頁也會更新）／
+> `sitemap.ts`（列表＋每則公告 ×3 語）／`DashboardHub` 新增「公告」入口卡（三語）／
+> `nav.announcements` 與 `metadata.announcements`。
+>
+> ### 驗收
+>
+> `generate:types` 已重生並 commit／`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／
+> `tsc --noEmit` 乾淨／`i18n:check` 三語 **730 鍵**（716 ＋14）／`pkill` 後 `rm -rf .next` 冷建綠，
+> `/announcements` 與 `/announcements/[slug]` 皆 ● SSG。`npm start` 實測：三語列表 200、
+> 詳情 200、不存在的 slug 404、`/admin` 與 `/api/users/me` 200、sitemap 含列表與各公告 ×3 語。
+> **用三筆臨時測試公告驗過互動後已全部刪除**（深連 `?category=important` 正確篩選並點亮 chip、
+> 點分類會寫入網址、「全部」清除參數、未知 slug 退回不篩選、header「公告」會亮 navy），
+> 現在 DB 只剩兩個分類、零公告，前台顯示中性空狀態。
+> 截圖檢查：1440／1360／1280／390 四個寬度 × 三語 × 列表/詳情。
+> **沒有 `migrate:check` 可跑**（Postgres 時代的閘門，第五十九輪已退役）；
+> Mongo 是 schemaless，新集合不需要任何 DDL 或 migration。
 
 > **✅ 第五十九輪（2026-10-12）完成：CMS 換到 MongoDB（庫名 `hatc-cms`）、migration 機制退役、
 > 交付改走 Gitee 增量同步。**

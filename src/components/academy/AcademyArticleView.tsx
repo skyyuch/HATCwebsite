@@ -3,21 +3,10 @@ import {RichText} from '@payloadcms/richtext-lexical/react';
 import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import type {AcademyArticleDetail} from '@/lib/academyArticles';
+import {formatDateLong} from '@/lib/dates';
 
 function isExternalSrc(src: string): boolean {
   return /^https?:\/\//i.test(src);
-}
-
-function formatPublishedAt(iso: string, locale: string): string {
-  try {
-    return new Intl.DateTimeFormat(locale, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
 }
 
 function Cover({
@@ -94,7 +83,7 @@ export default async function AcademyArticleView({
               dateTime={article.publishedAt}
               className="text-[13px] text-[var(--fig-text-muted)]"
             >
-              {formatPublishedAt(article.publishedAt, locale)}
+              {formatDateLong(article.publishedAt, locale)}
             </time>
           ) : null}
           <p className="text-sm leading-[1.65] text-[var(--fig-text-muted)]">

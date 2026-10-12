@@ -9,6 +9,8 @@
   交易概覽 `/trading`、產品 `/products`、所有交易產品 `/products/all`、交易帳戶 `/accounts`、
   入金與出金 `/funding`、**交易平台 `/platforms`**（Figma `89:4`；CMS `trading-platforms`
   ＋ faqs `platforms` 分類）、最新消息 `/news`（CMS `home-activities`）、
+  **官方公告 `/announcements` ＋ `/announcements/[slug]`**（第六十輪；CMS `announcements`
+  ＋業主可自建的 `announcement-categories`，無公告時中性空狀態），
   黃金學院 `/academy`（Figma `98:4` 改版：hero＋分類篩選/排序/分頁＋電子報）
   ＋`/academy/[slug]`（CMS `academy-articles`，本機現有 49 篇原創長文；封面為佔位圖）、
   **隱私權政策 `/privacy` 與免責聲明 `/disclaimer`**（第五十六輪；共用
@@ -40,6 +42,15 @@
   - 註記由 `visualNote()` 決定：自家截圖印 `platforms.types.screenshotNote`，供應商示範畫面印
     `platforms.types.vendorNote`（說明是示範帳戶、並點明 HATC 只提供黃金／白銀／人民幣公斤條）。
 - 最新消息 ✅（`/[locale]/news`，Payload `home-activities`；無內容時中性空狀態）
+- 官方公告 ✅（`/[locale]/announcements` 列表＋`/[locale]/announcements/[slug]` 詳情；
+  第六十輪，業主指定與「最新消息」分開的獨立版面，header 第五個頂層項目）
+  - Payload `announcements`（標題／網址代稱／分類／摘要／內文 richText／發佈日／置頂／啟用）
+    ＋ **業主可自建的** `announcement-categories`（名稱／網址代稱／排序／啟用；種子只給
+    業主指定的兩類＝重要公告 `important`／交易安排 `trading-arrangement`）。
+  - **不種任何公告**（公司對外聲明不得由程式捏造），空 → 中性「目前尚無公告」。
+  - 分類篩選用 `?category=<slug>`（slug 來自 CMS，不是程式常數；未知值忽略＝不篩選），
+    `useSearchParams` 以 Suspense 隔離 → 列表維持 ● SSG（同學院頁的做法）。
+  - 置頂（`pinned`）排最前，其餘依發佈日新→舊；分類被刪除的公告自動歸「未分類」。
 - 黃金學院 ✅（`/[locale]/academy` 列表〔Figma `98:4`：navy/gold hero＋分類篩選 sidebar
   ＋排序＋分頁＋電子報誠實佔位〕＋`/[locale]/academy/[slug]` 詳情；Payload `academy-articles`
   本機現有 49 篇原創長文；無 DB／空 CMS → i18n 種子 a1–a3；篩選分類＝固定 6 類
@@ -156,6 +167,16 @@
 
 - **Header 與 Footer 為全域共用**：在 `[locale]/layout.tsx` 只渲染一次，
   各頁面不得各自實作；頁面只負責兩者之間的內容。
+- **Header 頂層項目（第六十輪起 5 項）**＝關於HATC `/about`／交易 `/trading`（含 mega-menu）／
+  交易平台 `/platforms`／黃金學院 `/academy`／**公告 `/announcements`**；右側＝語言切換、
+  （CMS 設定後才出現的）登入、立即開戶。
+  - 🚩 **桌機橫列的斷點是 `min-[1360px]`，不是 `lg`（第六十輪實測）**。加入第五個項目後，
+    英文標籤最長的情況在 1024／1280 會把 logo 擠成 0 寬並讓標籤換行。於 1920 量到不換行
+    所需的實際寬度＝**1411px**（含業主尚未設定、設定後會出現的登入連結）；再把導覽間距收為
+    `gap-6`（`2xl` 才放大到 `gap-8`）、header 內距收為 `lg:px-12`（`2xl:px-20`）後降到
+    **1307px**，因此以 1360px 為切換點（餘裕 53px），未達者走手機抽屜
+    （`HeaderMobileMenu` 的 `min-[1360px]:hidden`）。**不要把導覽改回 `lg`／`xl`。**
+    日後再加頂層項目必須重新量測，或改採收納式設計。
 - **開戶入口**：全站「立即開戶」按鈕讀 CMS `SiteSettings → 開戶（註冊）連結`
   （業主 2026-10-11 提供線上註冊頁，見 `HATC_FACTS.md`）；未設定時退回客服連結，
   兩者皆無才退到 `/register`「即將推出」佔位頁。解析器＝`openAccountHref()`。
@@ -198,6 +219,11 @@
   重設篩選時以 `history.replaceState` 回寫網址（排序與頁碼刻意**不**進網址）。
   讀網址的 `useSearchParams` 被隔離在一個不渲染內容的 `<Suspense>` 子元件裡，**文章格維持
   預先渲染**、`/academy` 仍是 ● SSG；代價是篩選在 hydration 後才套用（首幀仍是完整清單）。
+- **公告分類深連**＝`/announcements?category=<slug>`（單選）。與學院不同，**slug 來自 CMS
+  `announcement-categories` 的「網址代稱」欄，不是程式常數**（業主要自由增刪分類），
+  因此沒有需要同步的清單檔；前台只接受當前存在的 slug，未知值忽略＝退回不篩選。
+  寫回網址同樣用 `history.replaceState`，`useSearchParams` 同樣以 `<Suspense>` 隔離
+  以保住 ● SSG。通用的「全部」與分頁文案**沿用 `academy.*` 既有鍵**，不重複開新鍵。
 - 全站導覽項目：【待確認】
 - 頁尾內容（公司名稱、會員編號等，依 `HATC_FACTS.md`）：【待確認】
 - 客服 / 聯絡連結：由 CMS 配置讀取，不得寫死於程式碼

@@ -71,6 +71,21 @@ const ENTRIES: Entry[] = [
     )
   },
   {
+    href: '/admin/collections/announcements',
+    labels: {
+      'zh-TW': {title: '公告', desc: '重要公告與交易安排'},
+      zh: {title: '公告', desc: '重要公告与交易安排'},
+      en: {title: 'Announcements', desc: 'Notices & trading arrangements'}
+    },
+    icon: icon(
+      <>
+        <path d="M3 11v2a1 1 0 0 0 1 1h2l4 3.5V7.5L6 11H4a1 1 0 0 0-1 1Z" />
+        <path d="M14 8.5a4 4 0 0 1 0 7" />
+        <path d="M17 5.5a8 8 0 0 1 0 13" />
+      </>
+    )
+  },
+  {
     href: '/admin/collections/faqs',
     labels: {
       'zh-TW': {title: '常見問題', desc: '維護 FAQ 問答'},

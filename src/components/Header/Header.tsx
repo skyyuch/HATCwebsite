@@ -25,6 +25,8 @@ const NAV: ReadonlyArray<Omit<NavLink, 'label'>> = [
   {key: 'goldTrading', href: '/trading', mega: true},
   {key: 'platforms', href: '/platforms'},
   {key: 'goldAcademy', href: '/academy'},
+  // Owner request 2026-10-12: announcements get their own top-level entry.
+  {key: 'announcements', href: '/announcements'},
   {key: 'support', href: '/#support'}
 ];
 
@@ -76,18 +78,25 @@ export default async function Header() {
 
   return (
     <header className="sticky top-0 z-50 h-20 border-b border-[#e6e6e6] bg-white">
-      <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-6 sm:px-10 lg:px-20">
+      {/*
+        The desktop row only fits from 1360px up. Measured at 1440 (English, the
+        widest labels, including the member-login link the owner has yet to
+        configure): logo 119 + nav 766 + actions 326 + 2×48 padding = 1307.
+        Below that the drawer takes over — do not move the nav back to `lg`,
+        which squeezed the logo to zero width (第六十輪).
+      */}
+      <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-6 sm:px-10 lg:px-12 2xl:px-20">
         <Link
           href="/"
           aria-label={t('brandFull')}
-          className="flex items-center rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
+          className="flex shrink-0 items-center rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
         >
           <BrandLogo height={35} alt="" chip={false} priority />
         </Link>
 
         <HeaderNav links={links} mega={mega} />
 
-        <div className="hidden items-center gap-5 lg:flex">
+        <div className="hidden items-center gap-5 min-[1360px]:flex">
           <LocaleSwitcher />
           {loginHref ? (
             <a

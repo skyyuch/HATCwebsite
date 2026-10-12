@@ -8,9 +8,14 @@ import {buttonVariants} from '@/components/ui/button';
 import type {MegaData, NavLink} from './HeaderNav';
 
 /**
- * Compact drawer for the white Figma header (node 38:5) on small screens (< lg).
- * Mirrors the desktop nav: top-level links plus an expandable "黃金交易" section
- * that lists the mega-menu items, then login / open-account actions.
+ * Compact drawer for the white Figma header (node 38:5) below 1360px. Mirrors
+ * the desktop nav: top-level links plus an expandable "交易" section that lists
+ * the mega-menu items, then login / open-account actions.
+ *
+ * The cutover is 1360px, not `lg`: six top-level links plus the locale
+ * switcher, login link and open-account button need 1307px of header (measured,
+ * English labels) — at 1024 the labels wrapped and squeezed the logo to zero
+ * width (第六十輪). See the note in `Header.tsx`.
  */
 export default function HeaderMobileMenu({
   links,
@@ -37,7 +42,7 @@ export default function HeaderMobileMenu({
   const megaItems = [...mega.products, ...mega.support];
 
   return (
-    <div className="lg:hidden">
+    <div className="min-[1360px]:hidden">
       <button
         type="button"
         aria-expanded={open}

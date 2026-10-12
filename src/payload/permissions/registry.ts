@@ -59,6 +59,26 @@ export const PERM_RESOURCES: PermResource[] = [
     fields: [publishField]
   },
   {
+    slug: 'announcements',
+    kind: 'collection',
+    label: adminLabel('Announcements', '公告', '公告'),
+    ops: ['create', 'update', 'delete'],
+    fields: [
+      {name: 'slug', label: adminLabel('URL slug', '網址代稱', '网址代称')},
+      publishField
+    ]
+  },
+  {
+    slug: 'announcement-categories',
+    kind: 'collection',
+    label: adminLabel('Announcement categories', '公告分類', '公告分类'),
+    ops: ['create', 'update', 'delete'],
+    fields: [
+      {name: 'slug', label: adminLabel('URL slug', '網址代稱', '网址代称')},
+      publishField
+    ]
+  },
+  {
     slug: 'faqs',
     kind: 'collection',
     label: adminLabel('FAQs', '常見問題', '常见问题'),

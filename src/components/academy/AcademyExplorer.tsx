@@ -21,6 +21,8 @@ import {
   slugsFromLabels,
   type AcademyCategorySlug
 } from '@/lib/academyCategories';
+import {formatDateShort} from '@/lib/dates';
+import {pageItems} from '@/lib/pagination';
 
 const PAGE_SIZE = 9;
 
@@ -30,20 +32,6 @@ function isExternalSrc(src: string): boolean {
   return /^https?:\/\//i.test(src);
 }
 
-function formatDate(iso: string, locale: string): string {
-  try {
-    return new Intl.DateTimeFormat(locale, {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    })
-      .format(new Date(iso))
-      .replace(/\//g, '-');
-  } catch {
-    return iso;
-  }
-}
-
 function byNewest(a: AcademyArticle, b: AcademyArticle): number {
   const da = a.publishedAt ? Date.parse(a.publishedAt) : NaN;
   const db = b.publishedAt ? Date.parse(b.publishedAt) : NaN;
@@ -51,19 +39,6 @@ function byNewest(a: AcademyArticle, b: AcademyArticle): number {
   if (!Number.isNaN(da)) return -1;
   if (!Number.isNaN(db)) return 1;
   return a.order - b.order;
-}
-
-/** Compact page list with an ellipsis, e.g. 1 2 3 4 5 … 8. */
-function pageItems(total: number, current: number): (number | 'ellipsis')[] {
-  if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
-  const items: (number | 'ellipsis')[] = [1];
-  const start = Math.max(2, current - 1);
-  const end = Math.min(total - 1, current + 1);
-  if (start > 2) items.push('ellipsis');
-  for (let i = start; i <= end; i += 1) items.push(i);
-  if (end < total - 1) items.push('ellipsis');
-  items.push(total);
-  return items;
 }
 
 function ArticleCover({
@@ -397,7 +372,7 @@ export default function AcademyExplorer({
                     <div className="mt-auto flex items-center justify-between border-t border-[var(--fig-border-light)] pt-4">
                       <span className="text-[12px] text-[#94a3b8]">
                         {article.publishedAt
-                          ? formatDate(article.publishedAt, locale)
+                          ? formatDateShort(article.publishedAt, locale)
                           : ''}
                       </span>
                       <span className="inline-flex items-center gap-1 text-[12px] font-bold text-[#09395f] transition-colors group-hover:text-gold">

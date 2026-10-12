@@ -36,6 +36,10 @@
       "title": "最新消息",
       "description": "華安泰昌最新消息與活動公告。內容由官方發佈，請以此頁為準。"
     },
+    "announcements": {
+      "title": "官方公告",
+      "description": "華安泰昌官方公告：重要公告與交易安排通知。內容由官方發佈，請以此頁為準。"
+    },
     "academy": {
       "title": "黃金學院",
       "description": "華安泰昌黃金學院：中性教育內容，介紹貴金屬市場與平台基礎知識。本站內容不構成投資建議。"
@@ -74,6 +78,7 @@
     "goldTrading": "交易",
     "platforms": "交易平台",
     "goldAcademy": "黃金學院",
+    "announcements": "公告",
     "support": "客戶支援",
     "login": "登入",
     "openAccount": "開立帳戶",
@@ -1094,6 +1099,23 @@
     "empty": "目前尚無最新消息。內容將於官方發佈後於此顯示。",
     "viewAll": "查看全部消息",
     "imageAlt": "消息封面"
+  },
+  "announcements": {
+    "breadcrumb": "公告導覽",
+    "hero": {
+      "badge": "HATC ANNOUNCEMENTS",
+      "title": "官方公告",
+      "subtitle": "華安泰昌的重要公告與交易安排通知，均於此頁發佈。"
+    },
+    "results": {
+      "title": "公告列表",
+      "count": "{count} 則"
+    },
+    "empty": "目前尚無公告。內容將於官方發佈後於此顯示。",
+    "pinned": "置頂",
+    "readMore": "閱讀全文",
+    "backToList": "返回公告列表",
+    "bodyEmpty": "此公告尚無完整內文。請稍後再查看，或返回列表瀏覽其他公告。"
   },
   "academy": {
     "kicker": "HATC GOLD ACADEMY",

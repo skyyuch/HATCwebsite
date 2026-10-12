@@ -2,6 +2,8 @@
 export const CACHE_TAGS = {
   siteSettings: 'site-settings',
   homeActivities: 'home-activities',
+  announcements: 'announcements',
+  announcementCategories: 'announcement-categories',
   faqs: 'faqs',
   academyArticles: 'academy-articles',
   instruments: 'instruments',

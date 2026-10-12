@@ -39,6 +39,25 @@ export function revalidateHomeActivities(): void {
   }
 }
 
+/** `/announcements` list + every `/announcements/[slug]` detail page. */
+function revalidateAnnouncementPages(): void {
+  for (const locale of routing.locales) {
+    safeRevalidatePath(`/${locale}/announcements`, 'layout');
+  }
+}
+
+export function revalidateAnnouncements(): void {
+  safeRevalidateTag(CACHE_TAGS.announcements);
+  revalidateAnnouncementPages();
+}
+
+/** A category rename changes the badges/filters rendered on both surfaces. */
+export function revalidateAnnouncementCategories(): void {
+  safeRevalidateTag(CACHE_TAGS.announcementCategories);
+  safeRevalidateTag(CACHE_TAGS.announcements);
+  revalidateAnnouncementPages();
+}
+
 export function revalidateFaqs(): void {
   safeRevalidateTag(CACHE_TAGS.faqs);
   for (const locale of routing.locales) {

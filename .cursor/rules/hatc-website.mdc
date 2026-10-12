@@ -857,6 +857,50 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  `next/font/google queries have exactly one entry`（Google Fonts 其實連得到，別去查網路）。
  **建置前 `pkill -f "next start"; pkill -f "next-server"`**，失敗後需再 `rm -rf .next` 才能恢復。
 
+- **2026-10-12 (第六十輪): 官方公告 `/announcements` ＋ `/announcements/[slug]` 上線；分類做成
+ 業主可自建的集合；Header 第五個頂層項目 ＋ 桌機斷點改 `min-[1360px]`。**
+ 業主指示「加一個公告位，在 CMS 要有地方加，分重要公告及交易安排（要有分類）」，四個方向級問題
+ 問齊後拍板：**獨立新頁（`/news` 保留不動）／要詳情頁／分類可自由增刪／頂部菜單加獨立項目**。
+ - **兩個新集合**：`announcements`（`src/collections/Announcements.ts`：title／slug〔唯一 index〕／
+ category〔relationship→`announcement-categories`，可空〕／excerpt／body richText／publishedAt
+ 〔預設今天〕／**pinned**／enabled；title·excerpt·body 為 localized）＋ **`announcement-categories`**
+ （name〔localized〕／slug／order／enabled）。Reader `src/lib/announcements.ts`＝標準 server-only
+ **DB→空** fallback（`getAnnouncements`／`getAnnouncementBySlug`／`getAnnouncementCategories`／
+ `getAnnouncementSlugs`，`hasDb()` 把關、`unstable_cache`＋tag）。已註冊 `payload.config`／
+ `permissions/registry`（create/update/delete ＋ `slug`·`enabled` 欄位權限）／`cacheTags`
+ （`announcements`／`announcementCategories`）／`revalidateContent`（兩者都 revalidate
+ `/${locale}/announcements` 的 **`'layout'`**，故詳情頁一併更新）／`sitemap.ts`／`DashboardHub` 入口卡。
+ - **🚩 分類刻意做成「集合」而非學院那種自由文字 `category` 欄**：自由文字打錯字就從前台篩選
+ 消失（第三十九輪留下的已知債），relationship 不可能漂移，且業主新增分類後前台篩選自動長出來。
+ 分類被刪除的公告由 reader 的 `mapCategory` 降級為**未分類**（不 500、不消失）。
+ **分類深連＝`/announcements?category=<slug>`，slug 來自 CMS，不是程式常數**（所以沒有像
+ `academyCategories.ts` 那樣需要手動同步的清單檔）；未知值忽略＝退回不篩選。
+ - **🚩 治理紅線：不種任何公告。** `scripts/seed-announcements.ts` **只**建立業主指定的兩個分類
+ （`important` 重要公告／`trading-arrangement` 交易安排，三語、冪等）。公告是公司對外聲明，
+ 比照 news／見證：**空就顯示中性「目前尚無公告」，不得由程式捏造**。公告內文亦不得與已核可
+ 交易條件（`products/tradingConditions.ts`）衝突。
+ - **元件**：`src/components/announcements/*`（`AnnouncementsHero` 沿用學院 navy→gold 標題帶／
+ server `AnnouncementsList`／client `AnnouncementFeed`〔分類 chip＋每頁 10 筆分頁〕／
+ `AnnouncementView`〔Lexical `RichText`，沿用學院 prose **並補 `[&_table]/[&_th]/[&_td]` 表格樣式**，
+ 因為交易安排公告多為時段表〕）。排序＝**置頂優先，其次發佈日新→舊**（無日期排最後）。
+ - **SSG 保衛戰照第五十四輪慣例**：`useSearchParams` 關在不渲染內容的 `CategoryQuerySync`
+ ＋獨立 `<Suspense fallback={null}>`，寫回網址用 `history.replaceState` → 列表維持 ● SSG。
+ **通用列表文案沿用 `academy.*` 既有鍵**（全部／分頁），不重複開鍵；順手把兩頁重複的日期格式化與
+ 分頁頁碼計算抽成 `src/lib/dates.ts`／`src/lib/pagination.ts`（無 `server-only`，client 可用）。
+ - **🚩 Header 斷點（本輪最花時間的坑）**：第五個頂層項目讓**英文版在 1024／1280 把 logo 擠成 0 寬
+ 並讓標籤換行**。1920 實測不換行需求＝**1411px**（含業主尚未設定、設定後會出現的「登入」）；
+ 導覽間距收 `gap-6`（`2xl:gap-8`）＋header 內距收 `lg:px-12`（`2xl:px-20`）後降到 **1307px**
+ → 桌機橫列改 **`min-[1360px]`**（餘裕 53px），未達走抽屜（`HeaderMobileMenu` `min-[1360px]:hidden`）。
+ **不要改回 `lg`／`xl`**（量測數字寫在 `Header.tsx` 註解）。再加頂層項目必須重新量測或改收納式設計。
+ - **i18n**：`metadata.announcements`＋`nav.announcements`＋`announcements.*` → 三語 **730 鍵**。
+ - **驗收**：`generate:types`（Mongo schemaless，**無 migration**）／`lint` 0 error（僅
+ `seed-academy.ts` 1 既有 warning）／`tsc --noEmit`／`i18n:check` 730 鍵／冷建綠且兩條路由 ● SSG；
+ `npm start` 實測三語列表與詳情 200、未知 slug 404、`/admin`＋`/api/users/me` 200、sitemap 齊。
+ **互動以三筆臨時公告驗完即刪**（現 DB 只有兩個分類、零公告）。
+ - **待業主**：(a) 發佈第一則公告；(b) 是否在 Footer 也加公告入口（本輪只加 header）；
+ (c) `/news`（`home-activities`，目前 0 筆）與公告定位重疊——業主選兩者併存，若日後只用公告，
+ `/news` 與首頁 `LatestNews` 可一併退役。
+
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾
  顯示退役的黃金 27／白銀 30 且缺公斤條。已改為條件欄位全部由 `tradingConditions.ts` 產生、

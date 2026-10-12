@@ -1,6 +1,7 @@
 import type {MetadataRoute} from 'next';
 import {routing} from '@/i18n/routing';
 import {getAcademyArticleSlugs} from '@/lib/academyArticles';
+import {getAnnouncementSlugs} from '@/lib/announcements';
 import {siteUrl} from '@/lib/seo';
 
 // Static pages available for indexing.
@@ -14,16 +15,21 @@ const staticPaths = [
   '/funding',
   '/platforms',
   '/news',
+  '/announcements',
   '/academy',
   '/privacy',
   '/disclaimer'
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const articleSlugs = await getAcademyArticleSlugs();
+  const [articleSlugs, announcementSlugs] = await Promise.all([
+    getAcademyArticleSlugs(),
+    getAnnouncementSlugs()
+  ]);
   const paths = [
     ...staticPaths,
-    ...articleSlugs.map((slug) => `/academy/${slug}`)
+    ...articleSlugs.map((slug) => `/academy/${slug}`),
+    ...announcementSlugs.map((slug) => `/announcements/${slug}`)
   ];
 
   return paths.flatMap((path) =>

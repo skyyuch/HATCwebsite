@@ -71,6 +71,8 @@ export interface Config {
     roles: Role;
     media: Media;
     'home-activities': HomeActivity;
+    announcements: Announcement;
+    'announcement-categories': AnnouncementCategory;
     faqs: Faq;
     'academy-articles': AcademyArticle;
     instruments: Instrument;
@@ -89,6 +91,8 @@ export interface Config {
     roles: RolesSelect<false> | RolesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'home-activities': HomeActivitiesSelect<false> | HomeActivitiesSelect<true>;
+    announcements: AnnouncementsSelect<false> | AnnouncementsSelect<true>;
+    'announcement-categories': AnnouncementCategoriesSelect<false> | AnnouncementCategoriesSelect<true>;
     faqs: FaqsSelect<false> | FaqsSelect<true>;
     'academy-articles': AcademyArticlesSelect<false> | AcademyArticlesSelect<true>;
     instruments: InstrumentsSelect<false> | InstrumentsSelect<true>;
@@ -203,6 +207,28 @@ export interface Role {
    * Also requires this resource’s Update permission.
    */
   fld__home_activities__enabled__update?: boolean | null;
+  can__announcements__create?: boolean | null;
+  can__announcements__update?: boolean | null;
+  can__announcements__delete?: boolean | null;
+  /**
+   * Also requires this resource’s Update permission.
+   */
+  fld__announcements__slug__update?: boolean | null;
+  /**
+   * Also requires this resource’s Update permission.
+   */
+  fld__announcements__enabled__update?: boolean | null;
+  can__announcement_categories__create?: boolean | null;
+  can__announcement_categories__update?: boolean | null;
+  can__announcement_categories__delete?: boolean | null;
+  /**
+   * Also requires this resource’s Update permission.
+   */
+  fld__announcement_categories__slug__update?: boolean | null;
+  /**
+   * Also requires this resource’s Update permission.
+   */
+  fld__announcement_categories__enabled__update?: boolean | null;
   can__faqs__create?: boolean | null;
   can__faqs__update?: boolean | null;
   can__faqs__delete?: boolean | null;
@@ -325,6 +351,81 @@ export interface HomeActivity {
    * Lower numbers appear first.
    */
   order?: number | null;
+  enabled?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Official notices shown on /announcements. Newest first; pinned ones stay on top. Trading details must match the approved trading conditions.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "announcements".
+ */
+export interface Announcement {
+  id: string;
+  title: string;
+  /**
+   * Used for /announcements/[slug]; unique site-wide; prefer ASCII + hyphens.
+   */
+  slug: string;
+  /**
+   * Optional. Without a category the notice only appears under "All".
+   */
+  category?: (string | null) | AnnouncementCategory;
+  /**
+   * Short blurb for the list page.
+   */
+  excerpt?: string | null;
+  /**
+   * Full notice (headings, lists and tables supported).
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Drives the list order (newest first).
+   */
+  publishedAt?: string | null;
+  /**
+   * Pinned notices stay above the dated list.
+   */
+  pinned?: boolean | null;
+  enabled?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Categories for the /announcements filter. Add your own; each one appears as a filter option on the site.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "announcement-categories".
+ */
+export interface AnnouncementCategory {
+  id: string;
+  name: string;
+  /**
+   * Used by /announcements?category=… — ASCII letters, numbers and hyphens, e.g. important or trading-arrangement.
+   */
+  slug: string;
+  /**
+   * Lower numbers appear first.
+   */
+  order?: number | null;
+  /**
+   * Disabling hides the filter option; announcements in this category still show under "All".
+   */
   enabled?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -556,6 +657,14 @@ export interface PayloadLockedDocument {
         value: string | HomeActivity;
       } | null)
     | ({
+        relationTo: 'announcements';
+        value: string | Announcement;
+      } | null)
+    | ({
+        relationTo: 'announcement-categories';
+        value: string | AnnouncementCategory;
+      } | null)
+    | ({
         relationTo: 'faqs';
         value: string | Faq;
       } | null)
@@ -659,6 +768,16 @@ export interface RolesSelect<T extends boolean = true> {
   can__home_activities__update?: T;
   can__home_activities__delete?: T;
   fld__home_activities__enabled__update?: T;
+  can__announcements__create?: T;
+  can__announcements__update?: T;
+  can__announcements__delete?: T;
+  fld__announcements__slug__update?: T;
+  fld__announcements__enabled__update?: T;
+  can__announcement_categories__create?: T;
+  can__announcement_categories__update?: T;
+  can__announcement_categories__delete?: T;
+  fld__announcement_categories__slug__update?: T;
+  fld__announcement_categories__enabled__update?: T;
   can__faqs__create?: T;
   can__faqs__update?: T;
   can__faqs__delete?: T;
@@ -735,6 +854,34 @@ export interface HomeActivitiesSelect<T extends boolean = true> {
   image?: T;
   href?: T;
   date?: T;
+  order?: T;
+  enabled?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "announcements_select".
+ */
+export interface AnnouncementsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  category?: T;
+  excerpt?: T;
+  body?: T;
+  publishedAt?: T;
+  pinned?: T;
+  enabled?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "announcement-categories_select".
+ */
+export interface AnnouncementCategoriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
   order?: T;
   enabled?: T;
   updatedAt?: T;

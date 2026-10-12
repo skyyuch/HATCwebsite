@@ -36,6 +36,10 @@
       "title": "Latest news",
       "description": "Latest news and activity notices from HATC. Content is published by HATC — this page is the source of truth."
     },
+    "announcements": {
+      "title": "Announcements",
+      "description": "Official HATC announcements: important notices and trading arrangements. Content is published by HATC — this page is the source of truth."
+    },
     "academy": {
       "title": "Gold Academy",
       "description": "HATC Gold Academy: neutral educational content on precious-metals markets and platform basics. Nothing on this site constitutes investment advice."
@@ -74,6 +78,7 @@
     "goldTrading": "Trading",
     "platforms": "Trading platforms",
     "goldAcademy": "Gold Academy",
+    "announcements": "Announcements",
     "support": "Client Support",
     "login": "Log in",
     "openAccount": "Open account",
@@ -1094,6 +1099,23 @@
     "empty": "No news has been published yet. Official updates will appear here when available.",
     "viewAll": "View all news",
     "imageAlt": "News cover"
+  },
+  "announcements": {
+    "breadcrumb": "Announcements navigation",
+    "hero": {
+      "badge": "HATC ANNOUNCEMENTS",
+      "title": "Announcements",
+      "subtitle": "Official HATC notices, including important announcements and trading arrangements."
+    },
+    "results": {
+      "title": "Notices",
+      "count": "{count} total"
+    },
+    "empty": "No announcements have been published yet. Official notices will appear here when available.",
+    "pinned": "Pinned",
+    "readMore": "Read notice",
+    "backToList": "Back to announcements",
+    "bodyEmpty": "This notice does not have a full body yet. Please check back later, or return to the list."
   },
   "academy": {
     "kicker": "HATC GOLD ACADEMY",

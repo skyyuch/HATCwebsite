@@ -14,6 +14,8 @@ import {Roles} from './collections/Roles';
 import {Media} from './collections/Media';
 import {Faqs} from './collections/Faqs';
 import {HomeActivities} from './collections/HomeActivities';
+import {Announcements} from './collections/Announcements';
+import {AnnouncementCategories} from './collections/AnnouncementCategories';
 import {AcademyArticles} from './collections/AcademyArticles';
 import {Instruments} from './collections/Instruments';
 import {AccountBenefits} from './collections/AccountBenefits';
@@ -129,6 +131,8 @@ export default buildConfig({
     Roles,
     Media,
     HomeActivities,
+    Announcements,
+    AnnouncementCategories,
     Faqs,
     AcademyArticles,
     Instruments,

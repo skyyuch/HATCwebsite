@@ -146,10 +146,16 @@ npm run payload -- run scripts/seed-academy-from-gitbook.ts  # 業主 GitBook �
 npm run payload -- run scripts/seed-accounts.ts         # 帳戶賣點 + FAQ
 npm run payload -- run scripts/seed-platforms.ts        # 平台 + FAQ
 npm run payload -- run scripts/seed-funding.ts          # 出入金渠道（示意資料）＋版面佔位圖
+npm run payload -- run scripts/seed-announcements.ts    # 公告分類（重要公告／交易安排）
 ```
 
 這些腳本都是冪等的，需要 `DATABASE_URI`。全部跑完的結果＝學院 49 篇、媒體 53 筆、
-出入金 14 筆、FAQ 12 筆、帳戶賣點 4 筆、平台 3 筆。
+出入金 14 筆、FAQ 12 筆、帳戶賣點 4 筆、平台 3 筆、公告分類 2 筆。
+
+> **公告（`/announcements`）**：`seed-announcements.ts` 只建立業主指定的兩個**分類**
+> （重要公告／交易安排），**不會建立任何公告**——公告是公司對外聲明，不得由程式捏造。
+> 沒有公告時前台顯示中性的「目前尚無公告」。業主可在後台自行新增分類，新增後會自動
+> 出現在前台的分類篩選；分類的「網址代稱」會用在 `/announcements?category=…` 連結上。
 
 > 🚩 **種子腳本不會、也不得寫入「頁面文案」類 global 的文字欄位。**（`seed-funding.ts`
 > 以前會，等於把內建文案複製進覆寫層，日後的文案修正就被吃掉了 —— 第五十九輪已移除。）

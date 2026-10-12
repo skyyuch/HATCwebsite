@@ -107,7 +107,7 @@ export default function HeaderNav({
   return (
     <nav
       aria-label={mega.navLabel}
-      className="hidden items-center gap-8 lg:flex"
+      className="hidden items-center gap-6 min-[1360px]:flex 2xl:gap-8"
     >
       {links.map((item) => {
         const active = isActive(pathname, item.href);
