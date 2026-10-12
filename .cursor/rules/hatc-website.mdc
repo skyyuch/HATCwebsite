@@ -962,6 +962,18 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  修正後第 1 次就新。另驗過**只 revalidate tag、沒有 `revalidatePath` 的 global**
  （`site-settings.phone` → `/privacy` 聯絡卡）也是第一次就更新。
 
+- **2026-10-12 (環境變數的三個既存事實，供下一輪「分環境配置 local/uat/prd」用；盤點於第
+ 六十一輪末，實作未開始 —— 任務細節見 `docs/HANDOFF.md`「▶ 下一輪任務」)**：
+ ① **`WEB_TERMINAL_HOST`（`components/platforms/platformVisuals.ts`）不得改成跟著環境變。**
+ 它是平台截圖瀏覽器外框位址列印出來的字，紅線是 **UAT 網域不得出現在官網任何畫面**，
+ 所以永遠是生產網域 `h5.hatcmarket.com`（FACTS 已核可）。
+ ② **營運連結的 7 個 `NEXT_PUBLIC_*` 其實只在 server 端讀**（`lib/siteSettings.ts` 第一行是
+ `import 'server-only'`，且無任何 client 元件 import 它或 `lib/seo.ts`）→ 前綴是多餘的，
+ **去掉前綴就能「一次打包、靠主機環境變數 runtime 切環境」**（`NEXT_PUBLIC_*` 會在 build 時
+ 寫死進產物）。改名要同步 `.env.example` ＋ `docs/DEPLOYMENT.md` §2.2 並通知開發端。
+ ③ **`NEXT_PUBLIC_SITE_URL` 是例外、本質上就是建置期值** —— canonical／hreflang／sitemap 都
+ 烤進 SSG 靜態 HTML，**無法** runtime 切換，換網域必須重新 build。
+
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾
  顯示退役的黃金 27／白銀 30 且缺公斤條。已改為條件欄位全部由 `tradingConditions.ts` 產生、
