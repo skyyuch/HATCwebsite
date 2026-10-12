@@ -3,6 +3,7 @@ import type {CollectionConfig} from 'payload';
 import {revalidateAnnouncements} from '@/lib/revalidateContent';
 import {contentCollectionAccess, fieldUpdateAccess} from '@/payload/access';
 import {ADMIN_GROUPS, adminLabel} from '@/payload/adminLabels';
+import {autoSlug, dateSlug} from '@/payload/slug';
 
 /**
  * Official announcements (owner request 2026-10-12, 第六十輪): `/announcements`
@@ -59,18 +60,28 @@ export const Announcements: CollectionConfig = {
       label: adminLabel('Title', '標題', '标题')
     },
     {
+      // Leave it blank and `autoSlug` derives one — see src/payload/slug.ts for
+      // why (第六十一輪). Anything typed here is normalised to ASCII + hyphens, so
+      // a pasted path or a stray space can no longer produce a broken URL.
       name: 'slug',
       type: 'text',
-      required: true,
       unique: true,
       index: true,
       access: {update: fieldUpdateAccess('announcements', 'slug')},
+      hooks: {
+        beforeValidate: [
+          autoSlug('announcements', (data, originalDoc) => [
+            data?.title,
+            dateSlug(data?.publishedAt ?? originalDoc?.publishedAt)
+          ])
+        ]
+      },
       label: adminLabel('URL slug', '網址代稱', '网址代称'),
       admin: {
         description: adminLabel(
-          'Used for /announcements/[slug]; unique site-wide; prefer ASCII + hyphens.',
-          '用於 /announcements/[slug]；建議英數與連字號，全站唯一。',
-          '用于 /announcements/[slug]；建议英数与连字符，全站唯一。'
+          'Optional — leave blank and it is generated from the title or the published date. It becomes the address of the notice: /announcements/<slug>.',
+          '可留空，系統會依標題或發布日期自動產生。它是這則公告的網址：/announcements/<代稱>。',
+          '可留空，系统会依标题或发布日期自动产生。它是这则公告的网址：/announcements/<代称>。'
         )
       }
     },

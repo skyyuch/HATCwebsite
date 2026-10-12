@@ -93,7 +93,45 @@
 > `/<locale>/announcements → 官方公告／官方公告／Announcements`（**靜態 HTML 裡就有**，
 > 不是 hydration 後才長出來）。版面以無頭 Chrome 截 footer 區塊看過 **1440／1024／834／390 ×
 > 英文＋繁中**：5 列欄位沒有擠壞其他欄，`md` 時的換行與改動前一致（本來就會換行）。
-> 未動任何 CMS schema → 不需要 `generate:types`。
+>
+> ### 3. 業主實測回報的三個問題（同一輪修掉）
+>
+> 業主發了第一則公告後回報三件事。**第 1 與第 3 件是同一個根因。**
+>
+> - **🚩「網址代稱」是個陷阱欄位 → 公告詳情 404。** 業主把它填成 **`" /announcements"`**
+>   （開頭還有一個空格）——他把「網址代稱」讀成「這一頁的網址」。卡片連結是
+>   `` `/announcements/${item.slug}` `` → `/announcements/ /announcements` → 404。
+>   根因不是填錯，而是**欄位設計**：`required` 卻沒有任何正規化，而且本站標題都是中文、
+>   沒有可轉寫的拉丁字，等於強迫業主自己發明一個代稱。
+>   **處置＝新的 [`src/payload/slug.ts`](../src/payload/slug.ts)**：
+>   - `slugify()` 把輸入正規化成 ASCII＋連字號（斜線、空白、標點全部清掉）；
+>   - `autoSlug(collection, from)`＝欄位 `beforeValidate` hook：先正規化輸入 → 空的話依
+>     候選值推導 → 再用 `-2`、`-3` 補到不撞號（排除自己那筆）；
+>   - `dateSlug()` 以**香港時間**產生 `YYYY-MM-DD`（不是 UTC，否則頁面上印的日期和網址會差一天）。
+>   - **公告**：`slug` 改成**可留空**（移除 `required`），候選＝標題 → 發布日期。
+>     實測：`" /announcements"`→`announcements`／留空＋中文標題→`2026-10-12`／同一天第二則→
+>     `2026-10-12-2`／`"  /Trading Hours//  "`→`trading-hours`。
+>   - **分類**：同樣正規化＋去重，但**刻意不自動產生**（它是會被分享的篩選網址
+>     `?category=…`，`category-2` 這種值沒有意義）；改成自訂 `validate` 訊息
+>     （`slugRequired()`，依後台語言三語）告訴業主該填什麼，而不是 Payload 的「必填」。
+>   - ⚠ `slug` 由必填改為選填 → `payload-types.ts` 變成 `slug?: string | null`，
+>     `lib/announcements.ts` 的分類 mapper 要改成 map+型別守衛（`filter` 不會窄化型別）。
+> - **內文（richText）欄位是灰底、其他欄位是白底。** Lexical **完全沒有自己的背景色**
+>   （它的樣式表只定義 error 狀態），所以在米色後台底上看起來像一塊灰色空隙。
+>   `adminBrand.css` 補上與 text/textarea 一致的白底＋邊框＋6px 圓角＋`min-height`。
+>   🚩 兩個實作陷阱：① **要套在 `.editor-container`，不是 `.rich-text-lexical__wrap`** ——
+>   `__wrap` 裡面**也包含欄位說明文字**，套在它上面會把說明包進輸入框內（第一版就是這樣，
+>   已截圖發現並改掉）；② 必須加 **`:not(.error)`** —— `adminBrand.css` 在
+>   `@payloadcms/next/css` **之後**載入，同特異度時我們會贏，等於默默吃掉無效欄位的紅色提示。
+> - **順手驗了一個沒人問但更危險的情境**：`/announcements/[slug]` 是 `generateStaticParams`
+>   產生的 ● SSG，**build 之後才新增的公告會不會 404？** 實測**不會** —— Next 預設
+>   `dynamicParams: true`，新 slug 走 on-demand 渲染（`getAnnouncementBySlugCached` 以 slug
+>   為 key，新 slug 必然 cache miss → 直接讀 DB）。**正式站新增公告不需要重新 build。**
+>
+> 驗收（第 3 節）：`generate:types` 已重生並 commit（`slug` 轉選填）／`lint` 0 error／
+> `tsc --noEmit`／`i18n:check` 730 鍵（未動文案）／冷建綠。後台畫面以**臨時 full-access 帳號**
+> 登入無頭 Chrome 截圖確認（驗完即刪該帳號）；hook 行為以 Payload local API 跑過上述四組輸入
+> （臨時公告驗完即刪，現 DB 只剩業主自己那筆測試公告，slug＝`announcements`）。
 
 > **✅ 第六十輪（2026-10-12）完成：官方公告 `/announcements` 上線（CMS 可新增、分類可自建）。**
 >

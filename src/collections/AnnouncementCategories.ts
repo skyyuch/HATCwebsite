@@ -3,6 +3,7 @@ import type {CollectionConfig} from 'payload';
 import {revalidateAnnouncementCategories} from '@/lib/revalidateContent';
 import {contentCollectionAccess, fieldUpdateAccess} from '@/payload/access';
 import {ADMIN_GROUPS, adminLabel} from '@/payload/adminLabels';
+import {autoSlug, slugRequired} from '@/payload/slug';
 
 /**
  * Announcement categories (owner decision 2026-10-12, 第六十輪): the owner asked
@@ -58,18 +59,34 @@ export const AnnouncementCategories: CollectionConfig = {
       label: adminLabel('Name', '分類名稱', '分类名称')
     },
     {
+      // Normalised and de-duplicated like the announcement slug, but NOT
+      // auto-generated: this one is a shareable filter URL set up once per
+      // category, and `?category=category-2` would be meaningless. A Chinese-only
+      // name therefore still asks for a slug — with a message that says what to
+      // type, which is the part the owner was missing in 第六十一輪.
       name: 'slug',
       type: 'text',
-      required: true,
       unique: true,
       index: true,
       access: {update: fieldUpdateAccess('announcement-categories', 'slug')},
+      hooks: {
+        beforeValidate: [
+          autoSlug('announcement-categories', (data) => [data?.name])
+        ]
+      },
+      validate: slugRequired(
+        adminLabel(
+          'Enter a slug in ASCII letters, numbers and hyphens, e.g. important or trading-arrangement.',
+          '請填寫網址代稱，使用英數與連字號，例如 important 或 trading-arrangement。',
+          '请填写网址代称，使用英数与连字符，例如 important 或 trading-arrangement。'
+        )
+      ),
       label: adminLabel('URL slug', '網址代稱', '网址代称'),
       admin: {
         description: adminLabel(
-          'Used by /announcements?category=… — ASCII letters, numbers and hyphens, e.g. important or trading-arrangement.',
-          '用於 /announcements?category=… 的篩選連結；請用英數與連字號，例如 important 或 trading-arrangement。',
-          '用于 /announcements?category=… 的筛选链接；请用英数与连字符，例如 important 或 trading-arrangement。'
+          'Used by the filter link /announcements?category=… — ASCII letters, numbers and hyphens, e.g. important or trading-arrangement.',
+          '用於篩選連結 /announcements?category=…；請用英數與連字號，例如 important 或 trading-arrangement。',
+          '用于筛选链接 /announcements?category=…；请用英数与连字符，例如 important 或 trading-arrangement。'
         )
       }
     },

@@ -365,9 +365,9 @@ export interface Announcement {
   id: string;
   title: string;
   /**
-   * Used for /announcements/[slug]; unique site-wide; prefer ASCII + hyphens.
+   * Optional — leave blank and it is generated from the title or the published date. It becomes the address of the notice: /announcements/<slug>.
    */
-  slug: string;
+  slug?: string | null;
   /**
    * Optional. Without a category the notice only appears under "All".
    */
@@ -416,9 +416,9 @@ export interface AnnouncementCategory {
   id: string;
   name: string;
   /**
-   * Used by /announcements?category=… — ASCII letters, numbers and hyphens, e.g. important or trading-arrangement.
+   * Used by the filter link /announcements?category=… — ASCII letters, numbers and hyphens, e.g. important or trading-arrangement.
    */
-  slug: string;
+  slug?: string | null;
   /**
    * Lower numbers appear first.
    */

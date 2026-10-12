@@ -918,7 +918,31 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  的正本取**，就不可能漂移。欄位長度也不再被型別綁死成 4 列。
  - **驗收**：`lint` 0 error／`tsc`／`i18n:check` 730 鍵／冷建綠 ● SSG；以
  `.next/server/app/<locale>/*.html` 的 footer `<nav>` 確認三語連結在**靜態 HTML 裡**，
- 版面截 footer 區塊看過 1440／1024／834／390 × 英文＋繁中。未動 schema → 免 `generate:types`。
+ 版面截 footer 區塊看過 1440／1024／834／390 × 英文＋繁中。
+
+- **2026-10-12 (第六十一輪 業主實測回報): 「網址代稱」陷阱欄位（→ 公告 404）＋ richText 灰底。**
+ - **🚩 CMS slug 欄位一律要正規化＋可自動產生（新慣例）。** 業主把公告的「網址代稱」填成
+ `" /announcements"`（還帶前導空格）——他把它讀成「這一頁的網址」→ 卡片連到
+ `/announcements/ /announcements` → **404**。根因是**欄位設計**：`required` 卻零正規化，而且
+ 本站標題都是中文、沒有可轉寫的拉丁字，等於強迫業主發明代稱。**新單一來源＝
+ `src/payload/slug.ts`**：`slugify()`（→ASCII＋連字號）／`autoSlug(collection, from)`
+ （欄位 `beforeValidate`：正規化輸入 → 空則依候選推導 → `-2`/`-3` 去重，排除自己那筆）／
+ `dateSlug()`（**香港時間** `YYYY-MM-DD`，用 UTC 會與頁面印的日期差一天）／`slugRequired()`
+ （三語 validate 訊息）。**公告 slug 改為可留空**（候選＝標題→發布日期）；**分類 slug 刻意不
+ 自動產生**（它是會被分享的 `?category=…`，`category-2` 無意義），改用清楚的 validate 訊息。
+ **日後任何新增 slug 欄位一律接 `autoSlug`，不要再做裸的 `required: true` 文字欄。**
+ ⚠ `slug` 轉選填 → `payload-types` 變 `slug?: string | null`，reader 的 `filter` 不會窄化型別，
+ 要改 map+型別守衛。
+ - **richText 欄位灰底的真正原因**：Lexical **沒有自己的背景色**（樣式表只定義 error 狀態），
+ 所以透出米色後台底。`adminBrand.css` 補白底＋邊框＋6px＋`min-height`。🚩 兩個陷阱：
+ ① **要套 `.editor-container`，不是 `.rich-text-lexical__wrap`**（`__wrap` 內含欄位說明文字，
+ 套上去會把說明包進輸入框）；② 必須 **`:not(.error)`** —— `adminBrand.css` 在
+ `@payloadcms/next/css` **之後**載入，同特異度我們會贏，等於吃掉無效欄位的紅色提示。
+ - **已驗證（記錄下來省得下一棒再怕）**：`/announcements/[slug]` 雖是 `generateStaticParams`
+ 的 ● SSG，**build 之後才新增的公告不會 404** —— Next 預設 `dynamicParams: true` 走 on-demand
+ 渲染。**正式站新增公告不需要重新 build。**
+ - **驗後台畫面的方法**：建臨時 full-access 帳號 → `POST /api/users/login` 取 token →
+ 無頭 Chrome `document.cookie='payload-token=…'` → CDP 截圖 → **驗完刪帳號**。
 
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾

@@ -374,6 +374,37 @@ html[data-theme='light'] .field-type.email input:focus {
   outline: none;
 }
 
+/* Rich-text (Lexical) body fields.
+   Lexical ships no background of its own — it only styles its error state — so
+   on the cream admin surface a body field read as a grey gap while every other
+   input was white (owner report 第六十一輪). Give it the same white field
+   treatment, plus the horizontal padding Lexical leaves at 0, and enough height
+   to look like somewhere you write a notice.
+
+   Target `.editor-container`, NOT `.rich-text-lexical__wrap`: the wrap also
+   contains the field description, so bordering it puts the help text inside the
+   writing box. `:not(.error)` is also deliberate — this file is imported after
+   Payload's own stylesheet, so an equal-specificity rule of ours would win and
+   silently drop the red tint Lexical paints on an invalid field. */
+html[data-theme='light']
+  .rich-text-lexical:not(.error)
+  > .rich-text-lexical__wrap
+  > .editor-container {
+  background: var(--theme-input-bg);
+  border: 1px solid var(--hatc-admin-line);
+  border-radius: var(--hatc-admin-radius);
+  padding: 0.25rem 0.75rem;
+  min-height: 11rem;
+}
+
+html[data-theme='light']
+  .rich-text-lexical:not(.error)
+  > .rich-text-lexical__wrap
+  > .editor-container:focus-within {
+  border-color: color-mix(in srgb, var(--hatc-admin-navy) 45%, var(--hatc-admin-line));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hatc-admin-navy) 14%, transparent);
+}
+
 /* ——— Default dashboard cards (auto-listed collections/globals) ——— */
 html[data-theme='light'] .card {
   border: 1px solid var(--hatc-admin-line);

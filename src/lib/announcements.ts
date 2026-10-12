@@ -158,8 +158,12 @@ async function fetchAnnouncementCategoriesFromDb(
     });
 
     return res.docs
-      .filter((doc) => doc.name && doc.slug)
-      .map((doc) => ({id: String(doc.id), slug: doc.slug, name: doc.name}));
+      .map((doc) =>
+        doc.name && doc.slug
+          ? {id: String(doc.id), slug: doc.slug, name: doc.name}
+          : null
+      )
+      .filter((category): category is AnnouncementCategoryRef => category !== null);
   } catch {
     return [];
   }
