@@ -937,6 +937,20 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
   以 sample/示範 標示、集中於元件常數易改，且**不得寫入 `HATC_FACTS.md`**。
 - 需要 shadcn CLI 產新元件時再補 `components.json`（目前手動維護 `ui/*` 未建此檔）。
 
+## Database: PostgreSQL only (Payload constraint)
+
+- **Payload 3 沒有 MySQL adapter。** 官方只有 `@payloadcms/db-postgres`／`db-mongodb`／
+ `db-sqlite`／`db-d1-sqlite`／`db-vercel-postgres`；**`@payloadcms/db-mysql` 不存在**
+ （2026-10-12 查 npm，404）。業主 2026-10-12 提出「db 改用 mysql」→ **不可直接實作**，
+ 必須先向業主說明並讓他在「維持 Postgres／改 MongoDB 或 SQLite／自建 CMS／只有其他系統用
+ MySQL」之間拍板。詳見 `docs/HANDOFF.md`「▶ 下一輪任務」。
+- 換 DB 引擎＝`src/migrations/*`（三個 Postgres SQL migration ＋ 39 表基線）全部作廢要重做，
+ 並重生 `payload-types.ts`；**不是改一行 adapter 名稱就好**。
+- 庫名：本機現為 `hatc`（Docker 容器 `hatc-postgres`，使用者亦 `hatc`）。業主要求改成
+ **`hatc-cms`** —— **只動連線字串、不影響 schema、不需要 migration**，但 `.env.example`／
+ `README.md`／`docs/DEPLOYMENT.md`／`docs/HATC_PROJECT_BRIEF.md` 要一次改齊。
+ ⚠ 庫名含連字號 → 連線字串與 `psql -d "hatc-cms"` 都要加引號。
+
 ## Delivery / deployment (owner 2026-10-11)
 
 - 業主把程式碼**交給開發團隊部署到伺服器**。**GitHub `origin` 是唯一來源**
@@ -946,8 +960,13 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  → 33 MB／435 檔，自動排除 `node_modules`／`.next`／本機 `.env`／`.git`，並刻意排除
  `lp.zip`（4 MB 設計素材，部署不需要）。**檔名帶日期＋commit sha**，每次重新交付都要重做
  （開發端拿到的是快照、沒有 `.git`，無法 `git pull`）。
-- 🚩 **Gitee 推送已證實行不通，不要再重試**：remote `gitee`
- （`git@gitee.com:spingpeng/homeindex.git`）已設好但**仍是空倉**。兩次嘗試皆失敗——
+- **2026-10-12 更新：開發已把 zip 內容 push 上 Gitee**，落在 **`master`** 分支（`cd2692b`），
+ **與本倉 `main` 是獨立歷史（無共同祖先）**。業主要求「之後直接 push 到 git 地址上改」→
+ 下一輪動手前要先對齊分支（以 `gitee/master` 為基線，或 force-push 我們的 `main`），業主拍板。
+ **大包已在對端 → 之後的 push 只送 delta（KB 級），不再撞 receive-pack 時限**，所以下面那條
+ 「不要再重試」**只適用於首次 39 MiB 整包**。從 Gitee fetch 仍很慢（實測 >10 分鐘）。
+- 🚩 **首次整包推送已證實行不通**：remote `gitee`
+ （`git@gitee.com:spingpeng/homeindex.git`）當時是空倉。兩次嘗試皆失敗——
  ① 69 分鐘後 client 端 `Operation timed out / Broken pipe`；② 加了 SSH 保活
  （`~/.ssh/config` 的 `ServerAliveInterval 20`，已驗證生效）後仍在 57 分鐘被
  **Gitee 伺服器端時限**砍掉：`Grpc Receive Pack error: DeadlineExceeded`。根因＝**39.1 MiB

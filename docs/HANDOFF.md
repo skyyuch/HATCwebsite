@@ -1,9 +1,57 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-11（第五十八輪：移除「其餘交易條件（執行方式等）」待公佈列；登入按鈕改 CMS
-> 設定、未填即隱藏。同日新增 `docs/DEPLOYMENT.md` 並把倉庫交付到 Gitee 供開發團隊部署。）
+> 最後更新：2026-10-12（第五十八輪：移除「其餘交易條件（執行方式等）」待公佈列；登入按鈕改 CMS
+> 設定、未填即隱藏。新增 `docs/DEPLOYMENT.md`；程式碼以 zip 交付、開發已 push 上 Gitee
+> `master`。下一輪＝DB 引擎／庫名／改走 Gitee，**第一項有不可行問題待業主拍板**。）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
+
+## ▶ 下一輪任務（業主 2026-10-12 指定，依序）
+
+> 業主：「1. db 改用 mysql　2. 數據庫改名為 `hatc-cms`　3. 之後直接 push 到 git 地址上改就行了」
+>
+> ### 1. 🚩 DB 改 MySQL —— **以目前架構不可行，動手前必須先問業主**
+>
+> **Payload 3 沒有 MySQL adapter。** 已查 npm：官方只有
+> `@payloadcms/db-postgres`／`db-mongodb`／`db-sqlite`／`db-d1-sqlite`／`db-vercel-postgres`，
+> **`@payloadcms/db-mysql` 這個套件不存在**（`npm view` 404）。本倉目前用
+> `postgresAdapter`（`src/payload.config.ts`），三個 migration 全是 Postgres SQL。
+>
+> 選項（請業主拍板，不要自行選）：
+> - **(a) 維持 PostgreSQL**（風險最低；39 張表的 migration 基線與三個 migration 都現成可用）。
+> - **(b) 改 MongoDB 或 SQLite**（官方支援）。代價：`src/migrations/*` 整套作廢要重做
+>   （MongoDB 根本不用 migration，SQLite 要重新產基線）；`payload-types.ts` 要重生；
+>   所有 reader 的 `hasDb()` 行為不變但要重新驗。
+> - **(c) 放棄 Payload、在 MySQL 上自建 CMS**：工程量巨大，且會失去後台 UI、欄位級權限
+>   （`Roles` 矩陣）、Lexical 富文本、媒體上傳、一鍵機翻、revalidate hook —— 不建議。
+> - **(d) 只有「其他系統」用 MySQL，CMS 繼續用 Postgres**（若開發的需求其實是伺服器上已有
+>   MySQL，這通常是最務實的答案）。
+>
+> **要先問清楚的是「為什麼要 MySQL」**：是伺服器只裝了 MySQL／維運規範／還是與既有系統共用？
+> 答案會直接決定走 (a) 還是 (d)。
+>
+> ### 2. 資料庫改名為 `hatc-cms`（單純，但要一次改齊）
+>
+> **改名只動連線字串，不影響 schema，不需要 migration。** 要同步的地方：
+> `.env.example`、`README.md`（快速開始）、`docs/DEPLOYMENT.md`（§2.1）、
+> `docs/HATC_PROJECT_BRIEF.md`（技術棧那行若提到庫名），以及**本機** `.env` 與 Docker 容器
+> （本機現況：容器 `hatc-postgres`，庫名與使用者皆 `hatc`）。
+> 本機改名作法＝`CREATE DATABASE "hatc-cms"` 後 `pg_dump | psql` 搬過去，或直接重建空庫跑
+> `npm run migrate` ＋ 重跑種子腳本（本機資料全是可重跑的種子）。
+> ⚠ 庫名含連字號，連線字串與 `psql` 都要**加引號**（`psql -d "hatc-cms"`）。
+>
+> ### 3. 之後直接 push 到 Gitee
+>
+> **開發已經把 zip 內容 push 上 Gitee，但落在 `master` 分支（`cd2692b`），與本倉 `main`
+> 是獨立歷史（無共同祖先）。** 所以不能直接 `git push gitee main`，必須先對齊，請業主選：
+> - **(a) 以開發的 `master` 為新基線**：本機建一條追蹤 `gitee/master` 的分支，把我們之後的
+>   改動 commit 在它上面。GitHub 保留完整 33 commit 歷史作備份。
+> - **(b) 把我們的 `main` 強推成 Gitee 的主幹**（`--force`，會蓋掉開發那個 commit）。
+>   需先確認開發**沒有**在上面加過部署用檔案（Dockerfile／nginx／CI 等）。
+>
+> ⚠ **前一輪「Gitee 不要再重試」的結論只適用於首次 39 MiB 整包。** 大包現在已經在對端，
+> 之後的 push 只送 delta（KB 級），**不再會撞到 receive-pack 時限** → 走 git 交付是可行的。
+> ⚠ 從 Gitee `fetch` 也很慢（實測 10 分鐘以上仍在下載 33 MiB），第一次對齊請預留時間。
 
 ## ▶ 交付狀態：程式碼交給開發團隊部署（2026-10-11）
 
