@@ -1,7 +1,10 @@
 # HATC 交棒摘要 (Handoff)
 
 > 最後更新：2026-10-12（第六十一輪：**Footer 加公告入口**，`關於我們`欄 `官方公告` → `/announcements`；
-> Footer 的靜態欄改成可變長度的條目清單、標籤可借用目的地頁面的鍵。）
+> Footer 的靜態欄改成可變長度的條目清單、標籤可借用目的地頁面的鍵。業主實測回報的三個問題
+> 已修（公告 slug 可留空／自動產生、Lexical 內文改白底、詳情 404）。
+> **另修掉一個全站性問題：CMS 存檔後要重新整理兩次才生效** —— `safeRevalidateTag` 由
+> `'max'`（stale-while-revalidate）改為 `{expire: 0}`（立即過期）。）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
@@ -132,6 +135,33 @@
 > `tsc --noEmit`／`i18n:check` 730 鍵（未動文案）／冷建綠。後台畫面以**臨時 full-access 帳號**
 > 登入無頭 Chrome 截圖確認（驗完即刪該帳號）；hook 行為以 Payload local API 跑過上述四組輸入
 > （臨時公告驗完即刪，現 DB 只剩業主自己那筆測試公告，slug＝`announcements`）。
+>
+> ### 4. 業主回報「改了內容不會馬上生效」→ 全站 revalidation 一直是 stale-while-revalidate
+>
+> 🚩 **這不是公告專屬的 bug，是全站每一個 CMS 讀取都中的。** 根因在
+> [`src/lib/revalidateContent.ts`](../src/lib/revalidateContent.ts) 的 `safeRevalidateTag()`：
+> 它呼叫 `revalidateTag(tag, 'max')`，而 `'max'` 是 Next 16 的 **stale-while-revalidate**
+> 設定檔 —— 只把條目標記為 stale，**存檔後第一次造訪仍然回舊值**、同時在背景重新產生，
+> 所以要重新整理**兩次**才看得到新內容。所有集合與 global 的 revalidate 函式都走這支 helper，
+> 等於後台改任何東西（公告、學院文章、FAQ、網站設定…）都是這個行為。
+>
+> **處置＝改成 `revalidateTag(tag, {expire: 0})`（立即過期）。**
+> - Next 為「read-your-own-writes」準備的 API 是 `updateTag()`，但它**只能在 Server Action
+>   裡呼叫**；Payload 的存檔跑在它自己的 **REST route handler**，官方文件對這個情境給的寫法
+>   正是 `revalidateTag(tag, {expire: 0})`（見 `node_modules/next/dist/docs` 的
+>   `revalidateTag.md`「Good to know」與 `updateTag.md`「Differences from revalidateTag」）。
+> - **不要改回 `'max'`。** 原因已寫在該檔的註解裡。
+> - 代價：存檔後的那**一個**請求會是真實的資料庫讀取（阻塞式 cache miss）而不是秒回舊值，
+>   之後照常走快取。對 CMS 來說這是正確的取捨。
+> - `revalidatePath` 不必改 —— 它在 route handler 裡本來就是「下次造訪時重新產生」，
+>   真正回舊值的是帶 tag 的 `unstable_cache` 條目。
+>
+> **驗收方式（日後驗快取都可照做）**：`npm start` 跑正式建置，用 REST PATCH 改資料
+> （與 `/admin` 存檔同一條 code path，`afterChange` 會在同一個程序內跑），然後比對
+> **存檔後第一次** `curl` 的 HTML。修正前：第 1 次仍是舊值、第 2 次才變新值；修正後：
+> 第 1 次就是新值（公告列表＋詳情皆驗）。另外驗了**只 revalidate tag、沒有 `revalidatePath`
+> 的 global**（`site-settings` 的電話 → `/privacy` 的聯絡卡）也是第一次就更新，確認 tag
+> 失效會連帶讓用到該 tag 的預產生頁面重新產生。驗完已把測試值全部還原。
 
 > **✅ 第六十輪（2026-10-12）完成：官方公告 `/announcements` 上線（CMS 可新增、分類可自建）。**
 >

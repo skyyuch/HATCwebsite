@@ -944,6 +944,24 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  - **驗後台畫面的方法**：建臨時 full-access 帳號 → `POST /api/users/login` 取 token →
  無頭 Chrome `document.cookie='payload-token=…'` → CDP 截圖 → **驗完刪帳號**。
 
+- **2026-10-12 (第六十一輪 追加): CMS 存檔要「改了馬上看得到」→ `revalidateTag` 必須用
+ `{expire: 0}`，不是 `'max'`。** 業主回報「改了內容後不會馬上生效，可能有緩存嗎」——**全站
+ 每一個 CMS 讀取都中**，因為所有 revalidate 函式都走 `src/lib/revalidateContent.ts` 的
+ `safeRevalidateTag()`，而它原本呼叫 `revalidateTag(tag, 'max')`。**`'max'` 是 Next 16 的
+ stale-while-revalidate 設定檔**：只把條目標記 stale，存檔後**第一次造訪仍回舊值**、背景才更新
+ → 每次編輯都要重新整理兩次。**正解＝`revalidateTag(tag, {expire: 0})`**（立即過期）。
+ Next 為 read-your-own-writes 準備的 `updateTag()` **只能在 Server Action 用**，Payload 存檔跑在
+ 它自己的 REST route handler，官方文件對這情境給的就是 `{expire: 0}`（`node_modules/next/dist/docs`
+ → `revalidateTag.md`／`updateTag.md`）。**不要改回 `'max'`**（理由已寫在該檔註解）。
+ `revalidatePath` 不必動（在 route handler 本來就是「下次造訪重新產生」）。代價＝存檔後那**一個**
+ 請求是阻塞式 cache miss，之後照常快取。
+ - **慣例：日後新增任何 CMS reader 的 revalidate，一律沿用 `safeRevalidateTag`**（try/catch 包裝
+ ＋ `{expire: 0}`），不要在新檔案裡直接呼叫 `revalidateTag`。
+ - **驗快取的方法**：`npm start` 跑正式建置 → REST PATCH 改資料（與 `/admin` 存檔同一條 code
+ path，`afterChange` 同程序內跑）→ 比對**存檔後第一次** `curl` 的 HTML。修正前第 1 次舊、第 2 次新；
+ 修正後第 1 次就新。另驗過**只 revalidate tag、沒有 `revalidatePath` 的 global**
+ （`site-settings.phone` → `/privacy` 聯絡卡）也是第一次就更新。
+
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾
  顯示退役的黃金 27／白銀 30 且缺公斤條。已改為條件欄位全部由 `tradingConditions.ts` 產生、

@@ -11,9 +11,30 @@ import {CACHE_TAGS} from '@/lib/cacheTags';
  * the calls keeps CMS writes (seeding, migrations) resilient while still
  * revalidating normally during admin edits inside a request.
  */
+
+/**
+ * 🚩 `{expire: 0}`, NOT `'max'` (owner report 第六十一輪: "改了內容後不會馬上生效").
+ *
+ * `revalidateTag(tag, 'max')` is Next's *stale-while-revalidate* profile: the
+ * tagged entry is only marked stale, so the first visit after a save still
+ * serves the old value and refreshes in the background — every CMS edit needed
+ * **two** reloads to show up. An editor checking his own change reads that as a
+ * broken site, so this is read-your-own-writes territory and the entry has to
+ * expire immediately.
+ *
+ * `updateTag()` is Next's dedicated read-your-own-writes API but it **only**
+ * works inside a Server Action; Payload runs these hooks inside its REST route
+ * handler, where the documented equivalent is `revalidateTag(tag, {expire: 0})`
+ * (see node_modules/next/dist/docs → revalidateTag "Good to know", updateTag
+ * "Differences from revalidateTag").
+ *
+ * Cost: the first request after an edit is a blocking cache miss instead of an
+ * instant stale response. That is the right trade for a CMS — readers only pay
+ * it on the one request that follows a save.
+ */
 function safeRevalidateTag(tag: string): void {
   try {
-    revalidateTag(tag, 'max');
+    revalidateTag(tag, {expire: 0});
   } catch {
     // Outside a request context — nothing to revalidate.
   }

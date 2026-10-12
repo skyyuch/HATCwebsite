@@ -181,7 +181,12 @@ npm run payload -- run scripts/seed-announcements.ts    # 公告分類（重要�
 ## 6. 更新內容後如何生效
 
 - 在 `/admin` 編輯內容 → Payload 的 `afterChange` hook 會自動 `revalidateTag` /
-  `revalidatePath`，**不需要重新部署或重啟**。
+  `revalidatePath`，**不需要重新部署或重啟**，前台**重新整理一次就會看到新內容**。
+- ⚠ 失效用的是 `revalidateTag(tag, {expire: 0})`（立即過期），**不是** Next 建議的
+  `'max'`。`'max'` 是 stale-while-revalidate：存檔後第一次造訪仍會看到舊值、只在背景更新，
+  等於每次編輯都要重新整理兩次（第六十一輪業主回報）。`updateTag()` 只能在 Server Action 用，
+  Payload 的存檔走 REST route handler，所以用 `{expire: 0}`。改 `src/lib/revalidateContent.ts`
+  時不要改回 `'max'`。代價是存檔後的那一個請求會是一次真實的資料庫讀取（略慢），之後照常走快取。
 - 改了 `src/messages/*`（程式內建文案）或任何程式碼 → **需要重新 build 並重啟**。
 - ⚠ **重新 build 前請先 `rm -rf .next`。** `next build` 會重用 `.next/cache` 裡的 CMS 讀取
   結果，可能把舊值烤進靜態頁面。CI 用全新 runner 沒這問題，但在同一台伺服器上重複建置會。
