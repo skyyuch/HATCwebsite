@@ -5,17 +5,21 @@
  * and withdrawal rows (`type: withdrawal`) from `funding.withdraw.methodsSample` —
  * read straight from `src/messages/*` so it stays in sync with the front-end fallback.
  *
- * Also seeds the `funding-page` global marketing copy from the same i18n source so
- * the owner sees the current three-locale copy in `/admin` and can edit it directly
- * (empty CMS fields still fall back to i18n — this just pre-fills the override layer).
+ * It also links the built-in placeholder background images into the `funding-page`
+ * global so they are visible and replaceable in `/admin`. It deliberately does NOT
+ * pre-fill that global's TEXT fields — see the governance note below.
  *
  * ⚠️ Governance:
  * - funding-methods rows are illustrative SAMPLE data (the front-end keeps the
  *   「示意數據」label), NOT approved facts or delivery guarantees.
  * - The `testimonials` collection is deliberately NOT seeded — testimonials are
  *   real company facts and must be entered by the owner (no fabricated seeds).
- * - The `funding-page` global only carries section chrome copy (not facts); the
- *   approved figures never live here.
+ * - **Never seed the `funding-page` global's text fields.** `pickText(cms, fallback)`
+ *   prefers any non-empty CMS value, so a stored copy of the i18n default silently
+ *   swallows every later i18n correction to that string. This script used to seed
+ *   all 22 fields × 3 locales and that is exactly how it ate a red-line copy fix
+ *   (第五十七輪). Empty is the correct state; the owner fills a field only when
+ *   genuinely overriding it.
  *
  * Idempotent: seeds a collection only when it is empty, and the global only when it
  * has not been overridden yet. Re-running never dupes or clobbers owner edits.
@@ -135,70 +139,6 @@ async function seedFundingMethods(
 
 await seedFundingMethods('deposit', 'deposit');
 await seedFundingMethods('withdrawal', 'withdraw');
-
-// funding-page global marketing copy (section chrome only; no facts).
-// Maps CMS field name -> dot path inside `funding.*` for the given locale.
-const GLOBAL_FIELD_MAP: Record<string, string> = {
-  heroTitleLead: 'hero.titleLead',
-  heroTitleAccent: 'hero.titleAccent',
-  heroTitleTail: 'hero.titleTail',
-  heroSubtitle: 'hero.subtitle',
-  depositIntroHeading: 'deposit.intro.heading',
-  depositIntroBody: 'deposit.intro.body',
-  depositMethodsKicker: 'deposit.kicker',
-  depositMethodsHeading: 'deposit.heading',
-  depositMethodsNote: 'deposit.note',
-  withdrawIntroHeading: 'withdraw.intro.heading',
-  withdrawIntroBody: 'withdraw.intro.body',
-  withdrawMethodsKicker: 'withdraw.kicker',
-  withdrawMethodsHeading: 'withdraw.heading',
-  withdrawMethodsNote: 'withdraw.note',
-  topicsKicker: 'topics.kicker',
-  topicsHeading: 'topics.heading',
-  topicsSubtitle: 'topics.subtitle',
-  testimonialsKicker: 'testimonials.kicker',
-  testimonialsHeading: 'testimonials.heading',
-  testimonialsSubtitle: 'testimonials.subtitle',
-  ctaHeading: 'cta.heading',
-  ctaBody: 'cta.body'
-};
-
-function dget(obj: unknown, path: string): string {
-  const val = path.split('.').reduce<unknown>(
-    (acc, k) =>
-      acc && typeof acc === 'object'
-        ? (acc as Record<string, unknown>)[k]
-        : undefined,
-    obj
-  );
-  return typeof val === 'string' ? val : '';
-}
-
-async function seedFundingMarketing(): Promise<void> {
-  // Skip if the owner has already overridden the copy (don't clobber edits).
-  const current = await p.findGlobal({
-    slug: 'funding-page',
-    locale: 'zh-Hant',
-    fallbackLocale: false,
-    depth: 0
-  });
-  if (current?.heroTitleLead) {
-    payload.logger.info('Skip funding-page global (already has copy)');
-    return;
-  }
-
-  for (const loc of ['zh-Hant', 'zh-Hans', 'en'] as const) {
-    const src = fund(loc);
-    const data: Record<string, string> = {};
-    for (const [field, path] of Object.entries(GLOBAL_FIELD_MAP)) {
-      data[field] = dget(src, path);
-    }
-    await p.updateGlobal({slug: 'funding-page', locale: loc, data});
-  }
-  payload.logger.info('Seeded funding-page global copy (3 locales)');
-}
-
-await seedFundingMarketing();
 
 // funding-page background images: import the built-in Figma placeholder PNGs into
 // the Media library and link them so the CMS upload fields show a preview matching

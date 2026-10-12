@@ -3,15 +3,19 @@
 > 本檔是**交給開發團隊部署到伺服器**的操作說明。
 > 想了解網站內容決策與設計史，請看 `docs/HANDOFF.md`；公司事實一律以
 > `docs/HATC_FACTS.md` 為準。
-> 最後更新：2026-10-11（第五十八輪）
+> 最後更新：2026-10-12（第五十九輪：資料庫由 PostgreSQL 改為 **MongoDB**，庫名
+> `hatc-cms`；migration 機制隨之退役）
 
 ---
 
 ## 0. 一句話摘要
 
 Next.js 16（App Router）＋ Payload CMS 同倉的三語網站，頁面全部 **SSG ＋ 按需
-revalidate**。部署三步：**空的 PostgreSQL → `npm run migrate` → `build` → `start`**。
-**本專案從未部署過，這是第一次上線。**
+revalidate**。部署兩步：**備好 MongoDB → `build` → `start`**（Mongo 是 schemaless 的，
+**不需要建表、不需要跑 migration**）。**本專案從未部署過，這是第一次上線。**
+
+> ⚠ 如果你拿到的是 2026-10-12 之前的舊快照或舊說明：那版用 PostgreSQL 並要求執行
+> `npm run migrate`。**現在不需要，也沒有這個指令了。**
 
 ---
 
@@ -21,7 +25,7 @@ revalidate**。部署三步：**空的 PostgreSQL → `npm run migrate` → `bui
 | --- | --- |
 | Node.js | **22.x LTS**（開發用 22.22.3 驗證；Next 16 最低 20.9） |
 | npm | 10.x（倉內有 `package-lock.json`，請用 `npm ci`） |
-| PostgreSQL | 14 以上（開發用 16）。**必須是一個全新的空資料庫** |
+| MongoDB | 6 以上（開發用 7）。單機 standalone 即可；若是 replica set，Payload 會自動啟用交易 |
 | 記憶體 | build 階段建議 ≥ 2 GB |
 
 本專案**不是** serverless-only 設計，預期跑在一般 Node 伺服器（PM2／systemd／Docker 皆可）。
@@ -38,8 +42,12 @@ revalidate**。部署三步：**空的 PostgreSQL → `npm run migrate` → `bui
 ```bash
 NEXT_PUBLIC_SITE_URL=https://www.hatchk.com   # 影響 canonical / hreflang / sitemap / robots
 PAYLOAD_SECRET=<openssl rand -base64 32>      # 請自行產生，勿沿用任何範例值
-DATABASE_URI=postgres://user:password@host:5432/hatc
+DATABASE_URI=mongodb://user:password@host:27017/hatc-cms?authSource=admin
 ```
+
+> **資料庫名稱固定用 `hatc-cms`**（業主指定）。名稱含連字號，寫進 shell 指令或
+> `mongosh` 參數時記得加引號：`mongosh "mongodb://…/hatc-cms?authSource=admin"`。
+> 資料庫**不需要事先建立**，Mongo 會在第一次寫入時自動建立；但帳號要先有該庫的讀寫權限。
 
 > `NEXT_PUBLIC_SITE_URL` 未設定時會 fallback 到 `http://localhost:3000`，**正式站一定要設**，
 > 否則 SEO 的 canonical 與 sitemap 會指到 localhost。
@@ -78,28 +86,26 @@ npm ci
 # 2. 設定環境變數（見第 2 節）
 cp .env.example .env && vi .env
 
-# 3. 建立 schema —— 務必對「全新空資料庫」執行
-npm run migrate
-
-# 4. 建置與啟動
+# 3. 建置與啟動（Mongo 不需要建表，也沒有 migration 步驟）
 npm run build
 npm run start          # 預設 3000 埠；請用反向代理掛上 TLS
 ```
 
-### 3.1 ⚠ 關於 migration（最重要的一點）
+### 3.1 ⚠ 關於 schema（最重要的一點）
 
-- 本機開發靠 Payload 的 Drizzle **push** 自動同步 schema，**生產模式不 push，只重播
-  `src/migrations/*`**。所以生產環境**一定要跑 `npm run migrate`**，不會自動建表。
-- **不要**把 `npm run migrate` 指向一個已經由 push 建好表的資料庫 —— 表已存在，
-  `CREATE TABLE` 會失敗。要用 migration 流程就砍掉重建。
-- 目前有三個 migration：`20261011_073413_initial`（39 張表的基線）、
-  `20261011_091538_add_open_account_url`、`20261011_122325_add_member_login_url`。
-  按順序重播即可得到正確 schema。
-- 之後若有人改了 `src/collections/*`、`src/globals/*`、`src/payload.config.ts` 或
-  `src/payload/permissions/registry.ts`，**同一次改動必須**跑
-  `npm run migrate:create -- <名稱>` 並把 `.ts` ＋ `.json` ＋ `index.ts` 一起 commit。
-  `npm run migrate:check`（CI 與 pre-commit 都有掛）會把漏掉的攔下來。
-- 查狀態：`npm run migrate:status`。
+- **沒有 migration。** Payload 的 MongoDB adapter 在連線時自行建立 collection 與索引
+  （`autoIndex`），所以新增集合／欄位都不需要任何部署步驟，空庫第一次啟動就會長出
+  正確結構。倉內**沒有** `src/migrations/`，`package.json` 也**沒有** `migrate*` 指令。
+- 開發者改了 `src/collections/*`、`src/globals/*`、`src/payload.config.ts` 或
+  `src/payload/permissions/registry.ts` 之後，**只需要**跑 `npm run generate:types` 並
+  commit `src/payload-types.ts`。
+- 退役欄位不會造成錯誤：Payload 預設忽略 schema 以外的鍵。要真的清掉舊資料就對該
+  collection 下 `$unset`。
+- 若日後需要**資料**搬遷（不是 schema），可用 `npx payload migrate:create <名稱>` 產生空白
+  up/down 腳本再 `npx payload migrate` 執行。目前完全沒有用到。
+- 🚩 **單機 vs replica set**：Payload 偵測到連線不是 replica set 時會自動停用交易
+  （`transactionOptions=false`），功能照常。若要交易保證，請把 Mongo 設成 replica set，
+  程式端不用改。
 
 ### 3.2 首次進後台
 
@@ -132,14 +138,22 @@ npm run start          # 預設 3000 埠；請用反向代理掛上 TLS
 若要把種子實際寫進資料庫以便後台編輯：
 
 ```bash
-npm run payload -- run scripts/seed-academy.ts         # 學院文章
-npm run payload -- run scripts/seed-academy-batch.ts   # 第一批長文（共三批）
-npm run payload -- run scripts/seed-accounts.ts        # 帳戶賣點 + FAQ
-npm run payload -- run scripts/seed-platforms.ts       # 平台 + FAQ
-npm run payload -- run scripts/seed-funding.ts         # 出入金渠道（示意資料）
+npm run payload -- run scripts/seed-academy.ts          # 學院文章（3 篇原始種子）
+npm run payload -- run scripts/seed-academy-batch.ts    # 原創長文第一批
+npm run payload -- run scripts/seed-academy-batch2.ts   # 第二批
+npm run payload -- run scripts/seed-academy-batch3.ts   # 第三批
+npm run payload -- run scripts/seed-academy-from-gitbook.ts  # 業主 GitBook 知識庫（需 GITBOOK_*）
+npm run payload -- run scripts/seed-accounts.ts         # 帳戶賣點 + FAQ
+npm run payload -- run scripts/seed-platforms.ts        # 平台 + FAQ
+npm run payload -- run scripts/seed-funding.ts          # 出入金渠道（示意資料）＋版面佔位圖
 ```
 
-這些腳本都是冪等的，需要 `DATABASE_URI`。
+這些腳本都是冪等的，需要 `DATABASE_URI`。全部跑完的結果＝學院 49 篇、媒體 53 筆、
+出入金 14 筆、FAQ 12 筆、帳戶賣點 4 筆、平台 3 筆。
+
+> 🚩 **種子腳本不會、也不得寫入「頁面文案」類 global 的文字欄位。**（`seed-funding.ts`
+> 以前會，等於把內建文案複製進覆寫層，日後的文案修正就被吃掉了 —— 第五十九輪已移除。）
+> 它只會把版面佔位圖掛進 `funding-page` 的圖片欄位，方便業主在後台換圖。
 
 ---
 
@@ -174,10 +188,13 @@ npm run payload -- run scripts/seed-funding.ts         # 出入金渠道（示�
    外層程序繼續佔用 `.next`，接著冷建會失敗並噴出看似無關的
    `next/font/google queries have exactly one entry`（字體其實連得到，不要去查網路）。
    請用 `pkill -f "next start"; pkill -f "next-server"`，失敗後再 `rm -rf .next`。
-2. **前台 200 不等於 CMS 正常。** 前台有 SSG ＋ 內建文案後備，即使 Payload 初始化卡住也會回
-   200。懷疑後台有問題時，請打 `/api/users/me` 並加 timeout；**無限 hang** 代表 Payload 卡在
-   schema 同步的互動式確認（通常是資料庫殘留了已退役的表或欄位）。
-3. **退役集合／欄位後**，必須「清 `.next`」＋「手動清掉資料庫殘留物件」兩件一起做。
+2. **前台 200 不等於 CMS 正常。** 前台有 SSG ＋ 內建文案後備，即使 Payload 連不上資料庫也會回
+   200。懷疑後台有問題時，請打 `/api/users/me` 並加 timeout（連不上 Mongo 時這支會失敗，
+   前台卻依然正常）。
+   ＊這條在 PostgreSQL 時代更嚴重：舊版會卡在 Drizzle 的互動式 schema 確認而無限 hang。
+   改用 Mongo 後沒有這個同步步驟，但「前台綠燈 ≠ CMS 活著」的判斷原則不變。
+3. **退役集合／欄位後**，清 `.next` 重建；資料庫端不需要處理（Mongo 會忽略多餘欄位，
+   要清就下 `$unset`）。
 4. **CI**：`.github/workflows/ci.yml` 跑 lint → i18n:check → build（用空的 `DATABASE_URI`
    走後備路徑）。pre-commit hook 需要 `npm install` 後才會掛上（`core.hooksPath=.githooks`）。
 

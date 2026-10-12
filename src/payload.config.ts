@@ -2,7 +2,7 @@ import path from 'path';
 import {fileURLToPath} from 'url';
 import {buildConfig} from 'payload';
 import type {CollectionConfig, GlobalConfig} from 'payload';
-import {postgresAdapter} from '@payloadcms/db-postgres';
+import {mongooseAdapter} from '@payloadcms/db-mongodb';
 import {lexicalEditor} from '@payloadcms/richtext-lexical';
 import {en} from '@payloadcms/translations/languages/en';
 import {zh} from '@payloadcms/translations/languages/zh';
@@ -152,8 +152,11 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts')
   },
-  db: postgresAdapter({
-    pool: {connectionString: process.env.DATABASE_URI || ''}
+  // MongoDB (owner decision 2026-10-12). `url: false` keeps Payload loadable
+  // without a database so `next build` and CI still run on the i18n/SSG
+  // fallback path; `hasDb()` gates every reader.
+  db: mongooseAdapter({
+    url: process.env.DATABASE_URI || false
   }),
   sharp,
   // Ensure a full-access Administrator role exists, and (single-owner convenience)

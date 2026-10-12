@@ -937,19 +937,36 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
   以 sample/示範 標示、集中於元件常數易改，且**不得寫入 `HATC_FACTS.md`**。
 - 需要 shadcn CLI 產新元件時再補 `components.json`（目前手動維護 `ui/*` 未建此檔）。
 
-## Database: PostgreSQL only (Payload constraint)
+## Database: MongoDB, database name `hatc-cms` (owner 2026-10-12, 第五十九輪)
 
-- **Payload 3 沒有 MySQL adapter。** 官方只有 `@payloadcms/db-postgres`／`db-mongodb`／
- `db-sqlite`／`db-d1-sqlite`／`db-vercel-postgres`；**`@payloadcms/db-mysql` 不存在**
- （2026-10-12 查 npm，404）。業主 2026-10-12 提出「db 改用 mysql」→ **不可直接實作**，
- 必須先向業主說明並讓他在「維持 Postgres／改 MongoDB 或 SQLite／自建 CMS／只有其他系統用
- MySQL」之間拍板。詳見 `docs/HANDOFF.md`「▶ 下一輪任務」。
-- 換 DB 引擎＝`src/migrations/*`（三個 Postgres SQL migration ＋ 39 表基線）全部作廢要重做，
- 並重生 `payload-types.ts`；**不是改一行 adapter 名稱就好**。
-- 庫名：本機現為 `hatc`（Docker 容器 `hatc-postgres`，使用者亦 `hatc`）。業主要求改成
- **`hatc-cms`** —— **只動連線字串、不影響 schema、不需要 migration**，但 `.env.example`／
- `README.md`／`docs/DEPLOYMENT.md`／`docs/HATC_PROJECT_BRIEF.md` 要一次改齊。
- ⚠ 庫名含連字號 → 連線字串與 `psql -d "hatc-cms"` 都要加引號。
+> **SUPERSEDES the previous「PostgreSQL only」section.** 本倉自第五十九輪起跑
+> `@payloadcms/db-mongodb`；`@payloadcms/db-postgres` 已移除，`src/migrations/*`、
+> `scripts/check-migrations.sh` 與所有 `migrate*` npm script 一併退役。
+
+- **Payload 3 沒有 MySQL adapter。** 官方只有 `db-postgres`／`db-mongodb`／`db-sqlite`／
+ `db-d1-sqlite`／`db-vercel-postgres`；**`@payloadcms/db-mysql` 不存在**（2026-10-12 查 npm，
+ 404）。業主要求「db 改用 mysql」時**不可直接實作**，要先說明並讓業主拍板。本輪業主理由是
+ 「與既有系統共用資料庫」、但最終**選擇 MongoDB**——已明確告知他 Mongo 一樣無法與 MySQL
+ 共用，業主確認照做。**日後再有人提 MySQL，答案仍是不存在 adapter。**
+- 連線＝`mongooseAdapter({url: process.env.DATABASE_URI || false})`。**`|| false` 不可拿掉**：
+ 它讓無資料庫時 Payload 仍可載入，`next build`／CI 才能走 i18n/SSG fallback（空字串會被
+ 當成要連線而拋錯）。所有讀取仍由 `hasDb()` 把關。
+- **沒有 migration，也不要重新引入。** Mongo 是 schemaless，Payload 連線時自動建立
+ collection 與索引（`autoIndex`）。改 `src/collections/*`／`src/globals/*`／
+ `payload.config.ts`／`payload/permissions/registry.ts` 之後**只需** `npm run generate:types`
+ 並 commit `src/payload-types.ts`。退役欄位不必清（Payload 忽略 schema 外的鍵），要清就
+ `$unset`。**若日後需要資料（非 schema）搬遷**，才用 `npx payload migrate:create`。
+- **ID 型別＝字串（ObjectId）**，不再是數字。全站 reader 本來就用 `String(doc.id)`，
+ 新程式碼也**不得**假設數字 ID。
+- **單機 standalone 會自動停用交易**（adapter 偵測不到 replicaSet 就 `transactionOptions=false`），
+ 功能不受影響；要交易保證就把 Mongo 設成 replica set，程式端不用改。
+- **庫名固定 `hatc-cms`**（業主指定）。本機＝Docker 容器 `hatc-mongo`（`mongo:7`，
+ volume `hatc-mongo-data`，帳密 `hatc`/`hatc_dev`，`authSource=admin`，port 27017）。
+ ⚠ 庫名含連字號 → 連線字串與 `mongosh … "hatc-cms"` 都要加引號。
+ 舊的 `hatc-postgres` 容器**刻意保留未刪**（舊資料可查，確認無誤後業主再刪）。
+- **本機資料的還原方式**＝重跑種子腳本（見 `docs/DEPLOYMENT.md` §4.1），全部跑完＝
+ 學院 49／媒體 53／出入金 14／FAQ 12／帳戶賣點 4／平台 3，與舊 Postgres 庫逐項一致。
+ `site-settings` 的電話／電郵／開戶連結與後台帳號需另外補（本輪已沿用原密碼雜湊搬過去）。
 
 ## Delivery / deployment (owner 2026-10-11)
 
@@ -1079,15 +1096,18 @@ CMS. Full plan + phases in `docs/HANDOFF.md` (第十九輪, planning). Key rules
  `DashboardHub`（`beforeDashboard`）＝深色品牌 hero＋6 張快速入口卡，**三語讀 `i18n.language`**
  （zh-TW／zh／en）。新增 `beforeDashboard` 元件後要 `generate:importmap`。仍保留 Payload 殼
  （表單／權限／Lexical／上傳），未自訂重寫整個 admin。
-- **可選 follow-up：** 託管 Postgres 後手動驗 admin 編輯 → revalidate。
+- **可選 follow-up：** 託管資料庫後手動驗 admin 編輯 → revalidate。
   （`/academy/[slug]` Lexical 詳情頁＝第二十六輪已完成。）
 - Regen `payload-types.ts` (`npm run generate:types`) after every collection/field change.
-- **And generate a migration in the same change**: `npm run migrate:create -- <name>`
- (no DB needed), commit the `.ts` + `.json` + `index.ts`. Local dev still syncs via
- Drizzle push, but production only replays `src/migrations/*` — `npm run migrate:check`
- (CI + pre-commit) fails the build when a schema change has no migration. 第四十八輪.
-- **Deployment prerequisite:** owner-editable content needs hosted Postgres
-  (Neon/Supabase) + `DATABASE_URI` + `PAYLOAD_SECRET` on the host for `/admin`.
+  **That is now the only required step** — the migration gate died with PostgreSQL
+  (第五十九輪); MongoDB needs no DDL. Do not re-add `migrate*` scripts for schema work.
+- **Never seed a marketing global's TEXT fields from a script.** `pickText(cms, fallback)`
+  prefers any non-empty CMS value, so a stored copy of the i18n default permanently
+  swallows later i18n corrections. `seed-funding.ts` did exactly that for 22 fields ×
+  3 locales and ate a red-line fix (第五十七輪 diagnosed, 第五十九輪 removed the cause).
+  Seeding a global's **image** fields is fine (no i18n fallback layer to shadow).
+- **Deployment prerequisite:** owner-editable content needs a reachable MongoDB
+  (self-hosted or Atlas) + `DATABASE_URI` + `PAYLOAD_SECRET` on the host for `/admin`.
   Without it the site still runs on i18n fallback (SSG).
 - **Governance still holds in CMS:** sample/display tables keep their「示意數據」
  label; owner is responsible for editorial content typed in; do not seed fabricated

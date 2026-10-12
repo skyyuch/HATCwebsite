@@ -39,8 +39,9 @@
 - i18n 方案：next-intl（`[locale]` routing、message 檔集中）
 - 部署方式：【待確認】（建議 Vercel）
 - 內容管理：**Payload CMS**（開源、可自架、原生 TypeScript、i18n 佳、與 Next.js 同倉整合、資料自有）
-- 資料庫：PostgreSQL（Payload `@payloadcms/db-postgres`）
-- 部署：Payload 與 Next.js 同倉；部署平台【待確認】（建議 Vercel + 託管 Postgres 如 Neon/Supabase）
+- 資料庫：**MongoDB**，庫名 `hatc-cms`（Payload `@payloadcms/db-mongodb`；業主 2026-10-12 決定由
+  PostgreSQL 改用 MongoDB。Payload 3 無 MySQL adapter，見 `docs/HANDOFF.md` 第五十九輪）
+- 部署：Payload 與 Next.js 同倉；部署平台【待確認】（建議 Node 伺服器 + 自架或託管 MongoDB 如 Atlas）
 
 ### CMS 需管理的配置（第一階段）
 

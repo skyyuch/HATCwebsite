@@ -102,7 +102,7 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: number;
+    defaultIDType: string;
   };
   fallbackLocale:
     ('false' | 'none' | 'null') | false | null | ('zh-Hant' | 'zh-Hans' | 'en') | ('zh-Hant' | 'zh-Hans' | 'en')[];
@@ -159,11 +159,11 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: number;
+  id: string;
   /**
    * The role assigned to this account. Manage roles under System → Roles.
    */
-  role?: (number | null) | Role;
+  role?: (string | null) | Role;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -190,7 +190,7 @@ export interface User {
  * via the `definition` "roles".
  */
 export interface Role {
-  id: number;
+  id: string;
   name: string;
   /**
    * Grants every permission and can manage roles & users. Ignores the matrix below.
@@ -284,7 +284,7 @@ export interface Role {
  * via the `definition` "media".
  */
 export interface Media {
-  id: number;
+  id: string;
   alt?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -305,7 +305,7 @@ export interface Media {
  * via the `definition` "home-activities".
  */
 export interface HomeActivity {
-  id: number;
+  id: string;
   title: string;
   summary?: string | null;
   /**
@@ -315,7 +315,7 @@ export interface HomeActivity {
   /**
    * If empty, the front-end shows a brand gradient banner.
    */
-  image?: (number | null) | Media;
+  image?: (string | null) | Media;
   /**
    * Optional; when set, the card is clickable.
    */
@@ -336,7 +336,7 @@ export interface HomeActivity {
  * via the `definition` "faqs".
  */
 export interface Faq {
-  id: number;
+  id: string;
   question: string;
   answer: string;
   category: 'trading' | 'products' | 'accounts' | 'platforms' | 'general';
@@ -355,7 +355,7 @@ export interface Faq {
  * via the `definition` "academy-articles".
  */
 export interface AcademyArticle {
-  id: number;
+  id: string;
   title: string;
   /**
    * Used for /academy/[slug]; unique site-wide; prefer ASCII + hyphens.
@@ -386,7 +386,7 @@ export interface AcademyArticle {
   /**
    * If empty, the front-end uses a brand gradient or seed placeholder.
    */
-  cover?: (number | null) | Media;
+  cover?: (string | null) | Media;
   /**
    * For the /academy filter to match, use one of the canonical categories: Gold basics / Trading strategy / Technical analysis / Market moves / Risk management / Portfolio. Free text is allowed but unlisted values will not appear as a filter option.
    */
@@ -407,7 +407,7 @@ export interface AcademyArticle {
  * via the `definition` "instruments".
  */
 export interface Instrument {
-  id: number;
+  id: string;
   name: string;
   /**
    * Use XAU/USD, XAG/USD or RKG/CNH to restyle an approved product. Any other symbol creates a product with no approved trading conditions.
@@ -432,7 +432,7 @@ export interface Instrument {
  * via the `definition` "account-benefits".
  */
 export interface AccountBenefit {
-  id: number;
+  id: string;
   title: string;
   desc?: string | null;
   icon: 'percent' | 'zap' | 'creditCard' | 'monitor';
@@ -451,7 +451,7 @@ export interface AccountBenefit {
  * via the `definition` "trading-platforms".
  */
 export interface TradingPlatform {
-  id: number;
+  id: string;
   name: string;
   /**
    * Short label drawn on the placeholder panel (not localised).
@@ -462,7 +462,7 @@ export interface TradingPlatform {
   /**
    * Real platform/device screenshot. Empty = Figma sample mockup (labelled 示意).
    */
-  visual?: (number | null) | Media;
+  visual?: (string | null) | Media;
   /**
    * Lower numbers appear first.
    */
@@ -478,7 +478,7 @@ export interface TradingPlatform {
  * via the `definition` "funding-methods".
  */
 export interface FundingMethod {
-  id: number;
+  id: string;
   /**
    * Deposit rows show in the 入金 table; withdrawal rows in the 出金 table.
    */
@@ -503,7 +503,7 @@ export interface FundingMethod {
  * via the `definition` "testimonials".
  */
 export interface Testimonial {
-  id: number;
+  id: string;
   quote: string;
   authorName: string;
   authorTitle?: string | null;
@@ -520,7 +520,7 @@ export interface Testimonial {
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: number;
+  id: string;
   key: string;
   data:
     | {
@@ -537,56 +537,56 @@ export interface PayloadKv {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: number;
+  id: string;
   document?:
     | ({
         relationTo: 'users';
-        value: number | User;
+        value: string | User;
       } | null)
     | ({
         relationTo: 'roles';
-        value: number | Role;
+        value: string | Role;
       } | null)
     | ({
         relationTo: 'media';
-        value: number | Media;
+        value: string | Media;
       } | null)
     | ({
         relationTo: 'home-activities';
-        value: number | HomeActivity;
+        value: string | HomeActivity;
       } | null)
     | ({
         relationTo: 'faqs';
-        value: number | Faq;
+        value: string | Faq;
       } | null)
     | ({
         relationTo: 'academy-articles';
-        value: number | AcademyArticle;
+        value: string | AcademyArticle;
       } | null)
     | ({
         relationTo: 'instruments';
-        value: number | Instrument;
+        value: string | Instrument;
       } | null)
     | ({
         relationTo: 'account-benefits';
-        value: number | AccountBenefit;
+        value: string | AccountBenefit;
       } | null)
     | ({
         relationTo: 'trading-platforms';
-        value: number | TradingPlatform;
+        value: string | TradingPlatform;
       } | null)
     | ({
         relationTo: 'funding-methods';
-        value: number | FundingMethod;
+        value: string | FundingMethod;
       } | null)
     | ({
         relationTo: 'testimonials';
-        value: number | Testimonial;
+        value: string | Testimonial;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -596,10 +596,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: number;
+  id: string;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   key?: string | null;
   value?:
@@ -619,7 +619,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: number;
+  id: string;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -887,7 +887,7 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  * via the `definition` "site-settings".
  */
 export interface SiteSetting {
-  id: number;
+  id: string;
   whatsapp?: string | null;
   phone?: string | null;
   email?: string | null;
@@ -914,7 +914,7 @@ export interface SiteSetting {
  * via the `definition` "home-page".
  */
 export interface HomePage {
-  id: number;
+  id: string;
   /**
    * 留空＝使用網站預設文案（i18n）。
    */
@@ -1053,7 +1053,7 @@ export interface HomePage {
  * via the `definition` "trading-page".
  */
 export interface TradingPage {
-  id: number;
+  id: string;
   /**
    * 留空＝使用網站預設文案（i18n）。
    */
@@ -1136,7 +1136,7 @@ export interface TradingPage {
  * via the `definition` "about-page".
  */
 export interface AboutPage {
-  id: number;
+  id: string;
   /**
    * 留空＝使用網站預設文案（i18n）。
    */
@@ -1223,7 +1223,7 @@ export interface AboutPage {
  * via the `definition` "products-page".
  */
 export interface ProductsPage {
-  id: number;
+  id: string;
   /**
    * 留空＝使用網站預設文案（i18n）。
    */
@@ -1286,7 +1286,7 @@ export interface ProductsPage {
  * via the `definition` "funding-page".
  */
 export interface FundingPage {
-  id: number;
+  id: string;
   /**
    * 留空＝使用網站預設文案（i18n）。
    */
@@ -1378,19 +1378,19 @@ export interface FundingPage {
   /**
    * Optional. Empty = built-in placeholder image.
    */
-  heroImage?: (number | null) | Media;
+  heroImage?: (string | null) | Media;
   /**
    * Optional. Empty = built-in placeholder image.
    */
-  depositImage?: (number | null) | Media;
+  depositImage?: (string | null) | Media;
   /**
    * Optional. Empty = built-in placeholder image.
    */
-  withdrawImage?: (number | null) | Media;
+  withdrawImage?: (string | null) | Media;
   /**
    * Optional. Empty = built-in placeholder image.
    */
-  ctaImage?: (number | null) | Media;
+  ctaImage?: (string | null) | Media;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1401,11 +1401,11 @@ export interface FundingPage {
  * via the `definition` "platforms-page".
  */
 export interface PlatformsPage {
-  id: number;
+  id: string;
   /**
    * Multi-device showcase shown in the hero. Empty = Figma sample mockup (labelled 示意).
    */
-  heroImage?: (number | null) | Media;
+  heroImage?: (string | null) | Media;
   updatedAt?: string | null;
   createdAt?: string | null;
 }

@@ -2,7 +2,7 @@ import 'server-only';
 
 import type {Payload} from 'payload';
 
-/** True when a Postgres connection string is configured. */
+/** True when a MongoDB connection string is configured. */
 export function hasDb(): boolean {
   return Boolean(process.env.DATABASE_URI);
 }

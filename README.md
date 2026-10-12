@@ -10,7 +10,7 @@
 - **Next.js 16**（App Router）+ **TypeScript**
 - **next-intl** 三語 i18n：`zh-Hant`（預設）／`zh-Hans`／`en`，路由為 `/[locale]/...`
 - **CSS Modules** + design tokens（`src/styles/tokens.css`）
-- **Payload CMS**（同倉，`/admin`）+ **PostgreSQL**
+- **Payload CMS**（同倉，`/admin`）+ **MongoDB**（庫名 `hatc-cms`）
 - SEO 內建：Metadata API、`hreflang`、`sitemap.xml`、`robots.txt`、`Organization` JSON-LD
 - 追蹤埋碼位已預留（工具待定，以環境變數注入，不寫死）
 
@@ -50,8 +50,12 @@ npm install
 ```bash
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 PAYLOAD_SECRET=<openssl rand -base64 32>
-DATABASE_URI=postgres://user:password@localhost:5432/hatc
+DATABASE_URI=mongodb://user:password@localhost:27017/hatc-cms?authSource=admin
 ```
+
+> 本機可用 Docker 起一個：
+> `docker run -d --name hatc-mongo -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=hatc -e MONGO_INITDB_ROOT_PASSWORD=hatc_dev -v hatc-mongo-data:/data/db mongo:7`
+> 庫名含連字號，`mongosh` 指定時要加引號：`mongosh ... "hatc-cms"`。
 
 3. 啟動開發伺服器：
 
@@ -73,34 +77,27 @@ npm run start              # 啟動生產伺服器
 npm run generate:types     # 產生 Payload 型別（src/payload-types.ts）
 npm run generate:importmap # 產生 admin importMap
 npm run i18n:check         # 三語文案鍵數對齊檢查（CI／pre-commit 用）
-npm run migrate            # 對資料庫套用 src/migrations/*（部署用）
-npm run migrate:create -- <name>  # 依 config 變更產生新 migration（不需連資料庫）
-npm run migrate:status     # 顯示已套用／待套用的 migration
-npm run migrate:check      # 檢查 config 是否有未產 migration 的 schema 變更
 ```
 
-## 資料庫 schema 與 migration
+## 資料庫 schema
 
-本機開發靠 Payload 的 Drizzle **push**（僅 dev 模式）自動同步資料庫，**不會**留下任何
-migration 檔；**生產模式不 push，只會重播 `src/migrations/*`**。因此：
+CMS 跑在 **MongoDB**（業主 2026-10-12 由 PostgreSQL 改用；Payload 3 沒有 MySQL adapter）。
+Mongo 是 schemaless 的，Payload 連線時會自行建立 collection 與索引，**所以沒有 migration
+機制，也不需要任何建表步驟**：
 
-- **改了 `src/collections/*`、`src/globals/*`、`src/payload.config.ts` 或
-  `src/payload/permissions/registry.ts`（它的資源清單會生成 `roles` 的勾選欄位）之後，
-  務必跑 `npm run migrate:create -- <描述性名稱>` 並把產生的 `.ts` ＋ `.json` ＋ `index.ts`
-  一起 commit。**
-- `npm run migrate:check` 會把漏掉的 migration 攔下來（CI 與 pre-commit 皆已掛）。
-  它比對 config 與 migrations 目錄最新的 snapshot JSON，**不需要資料庫**。
-- 部署流程：建立空資料庫 → 設好 `DATABASE_URI`／`PAYLOAD_SECRET` → `npm run migrate`
-  → `npm run build` → `npm run start`。首次進入 `/admin` 時 `onInit` 會自動建立
-  full-access 的 `Administrator` 角色。
+- 新增／修改 collection、global 或欄位之後，**只要跑 `npm run generate:types`** 並
+  commit `src/payload-types.ts`。（原本的 `migrate:*` 指令與 `src/migrations/` 已隨
+  PostgreSQL 一起退役。）
+- 部署流程：準備好 MongoDB → 設 `DATABASE_URI`／`PAYLOAD_SECRET` → `npm run build`
+  → `npm run start`。首次進入 `/admin` 時 `onInit` 會自動建立 full-access 的
+  `Administrator` 角色。
   **完整的伺服器部署交接說明（環境變數、後台必填清單、行情接線、已知陷阱）見
   [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)。**
-  若部署到無法跑 CLI 步驟的 serverless 平台（如 Vercel），把 `npm run migrate` 併進
-  build command，或改用 Payload 的 `postgresAdapter({prodMigrations})`（本倉目前未啟用，
-  避免執行期自動改 schema）。
-- ⚠ **不要**把 `npm run migrate` 指向既有的、由 push 建出來的本機資料庫——那些表已經存在，
-  migration 會在 `CREATE TABLE` 失敗。本機要改用 migration 流程的話，先砍掉重建資料庫
-  （本機資料皆為可重跑的種子腳本產物）。
+- 退役欄位要清掉舊資料時，直接對該 collection 下 `$unset`（Mongo 不會因為多出欄位而報錯；
+  Payload 預設會略過 schema 以外的鍵）。
+- 若日後需要**資料**搬遷（不是 schema），Payload 的 Mongo adapter 仍支援
+  `npx payload migrate:create <name>` 產生空白的 up/down 腳本，再用 `npx payload migrate`
+  執行。目前倉內沒有任何 migration，也不需要。
 
 ## 慣例（詳見 .cursor/rules/）
 

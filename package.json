@@ -11,16 +11,12 @@
     "payload": "payload",
     "generate:types": "payload generate:types",
     "generate:importmap": "payload generate:importmap",
-    "migrate": "payload migrate",
-    "migrate:create": "payload migrate:create",
-    "migrate:status": "payload migrate:status",
-    "migrate:check": "sh scripts/check-migrations.sh",
     "i18n:check": "payload run scripts/translate-messages.ts -- --check",
     "i18n:translate": "payload run scripts/translate-messages.ts --",
     "prepare": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {
-    "@payloadcms/db-postgres": "^3.87.1",
+    "@payloadcms/db-mongodb": "^3.87.1",
     "@payloadcms/next": "^3.87.1",
     "@payloadcms/richtext-lexical": "^3.87.1",
     "@payloadcms/translations": "^3.87.1",
