@@ -27,6 +27,14 @@ Build SEO in from the start, not as an afterthought.
 ## Crawlability & structure
 
 - Provide `sitemap.xml` (all locales) and `robots.txt`.
+- **Only production may be indexable (第六十二輪).** `siteIndexable` in `src/lib/seo.ts`
+  reads `SITE_INDEXABLE`; `false` (set in `config/env/local.env` and `uat.env`) turns
+  `robots.txt` into `Disallow: /` **and** emits `noindex, nofollow` on every page.
+  Both layers are needed — `robots.txt` only blocks crawling, not indexing of a URL
+  someone links to. It is build-time, so a UAT build must set it before `next build`.
+- `siteUrl` falls back to `http://localhost:3000`. Read it with `||`, never `??`:
+  an empty `NEXT_PUBLIC_SITE_URL=` used to pass through as `''` and break every
+  prerender with `ERR_INVALID_URL` from `new URL(siteUrl)`.
 - Semantic HTML: one `<h1>` per page, correct heading order, `<nav>/<main>/<footer>`,
   descriptive `alt` text, meaningful link text.
 - Add JSON-LD structured data (e.g. `Organization`) sourced from `docs/HATC_FACTS.md`.

@@ -17,6 +17,7 @@
 ## 目錄結構
 
 ```
+config/env/                    # local / uat / prd 分環境公開配置（不放密鑰）
 src/
 ├── app/
 │   ├── (frontend)/[locale]/   # 網站前台（三語）
@@ -48,10 +49,14 @@ npm install
 2. 建立 `.env`（可複製 `.env.example`），至少設定：
 
 ```bash
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
 PAYLOAD_SECRET=<openssl rand -base64 32>
 DATABASE_URI=mongodb://user:password@localhost:27017/hatc-cms?authSource=admin
 ```
+
+> 公開的分環境值（站台網域、開戶等營運連結的後備、行情閘道位址）已經放在
+> **`config/env/{local,uat,prd}.env`**，`npm run dev` 會自動套用 `local`。
+> `.env` 只放密鑰與你自己機器的覆寫值（優先序：主機環境變數 → `.env` → `config/env/*`）。
+> 詳見 [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) §2。
 
 > 本機可用 Docker 起一個：
 > `docker run -d --name hatc-mongo -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=hatc -e MONGO_INITDB_ROOT_PASSWORD=hatc_dev -v hatc-mongo-data:/data/db mongo:7`
@@ -66,17 +71,21 @@ npm run dev
 - 前台：`http://localhost:3000` → 會導向 `http://localhost:3000/zh-Hant`
 - 後台：`http://localhost:3000/admin`（需設定 `DATABASE_URI`，首次進入建立管理者帳號）
 
-> 未設定 `DATABASE_URI` 時，前台仍可運行；客服連結會回退讀取 `NEXT_PUBLIC_CONTACT_*` 環境變數。
+> 未設定 `DATABASE_URI` 時，前台仍可運行；客服連結會回退讀取 `CONTACT_*` 環境變數
+> （第六十二輪去掉了 `NEXT_PUBLIC_` 前綴，舊名已失效）。
 
 ## 常用指令
 
 ```bash
-npm run dev                # 開發
-npm run build              # 生產建置
-npm run start              # 啟動生產伺服器
+npm run dev                # 開發（自動套用 config/env/local.env）
+npm run build              # 生產建置（不套用任何環境檔，給自行注入變數的 CI 用）
+npm run start              # 啟動生產伺服器（同上）
+npm run build:uat          # 套用 config/env/uat.env 建置（prd 同理）
+npm run start:prd          # 套用 config/env/prd.env 啟動（uat 同理）
 npm run generate:types     # 產生 Payload 型別（src/payload-types.ts）
 npm run generate:importmap # 產生 admin importMap
 npm run i18n:check         # 三語文案鍵數對齊檢查（CI／pre-commit 用）
+npm run env:check          # config/env/* 不得含密鑰（CI 用）
 ```
 
 ## 資料庫 schema

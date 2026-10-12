@@ -3,7 +3,7 @@ import {notFound} from 'next/navigation';
 import {hasLocale, NextIntlClientProvider} from 'next-intl';
 import {getMessages, getTranslations, setRequestLocale} from 'next-intl/server';
 import {routing} from '@/i18n/routing';
-import {siteUrl, localeAlternates} from '@/lib/seo';
+import {siteUrl, siteIndexable, localeAlternates} from '@/lib/seo';
 import Header from '@/components/Header/Header';
 import Footer from '@/components/Footer/Footer';
 import Analytics from '@/components/Analytics/Analytics';
@@ -38,7 +38,9 @@ export async function generateMetadata({
       siteName: t('brandFull'),
       locale
     },
-    robots: {index: true, follow: true}
+    // `robots.txt` alone does not stop an externally linked UAT URL from being
+    // indexed, so non-production builds also emit a page-level noindex.
+    robots: {index: siteIndexable, follow: siteIndexable}
   };
 }
 

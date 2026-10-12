@@ -11,6 +11,17 @@ import {getPayloadClient, hasDb} from '@/lib/payload';
  *
  * Source of truth: the Payload `SiteSettings` global. When the database is not
  * configured, we fall back to environment variables so local/preview builds work.
+ *
+ * Those env vars are deliberately NOT prefixed `NEXT_PUBLIC_` (renamed
+ * 2026-10-12, 第六十二輪): this module is server-only, so the prefix only
+ * pushed the contact phone, email and account URLs into every browser bundle.
+ * Per-environment defaults live in `config/env/*.env`; see DEPLOYMENT.md §2.
+ *
+ * Note that dropping the prefix does NOT make them runtime-switchable: the
+ * pages are SSG, so this runs during prerender and the result is baked into the
+ * static HTML (measured 第六十二輪 — injecting OPEN_ACCOUNT_URL at `next start`
+ * changed nothing). The CMS is the only path that updates a link without a
+ * rebuild, via the `afterChange` revalidation hook.
  */
 export type SiteSettings = {
   whatsapp?: string;
@@ -27,13 +38,13 @@ export type SiteSettings = {
 
 function envFallback(): SiteSettings {
   return {
-    whatsapp: process.env.NEXT_PUBLIC_CONTACT_WHATSAPP || undefined,
-    phone: process.env.NEXT_PUBLIC_CONTACT_PHONE || undefined,
-    email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || undefined,
-    liveChatUrl: process.env.NEXT_PUBLIC_CONTACT_LIVECHAT || undefined,
-    openAccountUrl: process.env.NEXT_PUBLIC_OPEN_ACCOUNT_URL || undefined,
-    demoAccountUrl: process.env.NEXT_PUBLIC_DEMO_ACCOUNT_URL || undefined,
-    memberLoginUrl: process.env.NEXT_PUBLIC_MEMBER_LOGIN_URL || undefined
+    whatsapp: process.env.CONTACT_WHATSAPP || undefined,
+    phone: process.env.CONTACT_PHONE || undefined,
+    email: process.env.CONTACT_EMAIL || undefined,
+    liveChatUrl: process.env.CONTACT_LIVECHAT || undefined,
+    openAccountUrl: process.env.OPEN_ACCOUNT_URL || undefined,
+    demoAccountUrl: process.env.DEMO_ACCOUNT_URL || undefined,
+    memberLoginUrl: process.env.MEMBER_LOGIN_URL || undefined
   };
 }
 

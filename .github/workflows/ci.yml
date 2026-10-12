@@ -38,5 +38,10 @@ jobs:
       - name: i18n message key parity
         run: npm run i18n:check
 
+      # config/env/*.env is committed, so fail the build if a credential-like
+      # key ever lands in one of them (docs/DEPLOYMENT.md §2.3).
+      - name: Environment config has no secrets
+        run: npm run env:check
+
       - name: Build (SSG fallback)
         run: npm run build

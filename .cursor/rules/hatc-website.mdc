@@ -962,17 +962,49 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  修正後第 1 次就新。另驗過**只 revalidate tag、沒有 `revalidatePath` 的 global**
  （`site-settings.phone` → `/privacy` 聯絡卡）也是第一次就更新。
 
-- **2026-10-12 (環境變數的三個既存事實，供下一輪「分環境配置 local/uat/prd」用；盤點於第
- 六十一輪末，實作未開始 —— 任務細節見 `docs/HANDOFF.md`「▶ 下一輪任務」)**：
- ① **`WEB_TERMINAL_HOST`（`components/platforms/platformVisuals.ts`）不得改成跟著環境變。**
- 它是平台截圖瀏覽器外框位址列印出來的字，紅線是 **UAT 網域不得出現在官網任何畫面**，
- 所以永遠是生產網域 `h5.hatcmarket.com`（FACTS 已核可）。
- ② **營運連結的 7 個 `NEXT_PUBLIC_*` 其實只在 server 端讀**（`lib/siteSettings.ts` 第一行是
- `import 'server-only'`，且無任何 client 元件 import 它或 `lib/seo.ts`）→ 前綴是多餘的，
- **去掉前綴就能「一次打包、靠主機環境變數 runtime 切環境」**（`NEXT_PUBLIC_*` 會在 build 時
- 寫死進產物）。改名要同步 `.env.example` ＋ `docs/DEPLOYMENT.md` §2.2 並通知開發端。
- ③ **`NEXT_PUBLIC_SITE_URL` 是例外、本質上就是建置期值** —— canonical／hreflang／sitemap 都
- 烤進 SSG 靜態 HTML，**無法** runtime 切換，換網域必須重新 build。
+- **2026-10-12 (第六十二輪): 分環境配置 local / uat / prd 上線。**
+ 業主原話：「做分不同的環境配置文件出來…把那些開戶等的域名也放到這個配置文件中，這樣每次打包
+ 不同環境就不用去改域名。」四個方向題業主拍板：① **UAT 的開戶／登入／客服一律留空**
+ （HATC 沒有 UAT 版入口；把生產入口放進 UAT 會讓測試人員開到真帳戶）；② **兩種切換方式都要**；
+ ③ **要 npm script**，同時保留部署端自行注入變數那條路；④ **維持 CMS 優先**，配置檔只當後備。
+ - **架構**：`config/env/{local,uat,prd}.env`（**已 commit，只放公開值**）＋載入器
+ **`scripts/with-env.mjs`**。優先序（高→低）＝**主機／CI 環境變數 → 倉內 `.env.local`／`.env`
+ → `config/env/<環境>.env`**。🚩 第二層**依鍵名**讓路（某鍵只要出現在 `.env` 就完全不碰），
+ 否則我們注入的預設值會默默蓋掉開發者的 `.env`——Next 的查找順序是 `process.env` 先、`.env*` 後。
+ **不能用 Next 原生 `.env.<name>`**：`NODE_ENV` 只接受 `production`／`development`／`test`。
+ - **npm scripts**：`dev`（自動套 local）／`build:local|uat|prd`／`start:local|uat|prd`／`env:check`。
+ **裸的 `build`／`start` 刻意不套環境檔**（維持 CI 與「完全沒有環境變數」降級測試的原行為）。
+ **`build:*` 與 `start:*` 必須用同一個環境名**（多數變數在 build 時就定案）。
+ - **🚩 實測更正前一輪的盤點筆記**：「去掉 `NEXT_PUBLIC_` 前綴 → 同一份產物可 runtime 切環境」
+ **對營運連結是錯的**。頁面是 SSG，`getSiteSettings()` 在 **prerender 時**就被讀掉並寫進靜態
+ HTML——用無變數建置的產物跑 `start:prd`（已注入 `OPEN_ACCOUNT_URL`），開戶按鈕**仍是 `/register`**。
+ **真正 runtime 的只有** `QUOTE_GATEWAY_URL`／`QUOTE_HTTP_CRYPT_SECRET`（`force-dynamic` 的
+ `/api/market/*`，實測會改打生產閘道）、`MT_*`、`DATABASE_URI`／`PAYLOAD_SECRET`。
+ **不重新部署就能改連結的唯一路徑＝CMS**（`afterChange`→`revalidateTag`）。
+ - **改名（7 個，舊名完全失效、無相容讀取）**：`NEXT_PUBLIC_CONTACT_{WHATSAPP,PHONE,EMAIL,
+ LIVECHAT}` → `CONTACT_*`、`NEXT_PUBLIC_{OPEN_ACCOUNT_URL,DEMO_ACCOUNT_URL,MEMBER_LOGIN_URL}`
+ → 去前綴。理由改成「前綴只是白白把客服電話／電郵／開戶網址塞進每個瀏覽器 bundle」。
+ 本專案從未部署過，故不留舊名。**`NEXT_PUBLIC_SITE_URL`／`NEXT_PUBLIC_ANALYTICS_ID` 刻意保留前綴**
+ （前者本質是建置期值、後者是公開追蹤 ID 且會在瀏覽器執行）。`.env.example`／`DEPLOYMENT.md` §2／
+ `README.md` 已同步，**交付時要主動告知開發端**。
+ - **新增 `SITE_INDEXABLE`（`src/lib/seo.ts` 的 `siteIndexable`）**：`false`（local／uat）→
+ `robots.txt` 變 `Disallow: /` **且**每頁 metadata 改 `noindex, nofollow`（robots.txt 只擋爬取、
+ 擋不住外部連結造成的收錄，所以兩層都要）。`prd` 為 `true`；**未設定時預設可索引**，CI 行為不變。
+ - **順手修掉既有地雷**：`seo.ts` 原本 `process.env.NEXT_PUBLIC_SITE_URL ?? '…'`，**`??` 接不到
+ 空字串** → `NEXT_PUBLIC_SITE_URL=`（空值）會讓 `new URL('')` 在每一頁 prerender 丟
+ `ERR_INVALID_URL`、整個 build 掛掉且錯誤只指向 `metadataBase`。已改 `?.trim() || …`。
+ **日後讀任何可能被寫成空字串的環境變數都用 `||`，不要用 `??`。**
+ - **密鑰紅線機器把關**：載入器內建 `SECRET_KEY_PATTERN =
+ /SECRET|TOKEN|PASSWORD|_KEY$|^DATABASE_URI$/`，`build:*`／`start:*` 檢查當前環境檔、
+ `npm run env:check` 檢查全部（**CI 已加這一步**）。用 pattern 不用固定清單，新變數自動被擋。
+ **`config/env/*` 不得出現 `PAYLOAD_SECRET`／`DATABASE_URI`／閘道密鑰／`MT_API_KEY`。**
+ - **刻意沒做**：① **`WEB_TERMINAL_HOST`（`components/platforms/platformVisuals.ts`）不跟著環境變**
+ ——它是平台截圖瀏覽器外框位址列印出來的字，紅線是 **UAT 網域不得出現在官網任何畫面**，永遠是
+ 生產網域 `h5.hatcmarket.com`（FACTS 已核可）；② 不讓環境檔蓋掉 CMS（後台會永遠改不動連結）；
+ ③ 本機 Mongo 連線字串（含帳密）不寫進 `local.env`；④ CI 不加 `build:uat`（多一次完整建置，
+ 而 `env:check` 已擋住真正的風險）。
+ - **UAT 留空的兩處**：`uat.env` 的 `NEXT_PUBLIC_SITE_URL`（業主未提供 UAT 網域，空值會 fallback
+ 到 localhost，請在 UAT 主機自行設定）與全部營運連結（業主決定）。**不得自己編一個 UAT 網域。**
 
 - **2026-10-11 (第四十六輪 勘查): 交易產品頁 ／ 交易端截圖的前置結論（第四十七輪已實作）。**
  - **🚨 P0（第四十七輪已修）**：`/products/all` 讀 CMS `instruments`，DB 仍是第三十輪舊資料 → 曾
@@ -1112,7 +1144,11 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
 - **部署交接文件＝`docs/DEPLOYMENT.md`**（繁中，給開發／維運）。動到部署、環境變數、
  資料庫、或要交接給開發時**先讀它並同步更新**。`docs/HANDOFF.md` 是內容／設計決策史，
  不是部署手冊，兩者不要混寫。
-- 交接時必講的四件事：① **MongoDB 不需要建表、沒有 migration 步驟**（舊說明要求
+- 交接時必講的五件事（第五件為第六十二輪新增）：⑤ **分環境配置＝`config/env/{local,uat,prd}.env`
+ ＋`npm run build:prd`／`start:prd`**（裸的 `build`／`start` 不套環境檔，給自行注入變數的 CI 用；
+ `build:*` 與 `start:*` 要用同一個環境名），且**7 個營運連結環境變數已去掉 `NEXT_PUBLIC_` 前綴、
+ 舊名完全失效**（對照表見 `DEPLOYMENT.md` §2.2）；UAT 必須 `SITE_INDEXABLE=false`。
+ ① **MongoDB 不需要建表、沒有 migration 步驟**（舊說明要求
  `npm run migrate`，**該指令已不存在**）；② **頁面文案類 global 保持留空**（填入即永久覆蓋內建
  三語文案，日後修正會看不見）；③ **按鈕沒有目的地就不渲染**（模擬帳戶、會員登入）＝設計
  行為，不是 bug，不得指去佔位頁；④ **交易條件刻意不開放後台編輯**（治理設計）。

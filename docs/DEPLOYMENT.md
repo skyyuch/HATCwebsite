@@ -3,8 +3,10 @@
 > 本檔是**交給開發團隊部署到伺服器**的操作說明。
 > 想了解網站內容決策與設計史，請看 `docs/HANDOFF.md`；公司事實一律以
 > `docs/HATC_FACTS.md` 為準。
-> 最後更新：2026-10-12（第五十九輪：資料庫由 PostgreSQL 改為 **MongoDB**，庫名
-> `hatc-cms`；migration 機制隨之退役）
+> 最後更新：2026-10-12（第六十二輪：新增 **local / uat / prd 分環境配置檔**
+> `config/env/*.env` 與 `build:*`／`start:*` 指令，見 §2.0；**7 個營運連結環境變數已改名**，
+> 去掉了 `NEXT_PUBLIC_` 前綴，見 §2.2。第五十九輪：資料庫由 PostgreSQL 改為 **MongoDB**，
+> 庫名 `hatc-cms`；migration 機制隨之退役）
 
 ---
 
@@ -33,14 +35,51 @@ revalidate**。部署兩步：**備好 MongoDB → `build` → `start`**（Mongo
 
 ---
 
-## 2. 環境變數
+## 2. 環境變數與分環境配置
 
-複製 `.env.example` 成 `.env`（或改用主機的環境變數機制）。
+### 2.0 三個環境各一份配置檔（第六十二輪新增）
 
-### 2.1 必填
+公開的分環境值（站台網域、開戶等營運連結的後備、行情閘道位址）放在**已 commit** 的
+配置檔，切換環境**不需要改任何程式碼**：
+
+```
+config/env/local.env     # 本機開發
+config/env/uat.env       # UAT / 驗收
+config/env/prd.env       # 生產（www.hatchk.com）
+```
+
+用對應的 npm script 套用：
 
 ```bash
-NEXT_PUBLIC_SITE_URL=https://www.hatchk.com   # 影響 canonical / hreflang / sitemap / robots
+npm run build:prd && npm run start:prd     # 生產
+npm run build:uat && npm run start:uat     # UAT
+npm run dev                                # 本機（自動套 local）
+```
+
+也可以**完全不用這些 script**：直接在主機／CI 設環境變數再跑 `npm run build`、
+`npm run start` —— 原本的指令行為完全沒變。
+
+> ⚠ **`build:*` 與 `start:*` 要用同一個環境名。** 大部分變數在 build 時就被寫進靜態
+> HTML（§2.1a），`start` 階段才注入是來不及的。
+
+兩種方式可以混用，優先序如下（高→低）：
+
+1. 主機／CI 上真的設定的環境變數
+2. 倉內的 `.env.local` / `.env`（git-ignored，開發者自己的機器）
+3. `config/env/<環境>.env`（已 commit 的公開預設值）
+
+> 載入器＝`scripts/with-env.mjs`。它**只補上尚未設定的鍵**：某個鍵只要出現在主機環境變數
+> 或你的 `.env`，它就不碰（執行時會印出 `kept existing …`）。Next 自己不認識 `uat` 這種
+> 環境名（`NODE_ENV` 只接受 `production`/`development`/`test`），所以這一層必須自己做。
+
+**🚩 `config/env/*.env` 是公開檔案，只放公開值。** `PAYLOAD_SECRET`、`DATABASE_URI`
+帳密、`QUOTE_HTTP_CRYPT_SECRET`、`MT_API_KEY` 一律只放主機環境變數（見 §2.3）。
+這條有機器把關：`npm run env:check`（CI 會跑，`build:*` 也會順手檢查當前環境檔）會擋下
+任何名稱像憑證的鍵（`SECRET`／`TOKEN`／`PASSWORD`／`*_KEY`／`DATABASE_URI`）。
+
+### 2.1 必填（只能放主機環境變數或 git-ignored 的 `.env`）
+
+```bash
 PAYLOAD_SECRET=<openssl rand -base64 32>      # 請自行產生，勿沿用任何範例值
 DATABASE_URI=mongodb://user:password@host:27017/hatc-cms?authSource=admin
 ```
@@ -49,47 +88,87 @@ DATABASE_URI=mongodb://user:password@host:27017/hatc-cms?authSource=admin
 > `mongosh` 參數時記得加引號：`mongosh "mongodb://…/hatc-cms?authSource=admin"`。
 > 資料庫**不需要事先建立**，Mongo 會在第一次寫入時自動建立；但帳號要先有該庫的讀寫權限。
 
-> `NEXT_PUBLIC_SITE_URL` 未設定時會 fallback 到 `http://localhost:3000`，**正式站一定要設**，
-> 否則 SEO 的 canonical 與 sitemap 會指到 localhost。
+### 2.1a 建置期變數（寫進靜態 HTML，**換值必須重新 build**）
 
-### 2.2 選填（留空＝該功能停用，網站照常運作）
+| 變數 | 用途 | 現況 |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | canonical / hreflang / sitemap / robots | prd 已填 `https://www.hatchk.com`；**UAT 業主未提供網域，`uat.env` 留空，請在 UAT 主機自行設定** |
+| `SITE_INDEXABLE` | `false` ＝ `robots.txt` 全站 disallow ＋ 每頁 `noindex` | `local`/`uat` 為 `false`、`prd` 為 `true`。未設定時預設可索引 |
+| `NEXT_PUBLIC_ANALYTICS_ID` | 追蹤 ID（工具待定，目前佔位不輸出任何標籤） | 留空 |
+| `CONTACT_WHATSAPP` / `_PHONE` / `_EMAIL` / `_LIVECHAT` | 客服聯絡方式的**後備** | prd 帶已核可的電話／電郵；UAT 刻意留空 |
+| `OPEN_ACCOUNT_URL` / `DEMO_ACCOUNT_URL` / `MEMBER_LOGIN_URL` | 帳戶入口連結的**後備** | prd 帶已核可的開戶連結；其餘留空 |
+
+> `NEXT_PUBLIC_SITE_URL` 未設定時會 fallback 到 `http://localhost:3000`，**正式站一定要設**，
+> 否則 canonical 與 sitemap 會指到 localhost。
+> ⚠ **UAT 一定要 `SITE_INDEXABLE=false`**，否則會和生產站搶同一批內容的排名。
+>
+> ⚠ **後面 7 個營運連結後備也屬於建置期**（第六十二輪實測）。它們沒有 `NEXT_PUBLIC_`
+> 前綴，但頁面是 SSG：`getSiteSettings()` 在 **prerender 時**就被讀掉並寫進靜態 HTML，
+> 所以「改環境變數再重啟」不會改變按鈕的連結 —— 實測 `start:prd` 注入
+> `OPEN_ACCOUNT_URL` 之後，用無變數建置出來的頁面仍然指向 `/register`。
+> **要在不重新部署的情況下改連結，請改 CMS**（見下一段），那條路徑是真的 runtime。
+
+> ⚠ **這 7 個變數在第六十二輪改名了**（2026-10-12）：
+> `NEXT_PUBLIC_CONTACT_*` → `CONTACT_*`、`NEXT_PUBLIC_OPEN_ACCOUNT_URL` →
+> `OPEN_ACCOUNT_URL`，`DEMO_ACCOUNT_URL`／`MEMBER_LOGIN_URL` 亦同。
+> **舊名已完全失效，不再被讀取。若你手上的 `.env` 還是舊名，請改名。**
+> 原因：讀它們的 `src/lib/siteSettings.ts` 是 server-only，`NEXT_PUBLIC_` 前綴只是
+> 白白把客服電話、電郵等 7 個字串塞進每個瀏覽器 bundle。
+
+> **營運連結請一律在 `/admin` 的「網站營運設定」填寫**（業主 2026-10-12 確認維持
+> **CMS 優先**）。環境變數與 `config/env/*.env` 只是「CMS 還沒填」時的後備，CMS 一有值
+> 就以 CMS 為準。**CMS 改完存檔，前台重新整理一次就生效**（§6），不必重新 build ——
+> 這是唯一能在不重建的前提下改連結的方式。每個環境本來就有自己的 Mongo，
+> 所以 CMS 的值天生就是分環境的。
+
+### 2.2 Runtime 變數（改值只要重啟，不必重新 build）
+
+留空＝該功能停用，網站照常運作。
 
 | 變數 | 用途 | 留空的行為 |
 | --- | --- | --- |
-| `QUOTE_GATEWAY_URL` | MT5 行情閘道位址 | 首頁／`/trading` 顯示標示清楚的「示意數據」 |
-| `QUOTE_HTTP_CRYPT_SECRET` | 閘道回應解密共享密鑰 | 同上 |
-| `NEXT_PUBLIC_CONTACT_*` | 客服聯絡方式的環境變數後備 | 改由 CMS 讀（建議走 CMS） |
-| `NEXT_PUBLIC_OPEN_ACCOUNT_URL` / `_DEMO_ACCOUNT_URL` / `_MEMBER_LOGIN_URL` | 帳戶入口連結的後備 | 同上 |
+| `DATABASE_URI` / `PAYLOAD_SECRET` | CMS 與 `/admin` | 前台走內建三語文案，無 `/admin` |
+| `QUOTE_GATEWAY_URL` | MT5 行情閘道位址（`uat.env`／`prd.env` 已填） | 首頁／`/trading` 顯示標示清楚的「示意數據」 |
+| `QUOTE_HTTP_CRYPT_SECRET` | 閘道回應解密共享密鑰（**只放主機**） | 同上 |
 | `MT_*` | 後台「一鍵機器翻譯」按鈕 | 按鈕 disabled、API 回 501 |
 | `GITBOOK_*` | 學院文章匯入腳本 | 腳本不可用 |
 
-> **營運連結請一律在 `/admin` 的「網站營運設定」填寫**，環境變數只是沒有資料庫時的後備。
+> 這些之所以是真 runtime：行情走 `force-dynamic` 的 `/api/market/*`、翻譯走後台 API、
+> CMS 走資料庫連線 —— 都不經過預先產生的靜態 HTML。
 
 ### 2.3 🚩 密鑰紅線
 
+- **密鑰不得寫進倉內任何檔案**，包含新增的 `config/env/*.env`（它們是 commit 進倉的）、
+  `docs/*`、`.env.example` 與程式註解。可以 commit 的只有**公開網域**與**範本**。
 - **`QUOTE_GATEWAY_URL` / `QUOTE_HTTP_CRYPT_SECRET` 是 server-only，絕對不可改名成
   `NEXT_PUBLIC_*`。** 它們會被打進瀏覽器 bundle，等於公開共享密鑰。
-- **閘道密鑰的實際值不得寫進本倉任何檔案**（含 `docs/*`、`.env.example`、程式註解）。
-  請到行情閘道專案的 `deploy/env/*.env` 取值，填進主機環境變數。
+- **閘道密鑰的實際值**請到行情閘道專案的 `deploy/env/*.env` 取值，填進主機環境變數。
 - **生產與 UAT 的密鑰不同**。（已知地雷：交易端 H5 的 `env.prd.uts` 把生產值寫成了 UAT 值，
   不要照抄那份。）
+- **`WEB_TERMINAL_HOST`（`src/components/platforms/platformVisuals.ts`）刻意不跟著環境變。**
+  它是平台截圖外框位址列印出來的字，紅線是**UAT 網域不得出現在官網任何畫面**，
+  所以永遠是生產網域 `h5.hatcmarket.com`（`HATC_FACTS.md` 已核可）。
 
 ---
 
 ## 3. 首次部署步驟
 
 ```bash
-# 1. 取得程式碼（目前以 zip 快照交付，解開後進入 hatc-web/）
-unzip hatc-web-<日期>-<sha>.zip && cd hatc-web
+# 1. 取得程式碼（從 Gitee master，見 §9）
+git clone git@gitee.com:spingpeng/homeindex.git && cd homeindex
 npm ci
 
-# 2. 設定環境變數（見第 2 節）
+# 2. 設定密鑰（公開的分環境值已在 config/env/*.env，見第 2 節）
+#    至少要有 PAYLOAD_SECRET 與 DATABASE_URI
 cp .env.example .env && vi .env
 
 # 3. 建置與啟動（Mongo 不需要建表，也沒有 migration 步驟）
-npm run build
-npm run start          # 預設 3000 埠；請用反向代理掛上 TLS
+npm run build:prd      # UAT 用 build:uat；或自行注入環境變數後跑 npm run build
+npm run start:prd      # 預設 3000 埠；請用反向代理掛上 TLS
 ```
+
+> **升版／重新部署**：`git pull` →（必要時 `npm ci`）→ `rm -rf .next` →
+> `npm run build:prd` → 重啟。`rm -rf .next` 的原因見 §6 最後一條。
 
 ### 3.1 ⚠ 關於 schema（最重要的一點）
 
@@ -127,6 +206,12 @@ npm run start          # 預設 3000 埠；請用反向代理掛上 TLS
 | 開戶（註冊）連結 | `https://h5.hatcmarket.com/#/pages/auth/register/index` | 業主已提供 |
 | 模擬帳戶連結 | **業主未提供** | 留空＝全站隱藏模擬按鈕（**這是設計行為，不是 bug**） |
 | 會員登入連結 | **業主未提供** | 留空＝頁首「登入」不顯示（同上） |
+
+> **生產環境即使後台還沒填也不會開天窗**：`config/env/prd.env` 帶了電話、電郵與開戶連結
+> 作為後備（三者皆為 `HATC_FACTS.md` 已核可事實）。但後台填的值永遠優先，所以上線前還是
+> 請照上表填進 `/admin` —— 之後要改連結就不必重新部署。**UAT 的這些值刻意全部留空**
+> （業主 2026-10-12 決定：HATC 沒有 UAT 版的開戶／登入／客服入口，也不得把生產入口放進
+> UAT，避免測試人員在 UAT 開到真帳戶）。
 
 > ⚠ **「頁面文案」類的 global（首頁／關於／產品／交易／入金出金）請保持留空。**
 > 留空＝使用程式內建的三語文案；一旦填入值就會永久覆蓋該字串，日後的文案修正會「看不見」。
@@ -208,6 +293,13 @@ npm run payload -- run scripts/seed-announcements.ts    # 公告分類（重要�
    要清就下 `$unset`）。
 4. **CI**：`.github/workflows/ci.yml` 跑 lint → i18n:check → build（用空的 `DATABASE_URI`
    走後備路徑）。pre-commit hook 需要 `npm install` 後才會掛上（`core.hooksPath=.githooks`）。
+5. **改了 `config/env/*.env` 之後要不要重建？** 看改的是哪一類（§2.1a vs §2.2）：
+   - 站台網域、`SITE_INDEXABLE`、追蹤 ID、**營運連結後備** →
+     **必須 `rm -rf .next` 重新 build**（這些值在 prerender 時就被寫進靜態 HTML）。
+   - `QUOTE_GATEWAY_URL`／`QUOTE_HTTP_CRYPT_SECRET`／`MT_*`／`DATABASE_URI` →
+     **只要重啟**（走的是動態路由或資料庫連線）。
+6. **`npm run build` / `npm run start`（不帶 `:prd`）不會讀 `config/env/*`。** 這是刻意保留的，
+   給「自行注入環境變數」的 CI 用。用錯的症狀＝canonical 指向 localhost、開戶按鈕退回客服連結。
 
 ---
 

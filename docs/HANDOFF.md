@@ -1,75 +1,34 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-12（第六十一輪：**Footer 加公告入口**，`關於我們`欄 `官方公告` → `/announcements`；
-> Footer 的靜態欄改成可變長度的條目清單、標籤可借用目的地頁面的鍵。業主實測回報的三個問題
-> 已修（公告 slug 可留空／自動產生、Lexical 內文改白底、詳情 404）。
-> **另修掉一個全站性問題：CMS 存檔後要重新整理兩次才生效** —— `safeRevalidateTag` 由
-> `'max'`（stale-while-revalidate）改為 `{expire: 0}`（立即過期），業主已實測通過。
-> **下一輪業主已指定：分環境配置檔 local／uat／prd，見下方「▶ 下一輪任務」。**）
+> 最後更新：2026-10-12（第六十二輪：**分環境配置 local／uat／prd 上線** ——
+> `config/env/*.env`（已 commit、只放公開值）＋載入器 `scripts/with-env.mjs`
+> ＋`build:*`／`start:*`／`env:check` 指令；**7 個營運連結環境變數去掉 `NEXT_PUBLIC_` 前綴**；
+> 新增 `SITE_INDEXABLE`（UAT 不可被索引）；順手修掉 `NEXT_PUBLIC_SITE_URL=` 空值會讓整個
+> build 崩掉的既有地雷。**實測更正了一個流傳的假設**：營運連結即使去掉前綴也**不是** runtime
+> 可切換（SSG 在 prerender 時就讀掉了），詳見下方第六十二輪。
+> 第六十一輪：Footer 公告入口、公告 slug 可留空／自動產生、Lexical 內文白底、
+> `safeRevalidateTag` 改 `{expire: 0}`（存檔後第一次重新整理就生效）。）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
-## ▶ 下一輪任務（業主已指定：分環境配置 local / uat / prd）
+## ▶ 下一輪任務（業主尚未指定）
 
-> **業主原話（2026-10-12，第六十一輪驗收後）**：「下一輪做分不同的環境配置文件出來，
-> 比如 local、uat、prd，把那些開戶等的域名也放到這個配置文件中，這樣每次打包不同環境
-> 就不用去改域名。」
+> 第六十二輪（分環境配置）已完成，見下方「▶ 下一步」。**下一輪要做什麼業主還沒指定**，
+> 請從下面的未結案清單請業主挑一項，或等業主提出新需求。
 >
-> ### 目標
+> ### 第六十二輪新增的待業主項目
 >
-> 一個環境一份配置，切換環境時**不需要改任何程式碼或手動替換網域**。
->
-> ### 動手前先問業主的四件事（方向級，不要自己猜）
->
-> 1. **UAT 的對外網域是什麼？** 目前倉內只有生產值（`h5.hatcmarket.com` 開戶／
->    `www.hatchk.com` 站台）與行情閘道的 uat（`node.666678910.com`）。**開戶／登入／客服
->    在 uat 要指去哪裡，業主沒給過** —— 沒有值就不要編一個，該環境留空（按鈕本來就會自動不渲染）。
-> 2. **要「一次打包、三環境共用」還是「每個環境各打一次包」？** 這是整個做法的分水嶺，
->    見下面「⚠ 技術前提」。
-> 3. **要不要 npm script**（`build:uat` / `build:prd`）還是由部署端自己注入環境變數？
->    開發團隊是從 Gitee 部署的，他們的 CI/部署方式我們並不知道 —— 要問。
-> 4. **開戶等營運連結仍以 CMS 為主嗎？** 現行治理是 CMS `SiteSettings` 優先、環境變數只是
->    沒有資料庫時的後備（`.cursor/rules` 的 Content governance）。每個環境本來就有自己的
->    Mongo，所以 CMS 值天生就分環境了。建議**維持 CMS 優先**，環境檔只負責後備值與
->    建置期變數；若業主想反過來（環境檔蓋掉 CMS）要他明確拍板，因為那會讓後台改不動連結。
->
-> ### ⚠ 技術前提（先讀，會決定方案長相）
->
-> - **`NEXT_PUBLIC_*` 會在 build 時被寫死進產物**，所以只要連結是 `NEXT_PUBLIC_` 開頭，
->   「一次打包、三環境共用」就不可能成立。
-> - **好消息：那些連結其實只在 server 端讀。** `src/lib/siteSettings.ts` 第一行就是
->   `import 'server-only'`，而且沒有任何 client 元件 import 它或 `lib/seo.ts`（已實測
->   grep 確認）。所以這 7 個變數的 `NEXT_PUBLIC_` 前綴**是多餘的**：
->   `NEXT_PUBLIC_CONTACT_{WHATSAPP,PHONE,EMAIL,LIVECHAT}`、
->   `NEXT_PUBLIC_{OPEN_ACCOUNT_URL,DEMO_ACCOUNT_URL,MEMBER_LOGIN_URL}`。
->   **改成不帶前綴的 server 變數 → 同一份產物可以靠主機環境變數在 runtime 切環境。**
->   （改名要同時更新 `.env.example`、`docs/DEPLOYMENT.md` §2.2，並保留舊名讀取一段時間或
->   明確告知開發端，否則他們現有的設定會靜默失效。）
-> - **`NEXT_PUBLIC_SITE_URL` 是例外，它本質上就是建置期的值。** canonical／hreflang／
->   sitemap 都寫進 SSG 的靜態 HTML，所以這一個**無法** runtime 切換，環境不同必須重新 build。
->   結論：真正能「打包一次」的只有營運連結與行情閘道，SEO 網域不行 —— 回答業主第 2 題時要講清楚。
-> - `NEXT_PUBLIC_ANALYTICS_ID` 目前沒用（`Analytics.tsx` 是回傳 `null` 的佔位），工具未定。
->
-> ### 🚩 不可違反
->
-> - **密鑰絕對不能進倉**：`.gitignore` 是 `.env*` ＋ `!.env.example`。所以可以 commit 的只有
->   **範本**（`.env.uat.example` 這類，裡面不放真值），或**只含公開網域**的設定檔。
->   `PAYLOAD_SECRET`／`DATABASE_URI` 帳密／`QUOTE_HTTP_CRYPT_SECRET`／`MT_API_KEY`
->   一律只放主機環境變數。閘道密鑰**生產與 UAT 不同**，且不得寫進 `docs/*` 或註解。
-> - **`WEB_TERMINAL_HOST`（`src/components/platforms/platformVisuals.ts`）不要改成跟著環境變**。
->   它是平台截圖外框位址列印出來的字，紅線是**UAT 網域不得出現在官網任何畫面**，
->   所以它必須永遠是生產網域 `h5.hatcmarket.com`（FACTS 已核可）。
-> - `src/lib/marketQuotes.ts` 的 `QUOTE_GATEWAY_URL` 留空＝自動退回示意數據，這個優雅降級
->   不要在重構時弄掉；`npm start` 要能在完全沒有環境變數的情況下跑起來（CI 就是這樣跑的）。
->
-> ### 參考現況（已盤點）
->
-> - 可用變數清單＝`.env.example`（唯一 commit 進倉的 env 檔）；說明在
->   `docs/DEPLOYMENT.md` §2（必填／選填／密鑰紅線三節，改動要同步）。
-> - 程式裡讀環境變數的只有 9 個檔案：`lib/{marketQuotes,siteSettings,seo,payload}.ts`、
->   `lib/mt/provider.ts`、`payload.config.ts`、`components/Analytics/Analytics.tsx`、
->   `app/api/dev-revalidate/route.ts`（只看 `NODE_ENV`）。
-> - `package.json` 目前**沒有**任何分環境 script（只有 `dev`／`build`／`start`）。
+> a. **UAT 站台網域** —— 業主未提供，所以 `config/env/uat.env` 的 `NEXT_PUBLIC_SITE_URL`
+>    **刻意留空**（空值會 fallback 到 `http://localhost:3000`）。UAT 主機請自行設定該變數，
+>    否則 canonical／sitemap 會指到 localhost。拿到正式的 UAT 網域後填進 `uat.env` 即可。
+> b. **UAT 的開戶／登入／客服入口** —— 業主 2026-10-12 決定**三個全部留空**：HATC 沒有
+>    UAT 版的入口，而把生產入口放進 UAT 會讓測試人員在測試站開到真帳戶。按鈕沒有目的地
+>    本來就不渲染，所以留空是安全的。**不要自己編一個 UAT 網域。**
+> c. **交付時必須告知開發端變數改名** —— 7 個營運連結變數已去掉 `NEXT_PUBLIC_` 前綴
+>    （舊名完全失效，不再被讀取）。對照表在 `docs/DEPLOYMENT.md` §2.2。
+> d. **追蹤工具仍未定** —— `NEXT_PUBLIC_ANALYTICS_ID` 與 `components/Analytics` 還是
+>    回傳 `null` 的佔位。法律頁「未啟用任何分析追蹤」的敘述建立在這個事實上，
+>    **接上追蹤工具時必須同時改 `/privacy` 的對應章節**。
 >
 > ### 其餘未結案事項（之後可挑，都要先問業主）
 >
@@ -118,6 +77,111 @@
 >   （模擬帳戶、會員登入）是設計行為不是 bug；④ **交易條件刻意不開放後台編輯**（治理設計）。
 ## ▶ 下一步（下一位 agent）
 
+> **✅ 第六十二輪（2026-10-12）完成：分環境配置 local / uat / prd。**
+>
+> 業主原話：「下一輪做分不同的環境配置文件出來，比如 local、uat、prd，把那些開戶等的域名
+> 也放到這個配置文件中，這樣每次打包不同環境就不用去改域名。」四個方向題業主拍板：
+> ① **UAT 的開戶／登入／客服一律留空**（HATC 沒有 UAT 版入口，也不把生產入口放進 UAT）；
+> ② **兩種切換方式都要**（per-env build script ＋ 允許部署端自行注入變數）；
+> ③ **要 npm script**，同時保留「自己注入變數再跑 `npm run build`」這條路；
+> ④ **維持 CMS 優先**，配置檔只當 CMS 未填時的後備。
+>
+> ### 1. 做法：三份已 commit 的公開配置檔 ＋ 一支載入器
+>
+> - `config/env/{local,uat,prd}.env`：**已 commit，只放公開值**（站台網域、
+>   `SITE_INDEXABLE`、營運連結後備、行情閘道位址）。`.gitignore` 的 `.env*` 只比對檔名開頭，
+>   `local.env` 這種名字不會被忽略（已用 `git check-ignore` 確認）。
+> - 載入器 [`scripts/with-env.mjs`](../scripts/with-env.mjs)，優先序（高→低）＝
+>   **主機／CI 環境變數 → 倉內 `.env.local`／`.env` → `config/env/<環境>.env`**。
+>   🚩 第二層是**依鍵名**讓路：某個鍵只要出現在 `.env`，載入器就完全不碰它（會印
+>   `kept existing …`）。沒有這個判斷的話我們注入的預設值會**默默蓋掉開發者的 `.env`**，
+>   因為 Next 的查找順序是 `process.env` 先、`.env*` 後。
+> - **為什麼不用 Next 原生的 `.env.<name>`**：`NODE_ENV` 只接受
+>   `production`／`development`／`test`，沒有 `uat` 這個合法值（已查 Next 16 文件）。
+> - npm scripts：`dev`（自動套 local）／`build:local|uat|prd`／`start:local|uat|prd`／
+>   **`env:check`**。**裸的 `build`／`start` 刻意不套任何環境檔**，維持原行為給 CI
+>   （CI 自己注入變數）與「完全沒有環境變數」的降級測試用。
+>
+> ### 2. 🚩 實測更正：營運連結**不是** runtime 可切換的
+>
+> 第六十一輪的盤點筆記寫著「去掉 `NEXT_PUBLIC_` 前綴 → 同一份產物可以靠主機環境變數在
+> runtime 切環境」。**對營運連結來說這是錯的，本輪已實測推翻**：頁面是 SSG，
+> `getSiteSettings()` 在 **prerender 時**就被讀掉並寫進靜態 HTML。實測＝用「完全沒有環境
+> 變數」建置出來的產物跑 `npm run start:prd`（注入了 `OPEN_ACCOUNT_URL`），首頁的開戶按鈕
+> **仍然是 `/register`**。
+> - **真正 runtime 的只有**：`QUOTE_GATEWAY_URL`／`QUOTE_HTTP_CRYPT_SECRET`（走
+>   `force-dynamic` 的 `/api/market/*`，實測 `start:prd` 確實改打生產閘道）、`MT_*`
+>   （後台 API）、`DATABASE_URI`／`PAYLOAD_SECRET`（資料庫連線）。
+> - **要在不重新部署的前提下改連結，唯一的路是 CMS**（`afterChange` → `revalidateTag`，
+>   第六十一輪已修成存檔後第一次重新整理就生效）。這剛好就是業主選的治理方向。
+> - 所以 `build:*` 與 `start:*` **必須用同一個環境名**，已寫進 DEPLOYMENT §2.0。
+> - 前綴還是該去掉，但理由改成：那 7 個前綴只是白白把客服電話、電郵、開戶網址塞進**每一個**
+>   瀏覽器 bundle。改名後 `siteSettings.ts` 檔頭已記錄這個實測結論。
+>
+> ### 3. 環境變數改名（7 個，舊名完全失效）
+>
+> `NEXT_PUBLIC_CONTACT_{WHATSAPP,PHONE,EMAIL,LIVECHAT}` → `CONTACT_*`、
+> `NEXT_PUBLIC_{OPEN_ACCOUNT_URL,DEMO_ACCOUNT_URL,MEMBER_LOGIN_URL}` → 去前綴。
+> **沒有保留舊名的相容讀取**：本專案從未部署過（DEPLOYMENT §0），不存在會被靜默打斷的
+> 線上設定。`.env.example`、`docs/DEPLOYMENT.md` §2.2、`README.md` 都已同步，
+> **交付時要主動告知開發端**（未結案清單 c）。
+> `NEXT_PUBLIC_SITE_URL` 與 `NEXT_PUBLIC_ANALYTICS_ID` **刻意保留前綴**：前者本質上就是
+> 建置期值、後者是公開的追蹤 ID 且日後會在瀏覽器執行。
+>
+> ### 4. 順手修掉一個會讓整個 build 崩掉的既有地雷
+>
+> `src/lib/seo.ts` 原本是 `process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'`
+> —— **`??` 只接 `undefined`／`null`，接不到空字串**。於是 `NEXT_PUBLIC_SITE_URL=`
+> （空值，而 `.env.example` 對很多鍵就是這樣寫）會讓 `siteUrl` 變成 `''`，
+> locale layout 的 `new URL(siteUrl)` 在**每一頁** prerender 時丟 `ERR_INVALID_URL`，
+> 整個 build 失敗、錯誤訊息還只指向 `metadataBase`。本輪 `uat.env` 刻意留空該鍵時踩到，
+> 已改成 `?.trim() || …`。
+>
+> ### 5. 新增 `SITE_INDEXABLE`（UAT 不可被索引）
+>
+> 引入 UAT 環境就會多出一個「測試站被搜尋引擎收錄、和生產站搶同一批內容」的風險，
+> 所以一併處理：`SITE_INDEXABLE=false`（`local.env`／`uat.env`）時 → `robots.txt` 變成
+> `Disallow: /`，**而且**每頁 metadata 改 `noindex, nofollow`（robots.txt 只擋爬取，
+> 擋不住外部連結造成的收錄，所以兩層都要）。`prd.env` 為 `true`；**未設定時預設可索引**，
+> 所以 CI 與既有流程行為完全不變。原本 locale layout 裡是寫死的 `{index: true, follow: true}`。
+>
+> ### 6. 密鑰紅線改成機器把關
+>
+> `config/env/*` 是 commit 進倉的，靠註解提醒不夠 → 載入器內建
+> `SECRET_KEY_PATTERN = /SECRET|TOKEN|PASSWORD|_KEY$|^DATABASE_URI$/`：
+> `build:*`／`start:*` 會檢查當前環境檔，`npm run env:check` 會檢查全部三個，**CI 已加這一步**。
+> 用 pattern 而不是固定清單，日後出現 `PAYMENT_API_KEY` 之類的新變數也會被擋下
+> （負向測試：塞一個 `MT_API_KEY` 進去 → 兩種呼叫都 exit 1）。
+>
+> ### 7. 刻意沒做的事
+>
+> - **`WEB_TERMINAL_HOST` 不跟著環境變**（`components/platforms/platformVisuals.ts`）：
+>   它是平台截圖瀏覽器外框位址列印出來的字，紅線是 **UAT 網域不得出現在官網任何畫面**，
+>   永遠是生產網域 `h5.hatcmarket.com`（FACTS 已核可）。
+> - **沒有讓環境檔蓋掉 CMS**（業主第 4 題選 CMS 優先）。那樣做後台會永遠改不動連結。
+> - **沒有把本機 Mongo 連線字串寫進 `local.env`**（含帳密＝憑證，留在 git-ignored `.env`）。
+> - **沒有在 CI 加 `build:uat`**（會多一次完整建置，而 `env:check` 已能擋真正的風險）。
+>
+> ### 驗收
+>
+> `lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／
+> `i18n:check` 三語 **730 鍵**（本輪未動文案）／`env:check` 綠／`pkill` 後
+> `rm -rf .next` 冷建綠、**51 筆 ● SSG，動態路由集合與改動前一致**（admin／`/api/*`／
+> `robots.txt`／`sitemap.xml`／`_not-found`）。另外實測：
+> - `build:prd` → canonical／sitemap／`robots.txt` host 全為 `https://www.hatchk.com`、
+>   `robots` meta 為 `index, follow`、開戶 CTA 取到 CMS 的值（CMS 優先確認）、
+>   全頁 `target="_blank"` 數量 0。
+> - `build:uat` → `robots.txt` 為 `Disallow: /`、每頁 `noindex, nofollow`。
+> - **完全沒有環境變數**（`.env` 移走、裸 `npm run build` ＋ `npm start`）→ 首頁 200、
+>   行情卡與 K 線標「示意數據」、`/api/market/quotes` 回 `{ok:false}`、開戶 CTA 退回
+>   `/register`、頁首「登入」不渲染。
+> - `npm run dev`（已改成經過載入器）→ 前台 200、`/api/users/me` 200、`/admin` 200。
+> - ⚠ 驗證環境陷阱（再次踩到）：**在同一個 Shell 呼叫裡用 `&` 背景起 `npm start`，
+>   呼叫結束時會被收掉**，之後的 `curl` 會拿到空回應（看起來像頁面壞了）。請用獨立的
+>   背景 Shell 任務跑 server，再在另一次呼叫裡 curl。
+>
+> ---
+>
 > **✅ 第六十一輪（2026-10-12）完成：Footer 加公告入口。**
 >
 > 業主從第六十輪留下的 0–8 項裡選了 **0(ii)「要不要在 Footer 也加公告入口」＝要**，
