@@ -1,102 +1,124 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-12（第五十八輪：移除「其餘交易條件（執行方式等）」待公佈列；登入按鈕改 CMS
-> 設定、未填即隱藏。新增 `docs/DEPLOYMENT.md`；程式碼以 zip 交付、開發已 push 上 Gitee
-> `master`。下一輪＝DB 引擎／庫名／改走 Gitee，**第一項有不可行問題待業主拍板**。）
+> 最後更新：2026-10-12（第五十九輪：**CMS 資料庫由 PostgreSQL 改為 MongoDB，庫名 `hatc-cms`**；
+> migration 機制整套退役；交付改走 **Gitee 增量同步**（`sh scripts/sync-gitee.sh`），zip 退役。）
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
-## ▶ 下一輪任務（業主 2026-10-12 指定，依序）
+## ▶ 下一輪任務（待業主指定）
 
-> 業主：「1. db 改用 mysql　2. 數據庫改名為 `hatc-cms`　3. 之後直接 push 到 git 地址上改就行了」
+> 第五十九輪三項（DB 引擎／庫名／Gitee）**全部完成**。以下是本輪產生或仍未結案的事項，
+> 下一棒可挑，但**都要先問業主**：
 >
-> ### 1. 🚩 DB 改 MySQL —— **以目前架構不可行，動手前必須先問業主**
->
-> **Payload 3 沒有 MySQL adapter。** 已查 npm：官方只有
-> `@payloadcms/db-postgres`／`db-mongodb`／`db-sqlite`／`db-d1-sqlite`／`db-vercel-postgres`，
-> **`@payloadcms/db-mysql` 這個套件不存在**（`npm view` 404）。本倉目前用
-> `postgresAdapter`（`src/payload.config.ts`），三個 migration 全是 Postgres SQL。
->
-> 選項（請業主拍板，不要自行選）：
-> - **(a) 維持 PostgreSQL**（風險最低；39 張表的 migration 基線與三個 migration 都現成可用）。
-> - **(b) 改 MongoDB 或 SQLite**（官方支援）。代價：`src/migrations/*` 整套作廢要重做
->   （MongoDB 根本不用 migration，SQLite 要重新產基線）；`payload-types.ts` 要重生；
->   所有 reader 的 `hasDb()` 行為不變但要重新驗。
-> - **(c) 放棄 Payload、在 MySQL 上自建 CMS**：工程量巨大，且會失去後台 UI、欄位級權限
->   （`Roles` 矩陣）、Lexical 富文本、媒體上傳、一鍵機翻、revalidate hook —— 不建議。
-> - **(d) 只有「其他系統」用 MySQL，CMS 繼續用 Postgres**（若開發的需求其實是伺服器上已有
->   MySQL，這通常是最務實的答案）。
->
-> **要先問清楚的是「為什麼要 MySQL」**：是伺服器只裝了 MySQL／維運規範／還是與既有系統共用？
-> 答案會直接決定走 (a) 還是 (d)。
->
-> ### 2. 資料庫改名為 `hatc-cms`（單純，但要一次改齊）
->
-> **改名只動連線字串，不影響 schema，不需要 migration。** 要同步的地方：
-> `.env.example`、`README.md`（快速開始）、`docs/DEPLOYMENT.md`（§2.1）、
-> `docs/HATC_PROJECT_BRIEF.md`（技術棧那行若提到庫名），以及**本機** `.env` 與 Docker 容器
-> （本機現況：容器 `hatc-postgres`，庫名與使用者皆 `hatc`）。
-> 本機改名作法＝`CREATE DATABASE "hatc-cms"` 後 `pg_dump | psql` 搬過去，或直接重建空庫跑
-> `npm run migrate` ＋ 重跑種子腳本（本機資料全是可重跑的種子）。
-> ⚠ 庫名含連字號，連線字串與 `psql` 都要**加引號**（`psql -d "hatc-cms"`）。
->
-> ### 3. 之後直接 push 到 Gitee
->
-> **開發已經把 zip 內容 push 上 Gitee，但落在 `master` 分支（`cd2692b`，「feat：hatc web
-> 初始化项目」），與本倉 `main` 是獨立歷史（無共同祖先）**，所以不能直接 `git push gitee main`。
->
-> **✅ 已比對完畢（2026-10-12）：開發沒有新增任何檔案** —— 無 Dockerfile／nginx／CI 改動。
-> `gitee/master` 318 檔 vs `main` 319 檔，唯一差別是我們刻意排除的 `lp.zip`；內容差異只有
-> 我們之後那兩次文件更新（規則檔／`AGENTS.md`／`DEPLOYMENT.md`／`HANDOFF.md`）。
-> → **因此 force-push 我們的 `main` 不會弄丟任何東西，是建議做法**（保留 33 commit 完整歷史）：
-> ```bash
-> git push gitee main:master --force      # 或改推成 main 並在 Gitee 改預設分支
-> ```
-> 若業主偏好保留開發的 commit 當起點，才改以 `gitee/master` 為基線往上接。
->
-> ⚠ **zip 交付丟失了執行權限**：開發那邊的 `.githooks/pre-commit` 與
-> `scripts/check-migrations.sh` 已失去 `+x`（diff 顯示 0 行變更＝只有 mode 改變）
-> → 他們的 pre-commit 守門與 `npm run migrate:check` 會失效。改走 git 後自然修復
-> （git 記錄 file mode），切換前若要跑檢查需先 `chmod +x`。
->
-> ⚠ **前一輪「Gitee 不要再重試」的結論只適用於首次 39 MiB 整包。** 大包現在已經在對端，
-> 之後的 push 只送 delta（KB 級），**不再會撞到 receive-pack 時限** → 走 git 交付是可行的。
-> ⚠ 從 Gitee `fetch` 也很慢（實測 10 分鐘以上仍在下載 33 MiB），第一次對齊請預留時間。
+> 1. **交易條件「執行方式」** —— `HATC_FACTS.md` 唯一仍待業主提供的交易條件（官網目前
+>    刻意完全不提，**不要加回「將另行公佈」佔位列**，第五十八輪決定）。
+> 2. **模擬帳戶連結** —— 業主未提供，全站模擬按鈕因此不渲染（設計行為）。
+> 3. **會員登入連結** —— 同上，頁首「登入」目前不顯示。
+> 4. **MT5 的 EA 支援** —— `platforms.faq.items[3]` 與 CMS `faqs` id=12 聲稱支援 EA，
+>    業主說會正式確認為事實但**尚未確認**；在那之前不得據此在別處新增 EA／量化文案。
+> 5. **法律頁審核** —— `/privacy`、`/disclaimer` 是保守版草稿，待業主／法務逐條審核；
+>    改動文字時必須同步更新 `legal.updatedAt`。
+> 6. **生產環境行情** —— 生產遊客交易組仍未配產品（403 `SYMBOL_NOT_ALLOWED`），
+>    首頁停在示意數據。**後端配好即自動變真，官網不需改碼。**
+> 7. **About 區段錨點** —— Footer「關於我們」欄三個連結都指 `/about` 且該頁沒有任何
+>    區段 id（第五十七輪業主決定暫不處理）。
+> 8. **舊 Postgres 容器** —— `hatc-postgres` 仍在本機跑著（內含換引擎前的資料）。
+>    確認 MongoDB 一切正常後可由業主刪除：`docker rm -f hatc-postgres`。
 
-## ▶ 交付狀態：程式碼交給開發團隊部署（2026-10-11）
+## ▶ 交付狀態：開發團隊從 Gitee 部署（2026-10-12 起）
 
-> 業主決定**把程式碼交給開發團隊部署到伺服器**。**GitHub `origin` 是唯一來源**；
-> 交付方式＝**zip 快照**（業主 2026-10-12 決定，因為 Gitee 推不上去，見下）。
+> **GitHub `origin` 是唯一來源與完整歷史**（`https://github.com/skyyuch/HATCwebsite.git`）；
+> **開發端從 Gitee `master` 部署**（`git@gitee.com:spingpeng/homeindex.git`）。
 >
-> - **產生交付包**：
->   `git archive --format=zip -9 --prefix=hatc-web/ -o ~/Desktop/hatc-web-<date>-<sha>.zip HEAD -- . ':!lp.zip'`
->   → 33 MB／435 檔。自動排除 `node_modules`／`.next`／本機 `.env`／`.git`，並刻意排除
->   `lp.zip`（4 MB 設計素材，部署不需要，仍留在倉庫）。已驗證 `unzip -tq` 無損、
->   三個 migration（含 snapshot 共 7 檔）與 `docs/DEPLOYMENT.md` 都在內。
->   ⚠ 開發端拿到的是**快照、沒有 `.git`**，無法 `git pull` → **每次更新都要重新產包並重發**。
-> - 🚩 **Gitee 推送已證實行不通，不要再重試**。remote `gitee`
->   （`git@gitee.com:spingpeng/homeindex.git`）已設定但**仍是空倉**。兩次失敗：① 69 分鐘後
->   client 端 `Operation timed out / Broken pipe`；② 加 SSH 保活（新建 `~/.ssh/config`：
->   `ServerAliveInterval 20`／`TCPKeepAlive`／`Compression`，已驗證生效）後仍在 **57 分鐘**被
->   **Gitee 伺服器端時限**砍掉：`Grpc Receive Pack error: DeadlineExceeded`。根因＝
->   **39.1 MiB pack 配 3–13 KiB/s 上行**（重傳率約 17%），塞不進 Gitee 的 receive-pack deadline。
->   **依 commit 數分段無效**：39.1 MiB 裡 **35.9 MiB 集中在前 8 個 commit**（幾乎全在最初
->   commit 的圖片素材），後三段加起來只有 3 MiB。**壓成單一 commit 也沒用**——現行工作樹本身
->   就 39 MB，體積是現有 PNG／zip，不是歷史版本。
->   若日後要恢復 git 交付，正解＝**Gitee 網頁「倉庫鏡像管理 → 拉取」從 GitHub 同步**
->   （機房對機房，不經業主上行；GitHub 倉公開、免憑證）。
->
-> - **部署交接文件＝[`docs/DEPLOYMENT.md`](DEPLOYMENT.md)**（給開發／維運讀，繁中）：
->   環境需求、環境變數（哪些是 server-only 密鑰）、**空庫 → `npm run migrate` → build →
->   start** 的首次部署流程、首次進 `/admin`、**上線前後台必填清單**、內容種子腳本、
->   行情接線與生產阻塞、更新內容如何生效、實際踩過的陷阱、**內容治理紅線**。
-> - **本檔（HANDOFF）是給下一位 agent 的內容／設計決策史**，不要拿去當部署手冊。
-> - ⚠ **交接時務必一併提醒開發**：① 生產**只重播 migration、不會 push schema**，所以
->   一定要跑 `npm run migrate`；② **頁面文案類 global 要保持留空**（填入就會永久覆蓋
->   內建三語文案，日後修正看不見）；③ **按鈕沒有目的地就不顯示**（模擬帳戶、會員登入）
->   是設計行為不是 bug，不要指去佔位頁；④ **交易條件刻意不開放後台編輯**（治理設計）。
-
+> - **更新交付＝`sh scripts/sync-gitee.sh`**（工作區要乾淨）。它以 `gitee/master` 為 parent
+>   疊一個 tree 等於本地 `HEAD` 的 commit，**排除 `lp.zip`**（4 MB 設計素材，部署用不到）。
+> - 🚩 **絕對不要 `git push gitee main`。** 完整歷史＝**39.6 MiB** 物件（幾乎全在最初幾個
+>   commit 的圖片），業主上行 3–13 KiB/s，第五十八輪兩次都被 Gitee 的 receive-pack 時限砍掉
+>   （69 分鐘連線中斷／57 分鐘 `Grpc Receive Pack error: DeadlineExceeded`）。
+>   **增量同步實測只送 18 KiB、5 秒完成。**
+> - **Gitee 是獨立血統的部署鏡像**（開發端當初用 zip 匯入成單一 commit `cd2692b`，與我們的
+>   `main` 無共同祖先），本地以分支 `gitee-main` 記錄鏡像最新點。完整歷史只在 GitHub。
+> - **zip 交付（`git archive`）已退役**，只在對方無法用 git 時備用；屆時要提醒對方
+>   `chmod +x` 腳本檔（zip 會丟掉執行權限）。
+> - **部署交接文件＝[`docs/DEPLOYMENT.md`](DEPLOYMENT.md)**（給開發／維運讀，繁中）。
+>   本檔（HANDOFF）是內容／設計決策史，不要拿去當部署手冊。
+> - ⚠ **交接時務必一併提醒開發**：① **MongoDB 不需要建表、沒有 migration 步驟**
+>   （舊說明要求的 `npm run migrate` 指令已不存在）；② **頁面文案類 global 要保持留空**
+>   （填入就會永久覆蓋內建三語文案，日後修正看不見）；③ **按鈕沒有目的地就不顯示**
+>   （模擬帳戶、會員登入）是設計行為不是 bug；④ **交易條件刻意不開放後台編輯**（治理設計）。
 ## ▶ 下一步（下一位 agent）
+
+> **✅ 第五十九輪（2026-10-12）完成：CMS 換到 MongoDB（庫名 `hatc-cms`）、migration 機制退役、
+> 交付改走 Gitee 增量同步。**
+>
+> 業主三項指示：「1. db 改用 mysql　2. 數據庫改名為 `hatc-cms`　3. 之後直接 push 到 git 地址上改」。
+>
+> ### 1. 🚩 MySQL 不存在 → 業主改選 MongoDB
+>
+> **Payload 3 沒有 MySQL adapter**（`@payloadcms/db-mysql` 在 npm 上 404，本輪再次驗證）。
+> 依規則先 `AskQuestion` 問業主，業主給的理由是「要與公司既有系統共用同一個資料庫」卻選了
+> MongoDB —— **這兩件事互相矛盾**（Mongo 一樣無法與 MySQL 共用，伺服器上反而要多裝一套），
+> 已把矛盾明白指出並再問一次，**業主確認照做 MongoDB**，接受 migration 全部重做。
+> **日後再有人提 MySQL，答案仍是「沒有 adapter」，不要自行實作。**
+>
+> - **程式改動極小、風險集中在周邊**：`payload.config.ts` 換成
+>   `mongooseAdapter({url: process.env.DATABASE_URI || false})`。**`|| false` 不可拿掉** ——
+>   它讓無資料庫時 Payload 仍可載入（`next build`／CI 走 i18n/SSG fallback）；空字串會被當成
+>   要連線而拋錯。移除 `@payloadcms/db-postgres`，安裝 `@payloadcms/db-mongodb@3.87.1`（對齊
+>   payload 版本，不用 npm 上較新的 3.90）。
+> - **ID 由數字變字串（ObjectId）**：`payload-types.ts` 重生後 45 處 `id: number` → `string`。
+>   **全站零改動**，因為每個 reader 本來就寫 `String(doc.id)`、access 只做等值比較；
+>   `tsc --noEmit` 乾淨。**新程式碼不得假設數字 ID。**
+> - **migration 機制整套退役**：刪 `src/migrations/*`（三個 Postgres SQL migration ＋ 39 表
+>   基線 snapshot）、`scripts/check-migrations.sh`，拿掉 `migrate`／`migrate:create`／
+>   `migrate:status`／`migrate:check` 四個 npm script、CI 的「Payload migration drift」步驟、
+>   pre-commit 的 schema 閘門（i18n 閘門保留）。
+>   **Mongo 是 schemaless，Payload 連線時自動建立 collection 與索引**，所以改 schema 後
+>   **只要 `npm run generate:types`**。若日後需要**資料**（非 schema）搬遷，才用
+>   `npx payload migrate:create`。
+> - **交易不受影響**：adapter 偵測到連線不是 replica set 會自動 `transactionOptions=false`，
+>   單機 standalone 照常運作（已實測）。
+>
+> ### 2. 庫名 `hatc-cms` ＋ 本機資料搬遷
+>
+> 本機新容器 **`hatc-mongo`**（`mongo:7`，volume `hatc-mongo-data`，帳密 `hatc`/`hatc_dev`，
+> port 27017），連線字串 `mongodb://hatc:hatc_dev@127.0.0.1:27017/hatc-cms?authSource=admin`。
+> ⚠ 庫名含連字號，`mongosh` 指定時要加引號。**舊的 `hatc-postgres` 容器刻意沒刪**（舊資料可查）。
+>
+> **資料用種子腳本還原，與舊庫逐項對齊**：學院 49（三批原創 ＋ GitBook 匯入 22）／媒體 53／
+> 出入金 14／FAQ 12／帳戶賣點 4／平台 3／`roles` 1。另外手動補回 `site-settings` 的電話、
+> 電郵、開戶連結，以及後台帳號（**直接沿用原本的密碼雜湊與 salt**，所以原密碼仍可登入；
+> 若失敗就刪掉 `users` 文件重新註冊，第一個帳號會自動拿到全權角色）。
+>
+> ### 3. Gitee 改走增量同步（新腳本 `scripts/sync-gitee.sh`）
+>
+> 業主拍板「以開發的 `gitee/master` 為基線、保留他們的部署檔、再把我們的改動疊上去，
+> GitHub 保留完整 33 commit 歷史」。**已比對：開發端沒有新增任何檔案**（zip 原封不動匯入，
+> 差異只有 zip 丟失的執行權限、刻意排除的 `lp.zip`，以及我們之後更新的四份文件）。
+>
+> - **🚩 量測結果決定了做法**：把 `main` 整條推上 Gitee 需要 **39.6 MiB**（＝第五十八輪推爆
+>   兩次的那包）。以 `gitee/master` 為 parent、只疊一個 commit → **實際只傳 18 KiB、5 秒完成**。
+> - 流程寫成 `scripts/sync-gitee.sh`：fetch → 用**暫存索引**（不碰真索引）組出 tree 等於
+>   `HEAD`、排除 `lp.zip` 的 commit → 推 `master`。會擋髒工作區、樹沒變就結束、推前印出預估量。
+> - **Gitee = 獨立血統的部署鏡像，GitHub = 真歷史。** 本地分支 `gitee-main` 記錄鏡像最新點
+>   （現為 `3e17493`）。
+> - 從 Gitee `fetch` 這次只花 22 秒（第五十八輪說「>10 分鐘」是首次抓整包）。
+>
+> ### 4. 順手修掉的生產隱患：種子腳本會吃掉文案修正
+>
+> 重建本機資料時發現 **`scripts/seed-funding.ts` 會把 `funding-page` global 的 22 個文字欄位
+> × 3 語系灌成 i18n 預設值的逐字副本** —— 這正是第五十七輪查到「CMS 影子副本吃掉紅線修正」的
+> **真正來源**（當時以為是有人在 `/admin` 手動測試留下的）。而 `docs/DEPLOYMENT.md` §4.1 正是
+> 叫開發在正式站跑這支腳本 → 上線即永久凍結該頁文案。**已移除該段種子邏輯**（圖片欄位的
+> 連結保留，圖片沒有 i18n fallback 層，不會造成影子副本），並把這條寫進規則檔。
+>
+> ### 驗收
+>
+> `lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／`i18n:check`
+> 三語 **716 鍵**（未動文案）／`rm -rf .next` 冷建綠且全頁 ● SSG（`/academy` 49 篇全部預先
+> 渲染＝確認是從 Mongo 讀到的）。`npm start` 實測：六個三語頁面、`/admin`、`/api/users/me`
+> 全 200，`/api/market/quotes` 仍回真實報價，`/funding` 回到 i18n 文案（影子副本已清）。
+> **沒有 `migrate:check` 可跑了 —— 那是 Postgres 時代的閘門，已隨 migration 一起退役。**
 
 > **✅ 第五十八輪（2026-10-11）完成：官網不再提及未提供的「執行方式」；Header 登入按鈕改走
 > CMS 設定、未填即隱藏。**

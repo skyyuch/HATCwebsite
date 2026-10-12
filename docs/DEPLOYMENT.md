@@ -222,25 +222,30 @@ npm run payload -- run scripts/seed-funding.ts          # 出入金渠道（示�
 
 ## 9. 程式碼如何交付（給業主／維護者看）
 
-目前以 **zip 快照**交付給開發團隊：
+**開發團隊從 Gitee `master` 取得程式碼**：`git@gitee.com:spingpeng/homeindex.git`
+（網頁：`https://gitee.com/spingpeng/homeindex`）。開發端照常 `git pull` 即可，
+不再需要重發 zip。
+
+更新方式**只有一個指令**（在本倉、工作區乾淨的狀態下執行）：
 
 ```bash
-git archive --format=zip -9 --prefix=hatc-web/ \
-  -o ~/Desktop/hatc-web-$(date +%Y%m%d)-$(git rev-parse --short HEAD).zip \
-  HEAD -- . ':!lp.zip'
+sh scripts/sync-gitee.sh
 ```
 
-- 內容＝版控在 `HEAD` 的檔案，**自動排除** `node_modules`、`.next`、本機 `.env` 與 `.git`；
-  另外刻意排除 `lp.zip`（4 MB 設計素材，部署不需要）。約 33 MB／435 個檔案。
-- 產生後請用 `unzip -tq <檔名>` 驗證完整性。
-- ⚠ 快照**不含 `.git`**，開發端無法 `git pull`。**每次有更新都要重新產包並重發。**
+- 它會 `git fetch gitee`，然後以 `gitee/master` 為基礎加上**一個** commit，其內容
+  等於本地 `HEAD`，再推上去。**刻意排除 `lp.zip`**（4 MB 設計素材，部署用不到）。
+- 樹沒有變化時會直接結束；工作區髒的話會拒絕執行；推送前會印出預估上傳量。
 
-**為什麼不用 Gitee：** 曾嘗試推到 `git@gitee.com:spingpeng/homeindex.git` 兩次都失敗——
-第一次 69 分鐘後連線中斷，第二次加了 SSH 保活仍在 57 分鐘被 Gitee 伺服器端時限砍掉
-（`Grpc Receive Pack error: DeadlineExceeded`）。原因是 **39 MiB 的 pack 搭配 3–13 KiB/s
-的上行頻寬**，塞不進 Gitee 的 receive-pack 時限；而體積集中在圖片素材，分段推送或壓縮歷史
-都無法改善。
+### 9.1 為什麼不是 `git push gitee main`
 
-若日後要恢復 git 交付，建議走 **Gitee 網頁「倉庫鏡像管理 → 拉取」直接從 GitHub 同步**
-（`https://github.com/skyyuch/HATCwebsite.git`，公開倉、免憑證），由 Gitee 伺服器對 GitHub
-拉取，完全不經過本地上行頻寬。
+GitHub `origin/main` 保有完整歷史（33+ commits，約 **39.6 MiB** 物件，體積幾乎都在最初幾個
+commit 的圖片素材）。業主端上行只有 3–13 KiB/s，整包塞不進 Gitee 的 receive-pack 時限——
+實際失敗兩次：第一次 69 分鐘連線中斷，第二次加了 SSH 保活仍在 57 分鐘被伺服器端砍掉
+（`Grpc Receive Pack error: DeadlineExceeded`）。分段推送或壓縮歷史都沒用。
+
+因此 **Gitee 是一條獨立血統的部署鏡像**：開發端當初用 zip 匯入成單一 commit，之後每次同步
+只疊一個 commit，**只傳異動的物件**（首次同步實測 18 KiB、5 秒）。**完整歷史在 GitHub。**
+
+> 另一個可行方案（目前未啟用）：Gitee 網頁「倉庫鏡像管理 → 拉取」從 GitHub 自動同步
+> （`https://github.com/skyyuch/HATCwebsite.git`，公開倉、免憑證），機房對機房、完全不經過
+> 本地上行。若改走這條，就會變成 Gitee 完整複製 GitHub 歷史，上面的腳本即可退役。

@@ -7,11 +7,14 @@ Before planning, designing or changing code, read:
 3. `docs/WEBSITE_STRUCTURE.md`
 4. `docs/DESIGN_DIRECTION.md`
 
-For anything touching deployment, environment variables, migrations or the
+For anything touching deployment, environment variables, database setup or the
 hand-off to the dev/ops team, read `docs/DEPLOYMENT.md` as well. GitHub
-`origin` is the source of truth. The dev team currently receives a **zip
-snapshot** built with `git archive` (see DEPLOYMENT.md §9) because pushing to
-Gitee fails — the `gitee` remote is configured but still empty.
+`origin` is the source of truth; the dev team deploys from the **Gitee mirror**,
+which is updated with `sh scripts/sync-gitee.sh` (see DEPLOYMENT.md §9 — never
+`git push gitee main`, the full history is too large for Gitee's upload limit).
+
+The CMS runs on **MongoDB** (database `hatc-cms`) since 2026-10-12. There is no
+migration mechanism any more: schema changes only need `npm run generate:types`.
 
 ## Working rules
 

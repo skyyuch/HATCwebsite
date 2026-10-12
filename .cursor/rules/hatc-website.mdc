@@ -968,25 +968,22 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  學院 49／媒體 53／出入金 14／FAQ 12／帳戶賣點 4／平台 3，與舊 Postgres 庫逐項一致。
  `site-settings` 的電話／電郵／開戶連結與後台帳號需另外補（本輪已沿用原密碼雜湊搬過去）。
 
-## Delivery / deployment (owner 2026-10-11)
+## Delivery / deployment (owner 2026-10-11；交付改走 Gitee 2026-10-12 第五十九輪)
 
-- 業主把程式碼**交給開發團隊部署到伺服器**。**GitHub `origin` 是唯一來源**
- （`https://github.com/skyyuch/HATCwebsite.git`，公開倉）。
-- **交付方式＝zip 快照**（業主 2026-10-12 決定）：
- `git archive --format=zip -9 --prefix=hatc-web/ -o <out>.zip HEAD -- . ':!lp.zip'`
- → 33 MB／435 檔，自動排除 `node_modules`／`.next`／本機 `.env`／`.git`，並刻意排除
- `lp.zip`（4 MB 設計素材，部署不需要）。**檔名帶日期＋commit sha**，每次重新交付都要重做
- （開發端拿到的是快照、沒有 `.git`，無法 `git pull`）。
-- **2026-10-12 更新：開發已把 zip 內容 push 上 Gitee**，落在 **`master`** 分支（`cd2692b`），
- **與本倉 `main` 是獨立歷史（無共同祖先）**。業主要求「之後直接 push 到 git 地址上改」→
- **已比對：開發沒有新增任何檔案**（無 Dockerfile／nginx／CI 改動；318 vs 319 檔，差別只有
- 刻意排除的 `lp.zip`）→ **force-push `main:master` 不會弄丟東西，為建議做法**。
- ⚠ **zip 交付丟失執行權限**：開發端 `.githooks/pre-commit` 與 `scripts/check-migrations.sh`
- 已無 `+x`（守門與 `migrate:check` 會失效），改走 git 後自然修復。
- **慣例：日後若再用 zip 交付，必須提醒對方 `chmod +x` 這兩個檔。**
- **大包已在對端 → 之後的 push 只送 delta（KB 級），不再撞 receive-pack 時限**，所以下面那條
- 「不要再重試」**只適用於首次 39 MiB 整包**。從 Gitee fetch 仍很慢（實測 >10 分鐘）。
-- 🚩 **首次整包推送已證實行不通**：remote `gitee`
+- 業主把程式碼**交給開發團隊部署到伺服器**。**GitHub `origin` 仍是唯一來源與完整歷史**
+ （`https://github.com/skyyuch/HATCwebsite.git`，公開倉）；**開發端從 Gitee `master` 部署**
+ （`git@gitee.com:spingpeng/homeindex.git`）。
+- **🚩 交付＝`sh scripts/sync-gitee.sh`，不要 `git push gitee main`。** 業主 2026-10-12 拍板
+ 「以 `gitee/master` 為基線疊上去」。腳本做的事：以 `gitee/master` 為 parent、建一個 tree
+ 等於本地 `HEAD` 的 commit（**排除 `lp.zip`** 4 MB 設計素材），推到 `master`。
+ **Gitee 是一條獨立血統的部署鏡像，GitHub 保留真歷史** —— 直接推 `main` 需要上傳 **39.6 MiB**
+ 的完整物件（＝下面那個推爆兩次的包），而增量同步實測只送 **18 KiB、5 秒完成**。
+ 腳本會擋髒工作區、會在樹沒變時直接結束、會先印出預估上傳量。
+- **zip 交付（`git archive`）已退役**，僅在對方無法用 git 時備用。
+ ⚠ 當時 zip 丟失了執行權限（開發端 `.githooks/pre-commit` 無 `+x`），改走 git 後已修復。
+ **慣例：日後若再用 zip 交付，必須提醒對方 `chmod +x` 腳本檔。**
+- 從 Gitee `fetch` 第一次很慢（第五十八輪實測 >10 分鐘），之後已有本地物件就很快（實測 22 秒）。
+- 🚩 **首次整包推送已證實行不通**（＝為什麼要有 `sync-gitee.sh`）：remote `gitee`
  （`git@gitee.com:spingpeng/homeindex.git`）當時是空倉。兩次嘗試皆失敗——
  ① 69 分鐘後 client 端 `Operation timed out / Broken pipe`；② 加了 SSH 保活
  （`~/.ssh/config` 的 `ServerAliveInterval 20`，已驗證生效）後仍在 57 分鐘被
@@ -996,10 +993,10 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  若日後要恢復 git 交付，正解＝**Gitee 網頁「倉庫鏡像管理 → 拉取」從 GitHub 同步**
  （機房對機房，不經業主上行；GitHub 倉是公開的，免憑證）。
 - **部署交接文件＝`docs/DEPLOYMENT.md`**（繁中，給開發／維運）。動到部署、環境變數、
- migration、或要交接給開發時**先讀它並同步更新**。`docs/HANDOFF.md` 是內容／設計決策史，
+ 資料庫、或要交接給開發時**先讀它並同步更新**。`docs/HANDOFF.md` 是內容／設計決策史，
  不是部署手冊，兩者不要混寫。
-- 交接時必講的四件事：① 生產**只重播 `src/migrations/*`、不會 push schema** → 一定要跑
- `npm run migrate`（且必須對空庫）；② **頁面文案類 global 保持留空**（填入即永久覆蓋內建
+- 交接時必講的四件事：① **MongoDB 不需要建表、沒有 migration 步驟**（舊說明要求
+ `npm run migrate`，**該指令已不存在**）；② **頁面文案類 global 保持留空**（填入即永久覆蓋內建
  三語文案，日後修正會看不見）；③ **按鈕沒有目的地就不渲染**（模擬帳戶、會員登入）＝設計
  行為，不是 bug，不得指去佔位頁；④ **交易條件刻意不開放後台編輯**（治理設計）。
 - 🚩 **閘道密鑰只放主機環境變數**，不得寫進本倉任何檔案（含 `docs/*`、`.env.example`、註解），
