@@ -998,6 +998,16 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  - **`DEPLOYMENT.md` §5.1 已改寫**成「先開 `/api/market/diagnostics` → 對照 verdict 表格」，
  並在 §5 記下 **UAT 閘道與遊客交易組已驗證正常**（UAT 沒行情＝主機設定問題，不是閘道）。
 
+- **2026-10-13 (第六十四輪 追加查證；未改程式碼)**：① **判斷對方部署到哪一版，就打那一版新增
+ 的路由**——`/api/market/diagnostics` 在 UAT 回 **404 ＝ 還是舊建置**（Gitee `master` 早已有
+ `c11769e`，所以是沒重新部署，不是沒交付）。比問「部署了嗎」可靠。② 線上仍是 uat 設定
+ （`Disallow: /`／`noindex`／canonical `www.666678910.com`）。③ **🚩 不得在 UAT 主機跑 prd
+ 設定**：`prd.env` 的 `QUOTE_GATEWAY_URL=node.hatcmarket.com`＝生產遊客交易組**至今沒配產品**
+ ＋密鑰是另一組 → **行情一定更拿不到**；同時 `SITE_INDEXABLE=true` ＋ canonical 指正式網域
+ → **測試站被收錄並與正式站互搶**，畫面上毫無跡象。開發端若說「UAT 跑不起來只能跑 prd」，
+ 正確處置是要他們的錯誤訊息（本倉 `build:uat` 冷建實測正常），**不是讓他們換 prd**。
+ ④ 這個症狀尚未寫進 §5.1 verdict 表（業主選擇先等開發回覆）。
+
 - **2026-10-13 (第六十三輪): 開發端已部署 —— 同步他們的改動、導出 CMS 資料、正式網域改
  `www.hatcmarket.com`。SUPERSEDES 第六十二輪 `config/env/prd.env` 的 `hatchk.com`。**
  業主原話：「開發已經部署完了，他說有些東西改了，否則一直報錯。你做 2 件事：1. 先 pull 最新

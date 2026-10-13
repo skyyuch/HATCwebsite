@@ -30,12 +30,44 @@
 >
 > ### ▶ 下一棒要做的事
 >
-> 1. **等業主把下面這段問題轉給開發端**（已整理成可直接貼的文字，見「🟢 第六十四輪」第 4 節）。
->    最快的一條：請他們把這一版部署上去，登入 `/admin` 後開
->    **`https://www.666678910.com/api/market/diagnostics`**，`verdict` 一句話就會說出原因。
+> 1. **等業主把下面這段問題轉給開發端**（已整理成可直接貼的文字，見「🟢 第六十四輪」第 4 節
+>    ＋下面「2026-10-13 21:00 追加」的加強版）。最快的一條：請他們把這一版部署上去，
+>    登入 `/admin` 後開 **`https://www.666678910.com/api/market/diagnostics`**，
+>    `verdict` 一句話就會說出原因。
 > 2. 拿到 `verdict` 後對照 `docs/DEPLOYMENT.md` §5.1 的表格處理。**多數情況官網不必改碼**
 >    （不是改他們的啟動指令，就是後端把產品配進遊客交易組）。
 > 3. 其餘未結案項見下方 A–D、a–d、0–8。
+>
+> ### 2026-10-13 21:00 追加（純查證，未改任何程式碼；業主選擇「先等開發回覆」）
+>
+> **① 程式碼早就交付了，是開發端還沒重新部署。**
+> `git fetch gitee master` → `208f1ea Sync HATC website source (c11769e)`，第六十四輪的
+> 診斷端點已經在 Gitee `master` 上，開發端在那之後沒有再提交東西（與本地 `HEAD` 的唯一
+> 差異是刻意排除的 `lp.zip`）。但 `https://www.666678910.com/api/market/diagnostics`
+> **回 404** → 線上跑的仍是舊建置。
+> 🚩 **慣例：要判斷對方有沒有部署到某一版，找那一版新增的路由打一下就好**
+> （404＝舊版、401＝新版已上線）。比問「你們部署了嗎」可靠。
+>
+> **② 線上仍是 uat 設定。** `robots.txt` ＝ `Disallow: /`、每頁 `noindex, nofollow`、
+> canonical ＝ `https://www.666678910.com/zh-Hant` → 確實是 `build:uat` 的產物。
+> `/api/market/{quotes,bars}` 仍回 `{"ok":false}`（＝正常的降級答案）。
+> `https://www.hatcmarket.com/` 仍 307 → `/zh-HK`（既有站台），正式切換還沒發生。
+>
+> **③ 業主轉述開發端新說法：「UAT 目前跑不起來，只有 prd 可以。」**
+> 本倉這端實測 **`build:uat` 完全正常**（`pkill` → `rm -rf .next` → `npm run build:uat`
+> 冷建綠、全頁 ● SSG、`[with-env] uat` 正確套用、`env:check` 綠），所以**不是倉庫的
+> uat 路徑有 bug**；缺的是他們那邊的確切錯誤訊息。三個最可能：3000 埠被還活著的
+> `start:prd` 佔住／`config/env/uat.secrets.env` 存在但 git 沒忽略（`with-env` 會 exit 1
+> 並印出原因，是防呆不是 bug）／他們在找根本不會被讀取的 `.env.uat`。
+>
+> **④ 🚩 回答業主「這跟報價有關嗎」＝有關，而且「改用 prd」會讓事情更糟，不會更好。**
+> 兩個環境在報價這條線上差的就是閘道：`uat.env` → `node.666678910.com`（第六十四輪實測
+> 正常，三個產品都取得到）；`prd.env` → `node.hatcmarket.com`（**生產遊客交易組至今沒配
+> 產品**＝已知後端阻塞，且生產密鑰是另一組值）。**在 UAT 主機跑 prd 設定＝連到一個確定
+> 不會回報價的閘道**，同時還帶 `SITE_INDEXABLE=true` ＋ canonical `www.hatcmarket.com`
+> → **測試站會被搜尋引擎收錄並與未來的正式站互搶**，而畫面上完全看不出來。
+> 這個症狀**還沒寫進 `DEPLOYMENT.md` §5.1 的 verdict 對照表**（業主本輪選擇先不動），
+> 下一棒若要做，第一件就是補這一列 ＋ 讓 `start:*` 在 build 與 start 環境名不一致時擋下來。
 >
 > ### 仍然成立的背景（第六十三輪查到，不要重新摸索）
 >
