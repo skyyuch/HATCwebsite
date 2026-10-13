@@ -93,6 +93,56 @@ DATABASE_URI=mongodb://user:password@host:27017/hatc-cms?authSource=admin
 > `mongosh` 參數時記得加引號：`mongosh "mongodb://…/hatc-cms?authSource=admin"`。
 > 資料庫**不需要事先建立**，Mongo 會在第一次寫入時自動建立；但帳號要先有該庫的讀寫權限。
 
+### 2.1b 那 local / uat / prd 的 MongoDB 路徑要怎麼「區分」？
+
+**不需要區分 —— 一台機器只屬於一個環境，所以每台機器只設一個 `DATABASE_URI`。**
+
+這是最容易誤解的一點：`config/env/*.env` 之所以要分三份，是因為那些值是**公開**的，
+可以放進版本控制、讓任何人用 `build:prd` 一鍵套用。密鑰不一樣——它們天生就只屬於
+**所在的那台機器**，所以「區分」是靠機器本身，不是靠檔案：
+
+| 機器 | 怎麼設 | 怎麼建置 |
+| --- | --- | --- |
+| 開發者本機 | 自己的 `.env`：`DATABASE_URI=mongodb://…@127.0.0.1:27017/hatc-cms?authSource=admin` | `npm run dev` |
+| UAT 主機 | 主機環境變數（或該機的 `.env`）指向 **UAT 的 Mongo** | `npm run build:uat && npm run start:uat` |
+| 生產主機 | 主機環境變數（或該機的 `.env`）指向 **生產的 Mongo** | `npm run build:prd && npm run start:prd` |
+
+每台機器上都只有一個 `DATABASE_URI`，不會互相干擾，也沒有「選錯環境連到別的庫」的可能。
+
+> 這樣做還順便拿到最小權限：**UAT 主機上根本不存在生產資料庫的憑證**。
+> 把三個環境的連線字串全部放進倉裡，等於每一台機器（和每個能 clone 的人）都持有
+> 全部環境的資料庫密碼 —— 那是 2026-10-13 被擋下來的做法。
+
+**本機請連自己的 Mongo，不要連 UAT。** `config/env/local.env` 是所有人共用的檔案，
+在那裡填遠端位址會讓每個開發者的 `npm run dev` 都讀寫同一個資料庫，本機隨手測試就會
+污染 UAT 資料。
+
+#### 如果是同一台 CI runner 要建置多個環境
+
+這是唯一需要「在一個地方區分」的情境，做法是把密鑰存在 CI 的 secret store 裡用不同
+名稱，再於各自的 job 映射成 `DATABASE_URI`（名稱只在 CI 設定裡出現，不進倉）：
+
+```yaml
+# 範例：同一個 workflow 的兩個 job
+build-uat:
+  env:
+    DATABASE_URI: ${{ secrets.UAT_DATABASE_URI }}
+    PAYLOAD_SECRET: ${{ secrets.UAT_PAYLOAD_SECRET }}
+  run: npm run build:uat
+
+build-prd:
+  env:
+    DATABASE_URI: ${{ secrets.PRD_DATABASE_URI }}
+    PAYLOAD_SECRET: ${{ secrets.PRD_PAYLOAD_SECRET }}
+  run: npm run build:prd
+```
+
+主機環境變數的優先序最高（§2.0），所以這樣注入一定會贏過任何檔案。
+
+> ⚠ **`DATABASE_URI` 在 `build` 階段也會被讀取**，不只是 `start`。頁面是 SSG，
+> CMS 內容在 prerender 時就被讀進靜態 HTML，所以建置時就必須連得到正確的資料庫。
+> 換資料庫之後要 `rm -rf .next` 重新 build，單純重啟不會更新已經產生的頁面。
+
 ### 2.1a 建置期變數（寫進靜態 HTML，**換值必須重新 build**）
 
 | 變數 | 用途 | 現況 |
@@ -142,6 +192,13 @@ DATABASE_URI=mongodb://user:password@host:27017/hatc-cms?authSource=admin
 
 > 這些之所以是真 runtime：行情走 `force-dynamic` 的 `/api/market/*`、翻譯走後台 API、
 > CMS 走資料庫連線 —— 都不經過預先產生的靜態 HTML。
+>
+> ⚠ **`DATABASE_URI` 只有「連線」這件事是 runtime。** `/admin`、REST API 與
+> `/api/market/*` 會立即吃到新值，但**前台頁面的 CMS 內容是 SSG，在 build 時就被讀進
+> 靜態 HTML** —— 換資料庫之後必須 `rm -rf .next` 重新 build，頁面才會顯示新庫的內容
+> （單純重啟只會讓 `/admin` 換庫、前台還是舊資料，很容易誤判成「快取沒清」）。
+> 同一個資料庫內的**內容修改**不受此限：`/admin` 存檔會觸發 `revalidateTag`，
+> 前台重新整理一次就生效（§6）。
 
 ### 2.3 🚩 密鑰紅線
 
