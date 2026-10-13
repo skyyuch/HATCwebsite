@@ -1025,6 +1025,30 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  （已實測輸出）；③ `DEPLOYMENT.md` §2.0 補「被擋＝exit 1，不是警告」。
  **日後再加任何擋人的檢查，錯誤訊息要自己說出替代做法**，別只指向文件。
  - **⚠ UAT 與生產目前同一組 root 密碼 `Gold1234`** → 輪換時兩台必須各用不同密碼。
+ - **🚩 同輪追加：`config/env/<環境>.secrets.env`（git-ignored，按環境的密鑰檔）＝
+ 開發端兩度把憑證寫進 commit 檔案的根因修復。** 他們原話：「我想预先在某一个地方把 local、
+ uat、prd 等 DATABASE_URL 配置好，这样就可以通过命令不同的环境区分…不用我打包 prd 就要
+ 改下数据库连接」。**第六十二輪只給了兩條路**（主機環境變數／整機通用 `.env`），兩者都是
+ 「一台機器一個值」，**無法**讓同一台打包機持有多個環境的連線字串 → 他們沒有合法替代路徑。
+ **慣例：同一條紅線被違反兩次時，先問「我們是不是沒給可用的替代做法」，再加一道擋閘。**
+ （我第一次還回答「不需要區分，一台機器只屬於一個環境」＝答錯了題，那是另一種部署形態。）
+ - **機制**：每環境一份 `config/env/<環境>.secrets.env`，`scripts/with-env.mjs` 依環境名
+ 自動載入（`build:prd`→`prd.secrets.env`、`build:uat`→`uat.secrets.env`），中間不改檔案。
+ 範本＝已 commit 的 `config/env/secrets.env.example`（只有佔位值）。
+ **優先序改四層**：① 主機環境變數 → ② `<環境>.secrets.env` → ③ 倉內 `.env.local`／`.env`
+ → ④ `<環境>.env`（commit）。**第 2 層刻意蓋掉第 3 層**（單一環境的值該贏過整機通用值，
+ 同 Next 的 `.env.production.local` 勝過 `.env.local`）；**第 4 層仍依鍵名讓路給 `.env`**
+ （第六十二輪的設計，不可改）。兩層方向相反是刻意的，已寫在 `with-env.mjs` 檔頭。
+ - **防呆**：`.gitignore` 加 `config/env/*.secrets.env`；該檔存在而 git **沒在忽略**時，
+ `env:check` 與每個 `build:*`／`start:*` **exit 1**（`isGitIgnored()` 包 `git check-ignore -q`，
+ git 不可用回 `null` 並跳過，不為無關原因擋建置）。已實測註解掉忽略規則→兩者都 exit 1。
+ log **只印鍵名不印值**。`availableEnvironments()` 已排除 `*.secrets.env`，否則 `uat.secrets`
+ 會變成第四個環境名。**日後新增密鑰一律進這個檔或主機環境變數，不要再放進 `.env.*` 命名。**
+ - **驗「注入值是否真的勝過 `.env`」的省時做法**：用 `@next/env` 的 `loadEnvConfig()`
+ 在注入後印實際生效值（不必跑完整 build）；另跑一次真實冷建確認 CMS 讀得到＋SSG 不變。
+ - **文件**：`DEPLOYMENT.md` **§2.3a**（規格／優先序／防呆）＋改寫 **§2.1b**（情境 A 一機
+ 多環境→`.secrets.env`／情境 B 一機一環境→主機環境變數／CI runner→secret store）＋§2.0
+ 四層優先序＋§2.3「密鑰只有三個合法位置」＋§2.4 補正規替代；`.env.example` 檔頭同步。
  - **⚠ 同步前務必 `git fetch gitee master` ＋ `git diff` 逐項審**：`sync-gitee.sh` 建的 tree
  完全等於本地 HEAD，會無聲刪掉開發端直接 commit 到 Gitee 的任何檔案；反之他們的改動也可能
  是必要修復（如 next 16.3.3）。**不要假設他們沒再改。**

@@ -7,25 +7,34 @@
  *
  * Precedence, highest first:
  *   1. real environment variables already set on the host / CI
- *   2. the repo's own `.env.local` / `.env`  (git-ignored, developer machines)
- *   3. `config/env/<name>.env`               (committed, public values only)
+ *   2. `config/env/<name>.secrets.env`       (git-ignored, per-environment)
+ *   3. the repo's own `.env.local` / `.env`  (git-ignored, machine-wide)
+ *   4. `config/env/<name>.env`               (committed, public values only)
  *
- * Layer 2 is honoured by *name*: if a key appears in `.env.local` or `.env` at
- * all, this script leaves it alone so Next's own loader resolves it. Without
- * that check our defaults would silently outrank a developer's `.env.local`,
+ * Layer 3 is honoured by *name*: if a key appears in `.env.local` or `.env` at
+ * all, layer 4 leaves it alone so Next's own loader resolves it. Without that
+ * check our public defaults would silently outrank a developer's `.env.local`,
  * because Next looks at `process.env` before any `.env*` file.
+ *
+ * Layer 2 deliberately does NOT defer that way: a value chosen for *this*
+ * environment must beat a machine-wide `.env`, exactly like Next's own
+ * `.env.production.local` beats `.env.local`. It exists so one build machine
+ * can hold every environment's credentials and switch with `build:uat` /
+ * `build:prd` alone, editing nothing in between.
  *
  * Why this exists at all instead of Next's `.env.<name>` convention: Next only
  * accepts `production` / `development` / `test` for NODE_ENV, so there is no
  * native file name for "uat".
  *
- * 🚩 Secrets never live in `config/env/*` — those files are committed, so any
- * key that looks like a credential is rejected (see SECRET_KEY_PATTERN).
- * `node scripts/with-env.mjs --check` validates all three files and is run by
- * CI. See docs/DEPLOYMENT.md §2.3.
+ * 🚩 Secrets never live in `config/env/<name>.env` — those files are committed,
+ * so any key that looks like a credential is rejected (see
+ * SECRET_KEY_PATTERN); they belong in the `.secrets.env` sibling, which is
+ * git-ignored. `node scripts/with-env.mjs --check` validates every committed
+ * file, and verifies that any `.secrets.env` present really is ignored, and is
+ * run by CI. See docs/DEPLOYMENT.md §2.3 / §2.3a.
  */
 
-import {spawn} from 'node:child_process';
+import {execFileSync, spawn} from 'node:child_process';
 import {existsSync, readdirSync, readFileSync} from 'node:fs';
 import {dirname, join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -43,8 +52,13 @@ function fail(message) {
 function availableEnvironments() {
   if (!existsSync(configDir)) return [];
   return readdirSync(configDir)
-    .filter((f) => f.endsWith('.env'))
+    .filter((f) => f.endsWith('.env') && !f.endsWith('.secrets.env'))
     .map((f) => f.replace(/\.env$/, ''));
+}
+
+/** Git-ignored per-environment credentials file. */
+function secretsFileFor(name) {
+  return join(configDir, `${name}.secrets.env`);
 }
 
 /**
@@ -89,24 +103,42 @@ const SECRET_KEY_PATTERN = /SECRET|TOKEN|PASSWORD|_KEY$|^DATABASE_URI$/;
  * someone sees at the moment they hit this — the dev team put `DATABASE_URI`
  * into all three files twice (第六十三輪) despite the header comments.
  */
-const SECRET_PLACEMENT_HELP = `secrets must live in the host's environment or the git-ignored .env, not in a committed file.
+const SECRET_PLACEMENT_HELP = `config/env/*.env is committed, so it may only hold public per-environment
+  values (site domain, SITE_INDEXABLE, quote-gateway host, operational-link
+  fallbacks). Credentials go in one of these instead:
 
-  Host environment (recommended for servers):
-    export DATABASE_URI='mongodb://<user>:<pass>@<host>:27017/hatc-cms?authSource=admin'
-    export PAYLOAD_SECRET="$(openssl rand -base64 32)"
+  A. config/env/<name>.secrets.env — git-ignored, one file per environment.
+     Use this to keep every environment configured on one machine and switch
+     with build:uat / build:prd alone, editing nothing in between:
+       echo "DATABASE_URI=mongodb://<user>:<pass>@<host>:27017/hatc-cms?authSource=admin" >> config/env/prd.secrets.env
+       echo "PAYLOAD_SECRET=$(openssl rand -base64 32)" >> config/env/prd.secrets.env
 
-  Or a .env created by hand on that machine (never committed):
-    DATABASE_URI=mongodb://<user>:<pass>@<host>:27017/hatc-cms?authSource=admin
-    PAYLOAD_SECRET=<any long random string>
+  B. The host's own environment — best on a server that only ever runs one
+     environment, and the only option on a CI runner:
+       export DATABASE_URI='mongodb://<user>:<pass>@<host>:27017/hatc-cms?authSource=admin'
+       export PAYLOAD_SECRET="$(openssl rand -base64 32)"
 
-  config/env/*.env is for public per-environment values only (site domain,
-  SITE_INDEXABLE, quote-gateway host, operational-link fallbacks).
-  See docs/DEPLOYMENT.md §2.3.`;
+  See docs/DEPLOYMENT.md §2.3 / §2.3a.`;
 
 function secretKeysIn(path) {
   return parseEnvFile(path)
     .map(([key]) => key)
     .filter((key) => SECRET_KEY_PATTERN.test(key));
+}
+
+/**
+ * True when git would ignore `path`. Returns `null` when git cannot answer
+ * (no git binary, not a working tree) so callers can skip the check instead of
+ * failing a build for an unrelated reason.
+ */
+function isGitIgnored(path) {
+  try {
+    execFileSync('git', ['check-ignore', '-q', path], {cwd: repoRoot, stdio: 'ignore'});
+    return true;
+  } catch (error) {
+    // Exit code 1 = "not ignored"; anything else = git could not tell us.
+    return error.status === 1 ? false : null;
+  }
 }
 
 /** `--check`: validate every environment file. Used by CI. */
@@ -119,6 +151,17 @@ function checkAllFiles() {
     const file = join(configDir, `${name}.env`);
     for (const key of secretKeysIn(file)) {
       problems.push(`config/env/${name}.env declares credential-like key ${key}`);
+    }
+
+    // The dev team deleted the `.env*` ignore rule once already (第六十三輪),
+    // which is the one mistake that would publish these files to a public
+    // remote. Catch it here rather than in a code review.
+    const secretsFile = secretsFileFor(name);
+    if (existsSync(secretsFile) && isGitIgnored(secretsFile) === false) {
+      problems.push(
+        `config/env/${name}.secrets.env exists but git is NOT ignoring it — ` +
+          'restore the `config/env/*.secrets.env` rule in .gitignore'
+      );
     }
   }
 
@@ -168,10 +211,37 @@ const locallyDefined = localKeyNames();
 const childEnv = {...process.env};
 const applied = [];
 const deferred = [];
+const secretsApplied = [];
 
+// Layer 2: this environment's own credentials. Applied before the public
+// defaults and, unlike them, allowed to outrank a machine-wide `.env` — it was
+// written for this environment specifically.
+const secretsFile = secretsFileFor(envName);
+if (existsSync(secretsFile)) {
+  if (isGitIgnored(secretsFile) === false) {
+    fail(
+      `config/env/${envName}.secrets.env holds credentials but git is NOT ignoring it.\n` +
+        '  Restore the `config/env/*.secrets.env` rule in .gitignore before building.'
+    );
+  }
+  for (const [key, value] of parseEnvFile(secretsFile)) {
+    if (key in process.env) {
+      deferred.push(`${key} (host)`);
+      continue;
+    }
+    childEnv[key] = value;
+    secretsApplied.push(key);
+  }
+}
+
+// Layer 4: committed public defaults.
 for (const [key, value] of parseEnvFile(envFile)) {
   if (key in process.env) {
     deferred.push(`${key} (host)`);
+    continue;
+  }
+  if (secretsApplied.includes(key)) {
+    deferred.push(`${key} (${envName}.secrets.env)`);
     continue;
   }
   if (locallyDefined.has(key)) {
@@ -184,6 +254,9 @@ for (const [key, value] of parseEnvFile(envFile)) {
 
 console.log(
   `[with-env] ${envName}: applied ${applied.length} default(s) from config/env/${envName}.env` +
+    (secretsApplied.length
+      ? `; ${secretsApplied.length} value(s) from ${envName}.secrets.env (${secretsApplied.join(', ')})`
+      : '') +
     (deferred.length ? `; kept existing ${deferred.join(', ')}` : '')
 );
 

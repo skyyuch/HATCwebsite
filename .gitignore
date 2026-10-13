@@ -39,6 +39,11 @@ yarn-error.log*
 .env*
 !.env.example
 
+# Per-environment credentials, so one machine can build several environments
+# without editing anything between builds (docs/DEPLOYMENT.md §2.3a).
+# Same red line as above: these are secrets, they must never be committed.
+config/env/*.secrets.env
+
 # Payload media uploads
 /media
 

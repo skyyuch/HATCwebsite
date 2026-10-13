@@ -4,7 +4,10 @@
 > —— 採納 `next` 16.3.3，拒絕他們 commit 進 Gitee 的三份含憑證 `.env` 檔；**正式網域改為
 > `https://www.hatcmarket.com`**（業主確認）；導出 `hatc-cms` 全庫＋`media/` 實體檔案給開發
 > 匯入。**查出一個不會報錯但會讓官網完全不被搜尋引擎收錄的部署問題**（`.env.local` 蓋掉
-> `config/env/prd.env` → localhost canonical ＋ 全站 noindex），詳見下方第六十三輪。
+> `config/env/prd.env` → localhost canonical ＋ 全站 noindex）。**追加：新增
+> `config/env/<環境>.secrets.env`**（git-ignored，按環境的密鑰檔）—— 開發端要的是
+> 「一台機器預先配好三個環境的 `DATABASE_URI`、只靠指令切換」，這是他們兩度把憑證寫進
+> commit 檔案的真正動機，現在有了正規做法。詳見下方第六十三輪。
 > 第六十二輪：分環境配置 `config/env/*.env`＋載入器 `scripts/with-env.mjs`＋`build:*`／
 > `start:*`／`env:check`；7 個營運連結變數去掉 `NEXT_PUBLIC_` 前綴；新增 `SITE_INDEXABLE`。
 > **實測更正**：營運連結即使去前綴也**不是** runtime 可切換（SSG 在 prerender 就讀掉了）。）
@@ -40,6 +43,11 @@
 >    已移除並把替代做法寫進他們會看到的三個地方（三份檔案的檔頭、`with-env.mjs` 的
 >    錯誤訊息、`DEPLOYMENT.md` §2.0／§2.3）。**下一棒同步前務必先
 >    `git fetch gitee master` 並 `git diff` 檢查，不要假設他們沒有再改。**
+>    ✅ **根因已處理（同輪追加）**：他們真正要的是「一台機器預先配好多個環境、
+>    打包時不用改連線字串」，而當時倉內**沒有任何合法做法**能做到（只有「主機環境變數」
+>    與「整機通用的 `.env`」兩條路）。現在有 `config/env/<環境>.secrets.env`
+>    （`DEPLOYMENT.md` §2.3a），`build:uat`／`build:prd` 自動載入對應那份。
+>    **下一棒若再看到他們把憑證放進 commit 檔案，先確認他們知道這個機制存在。**
 >    另外他們的 `local.env` 曾指向 UAT 資料庫 —— 那個檔案是共用的，等於強制每個開發者
 >    的 `npm run dev` 都讀寫 UAT 資料。本機請連自己的 Mongo。
 > C. **`www.hatchk.com` 與 `www.hatcmarket.com` 的關係** —— 業主確認新官網部署在
@@ -230,6 +238,46 @@
 > 正常讀出。`build:prd` 與 `build:uat` 的 `robots.txt`／canonical／`robots` meta 都實測過。
 > **本輪沒有改任何前台程式邏輯**（只有 `robots.ts` 一行註解＋`with-env.mjs` 的錯誤訊息），
 > 所以沒有 UI 回歸風險。
+>
+> ### 7. 同輪追加：`config/env/<環境>.secrets.env` —— 按環境的密鑰檔（git-ignored）
+>
+> 開發端原話：「我想预先在某一个地方把 local、uat、prd 等 DATABASE_URL 配置好，这样就
+> 可以通过命令不同的环境区分，这要一套代码就行，不用我打包 prd 就要改下数据库连接，
+> uat 部署要改成数据库连接。」
+>
+> - **🚩 這才是他們兩度把憑證寫進 commit 檔案的動機，而倉內當時沒有任何合法做法。**
+>   第六十二輪只給了兩條路：主機環境變數（一台機器一個值）與整機通用的 `.env`（同上）。
+>   兩者都無法「同一台打包機持有多個環境的連線字串、靠指令切換」。我前一次回答
+>   「不需要區分，一台機器只屬於一個環境」是**答錯了題**——那是情境 B，他問的是情境 A。
+>   **慣例：當同一個紅線被違反兩次，先問「我們是不是沒給他可用的替代路徑」。**
+> - **機制**：`config/env/<環境>.secrets.env`，每個環境一份，**git-ignored**，
+>   由 `scripts/with-env.mjs` 依環境名自動載入 → `build:prd` 用 `prd.secrets.env`、
+>   `build:uat` 用 `uat.secrets.env`，中間不改任何檔案。範本＝已 commit 的
+>   `config/env/secrets.env.example`（只有佔位值）。
+> - **優先序（`with-env.mjs` 檔頭／`DEPLOYMENT.md` §2.0 已更新）**：① 主機環境變數
+>   → ② `<環境>.secrets.env` → ③ 倉內 `.env.local`／`.env` → ④ `<環境>.env`（commit）。
+>   **第 2 層刻意會蓋掉第 3 層**（為單一環境特別寫的值該贏過整機通用值，與 Next 自己的
+>   `.env.production.local` 勝過 `.env.local` 同理）；**第 4 層仍依鍵名讓路給 `.env`**
+>   （否則公開預設值會蓋掉開發者自己的設定——第六十二輪已確立）。兩者方向相反是刻意的。
+> - **防呆（開發端已經刪過一次 `.gitignore` 的 `.env*`）**：`.gitignore` 新增
+>   `config/env/*.secrets.env`；只要該檔存在而 git **沒有**忽略它，`env:check` 與每個
+>   `build:*`／`start:*` 都 **exit 1**。實作＝`isGitIgnored()` 包 `git check-ignore -q`，
+>   git 不可用時回 `null` 並跳過（不為了無關原因擋掉建置）。已實測：把忽略規則註解掉後
+>   `build:uat` 與 `env:check` 都 exit 1。
+> - **log 只印鍵名不印值**：`applied 9 default(s) from config/env/prd.env; 1 value(s)
+>   from prd.secrets.env (DATABASE_URI)`。
+> - **`availableEnvironments()` 已排除 `*.secrets.env`**，否則 `uat.secrets` 會被當成
+>   第四個環境名。`secrets.env.example` 也因為不以 `.env` 結尾而不被掃。
+> - **實測方式（值得沿用）**：用 `@next/env` 的 `loadEnvConfig()` 在注入後印出實際生效值，
+>   就能證明「我們注入的值勝過 `.env`」而不必跑完整 build。實測 `uat.secrets.env` 的
+>   `DATABASE_URI` 贏過 `.env`、沒有 `prd.secrets.env` 時沿用 `.env`。另跑一次真實冷建
+>   （`prd.secrets.env` 指向本機 Mongo）＝綠、203 頁、CMS 內容讀到、SSG 不變。
+> - **文件**：`DEPLOYMENT.md` 新增 **§2.3a**（規格／優先序／防呆）、改寫 **§2.1b**
+>   為「情境 A：一台機器多環境 → `.secrets.env`／情境 B：一機一環境 → 主機環境變數／
+>   CI runner → secret store」、§2.0 優先序改四層、§2.3 紅線改成「密鑰只有三個合法位置」、
+>   §2.4 的「`.env.uat` 不會生效」補上正規替代。`.env.example` 檔頭同步。
+>   給開發端的那份（`~/Desktop/hatc-cms-export-20261013/給開發端-環境變數與憑證處理.md`）
+>   已改寫成「✅ 已支援：預先配好三個環境…（請拉最新代碼）」。
 >
 > ---
 >

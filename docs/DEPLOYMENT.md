@@ -65,22 +65,25 @@ npm run dev                                # 本機（自動套 local）
 兩種方式可以混用，優先序如下（高→低）：
 
 1. 主機／CI 上真的設定的環境變數
-2. 倉內的 `.env.local` / `.env`（git-ignored，開發者自己的機器）
-3. `config/env/<環境>.env`（已 commit 的公開預設值）
+2. `config/env/<環境>.secrets.env`（git-ignored，**按環境**的密鑰；§2.3a）
+3. 倉內的 `.env.local` / `.env`（git-ignored，**整台機器通用**）
+4. `config/env/<環境>.env`（已 commit 的公開預設值）
 
-> 載入器＝`scripts/with-env.mjs`。它**只補上尚未設定的鍵**：某個鍵只要出現在主機環境變數
-> 或你的 `.env`，它就不碰（執行時會印出 `kept existing …`）。Next 自己不認識 `uat` 這種
-> 環境名（`NODE_ENV` 只接受 `production`/`development`/`test`），所以這一層必須自己做。
+> 載入器＝`scripts/with-env.mjs`。第 4 層**只補上尚未設定的鍵**：某個鍵只要出現在主機環境
+> 變數或你的 `.env`，它就不碰（執行時會印出 `kept existing …`）。第 2 層相反，會蓋掉通用的
+> `.env`（為單一環境特別寫的值該贏過整機通用值）。Next 自己不認識 `uat` 這種環境名
+> （`NODE_ENV` 只接受 `production`/`development`/`test`），所以這一層必須自己做。
 
 **🚩 `config/env/*.env` 是公開檔案，只放公開值。** `PAYLOAD_SECRET`、`DATABASE_URI`
-帳密、`QUOTE_HTTP_CRYPT_SECRET`、`MT_API_KEY` 一律只放主機環境變數（見 §2.3）。
+帳密、`QUOTE_HTTP_CRYPT_SECRET`、`MT_API_KEY` 一律只放主機環境變數或 git-ignored 的
+`config/env/<環境>.secrets.env`（見 §2.3 / §2.3a）。
 這條有機器把關：`npm run env:check`（CI 會跑，`build:*` 也會順手檢查當前環境檔）會擋下
 任何名稱像憑證的鍵（`SECRET`／`TOKEN`／`PASSWORD`／`*_KEY`／`DATABASE_URI`）。
 
 > ⚠ **被擋下來不只是「警告」——`build:*` 會 exit 1，整個建置不會開始。** 2026-10-13
 > 開發端把 `DATABASE_URI` 寫進全部三份檔案，結果 `build:prd`／`build:uat`／`build:local`
-> 與 CI 的 `env:check` 全部中止。錯誤訊息本身會列出該放哪裡（主機環境變數或部署機上
-> 手動建立的 `.env`），照著做即可。
+> 與 CI 的 `env:check` 全部中止。錯誤訊息本身會列出該放哪裡
+> （`config/env/<環境>.secrets.env` 或主機環境變數），照著做即可。
 
 ### 2.1 必填（只能放主機環境變數或 git-ignored 的 `.env`）
 
@@ -95,11 +98,27 @@ DATABASE_URI=mongodb://user:password@host:27017/hatc-cms?authSource=admin
 
 ### 2.1b 那 local / uat / prd 的 MongoDB 路徑要怎麼「區分」？
 
-**不需要區分 —— 一台機器只屬於一個環境，所以每台機器只設一個 `DATABASE_URI`。**
+分兩種情境，而**兩種都不需要在打包前改任何連線字串**。
 
-這是最容易誤解的一點：`config/env/*.env` 之所以要分三份，是因為那些值是**公開**的，
-可以放進版本控制、讓任何人用 `build:prd` 一鍵套用。密鑰不一樣——它們天生就只屬於
-**所在的那台機器**，所以「區分」是靠機器本身，不是靠檔案：
+#### 情境 A：同一台機器要建置多個環境 → `config/env/<環境>.secrets.env`
+
+一次把各環境配好，之後只靠指令切換：
+
+```bash
+cp config/env/secrets.env.example config/env/uat.secrets.env   # 填 UAT 的連線字串
+cp config/env/secrets.env.example config/env/prd.secrets.env   # 填生產的連線字串
+
+npm run build:uat && npm run start:uat   # 自動載入 uat.secrets.env
+npm run build:prd && npm run start:prd   # 自動載入 prd.secrets.env
+```
+
+`scripts/with-env.mjs` 會依環境名載入對應的 `.secrets.env`，所以**一套程式碼、一台機器、
+零手動改檔**。這些檔案是 **git-ignored**（規格與防呆見 §2.3a），因此密鑰不會進倉。
+
+#### 情境 B：一台機器只跑一個環境 → 直接用主機環境變數
+
+生產主機只跑生產、UAT 主機只跑 UAT 時，這是更好的做法——密鑰由機器本身持有，
+**UAT 主機上根本不存在生產資料庫的憑證**：
 
 | 機器 | 怎麼設 | 怎麼建置 |
 | --- | --- | --- |
@@ -107,20 +126,18 @@ DATABASE_URI=mongodb://user:password@host:27017/hatc-cms?authSource=admin
 | UAT 主機 | 主機環境變數（或該機的 `.env`）指向 **UAT 的 Mongo** | `npm run build:uat && npm run start:uat` |
 | 生產主機 | 主機環境變數（或該機的 `.env`）指向 **生產的 Mongo** | `npm run build:prd && npm run start:prd` |
 
-每台機器上都只有一個 `DATABASE_URI`，不會互相干擾，也沒有「選錯環境連到別的庫」的可能。
-
-> 這樣做還順便拿到最小權限：**UAT 主機上根本不存在生產資料庫的憑證**。
-> 把三個環境的連線字串全部放進倉裡，等於每一台機器（和每個能 clone 的人）都持有
-> 全部環境的資料庫密碼 —— 那是 2026-10-13 被擋下來的做法。
+**不論用哪種情境，都不要把連線字串寫進 `config/env/*.env`**（那三份是 commit 的，
+`with-env.mjs` 與 `env:check` 會直接 exit 1）。把三個環境的連線字串放進倉裡，等於每一台
+機器、每個能 clone 的人都持有全部環境的資料庫密碼 —— 那是 2026-10-13 被擋下來的做法。
 
 **本機請連自己的 Mongo，不要連 UAT。** `config/env/local.env` 是所有人共用的檔案，
 在那裡填遠端位址會讓每個開發者的 `npm run dev` 都讀寫同一個資料庫，本機隨手測試就會
 污染 UAT 資料。
 
-#### 如果是同一台 CI runner 要建置多個環境
+#### CI runner
 
-這是唯一需要「在一個地方區分」的情境，做法是把密鑰存在 CI 的 secret store 裡用不同
-名稱，再於各自的 job 映射成 `DATABASE_URI`（名稱只在 CI 設定裡出現，不進倉）：
+CI 不適合放檔案（每次都是全新 runner），改把密鑰存在 CI 的 secret store 裡用不同名稱，
+再於各自的 job 映射成 `DATABASE_URI`（名稱只在 CI 設定裡出現，不進倉）：
 
 ```yaml
 # 範例：同一個 workflow 的兩個 job
@@ -202,8 +219,10 @@ build-prd:
 
 ### 2.3 🚩 密鑰紅線
 
-- **密鑰不得寫進倉內任何檔案**，包含新增的 `config/env/*.env`（它們是 commit 進倉的）、
+- **密鑰不得寫進任何會被 commit 的檔案**，包含 `config/env/*.env`（它們是 commit 進倉的）、
   `docs/*`、`.env.example` 與程式註解。可以 commit 的只有**公開網域**與**範本**。
+  密鑰只有三個合法位置：主機環境變數、git-ignored 的 `.env`、
+  git-ignored 的 `config/env/<環境>.secrets.env`（§2.3a）。
 - **`QUOTE_GATEWAY_URL` / `QUOTE_HTTP_CRYPT_SECRET` 是 server-only，絕對不可改名成
   `NEXT_PUBLIC_*`。** 它們會被打進瀏覽器 bundle，等於公開共享密鑰。
 - **閘道密鑰的實際值**請到行情閘道專案的 `deploy/env/*.env` 取值，填進主機環境變數。
@@ -212,6 +231,37 @@ build-prd:
 - **`WEB_TERMINAL_HOST`（`src/components/platforms/platformVisuals.ts`）刻意不跟著環境變。**
   它是平台截圖外框位址列印出來的字，紅線是**UAT 網域不得出現在官網任何畫面**，
   所以永遠是生產網域 `h5.hatcmarket.com`（`HATC_FACTS.md` 已核可）。
+
+### 2.3a `config/env/<環境>.secrets.env`（git-ignored，第六十三輪新增）
+
+讓**一台機器同時持有多個環境的密鑰**、只靠 `build:uat` / `build:prd` 切換的機制。
+每個環境一份，從範本複製：
+
+```bash
+cp config/env/secrets.env.example config/env/prd.secrets.env
+```
+
+`scripts/with-env.mjs` 的優先序（高→低）：
+
+| 層 | 來源 | 性質 |
+| --- | --- | --- |
+| 1 | 主機／CI 已 export 的環境變數 | 最高，永遠贏 |
+| 2 | `config/env/<環境>.secrets.env` | **git-ignored，按環境**的密鑰 |
+| 3 | 倉內 `.env.local` / `.env` | git-ignored，**整台機器通用** |
+| 4 | `config/env/<環境>.env` | **commit 進倉**，只放公開值 |
+
+- **第 2 層刻意會蓋掉第 3 層。** 為某個環境特別寫的值，應該贏過整台機器通用的 `.env`，
+  與 Next 自己的 `.env.production.local` 勝過 `.env.local` 同理。第 4 層則相反——
+  公開預設值**依鍵名讓路**給 `.env`，不會蓋掉開發者自己的設定。
+- `build:*` / `start:*` 的 log 會印出「哪些鍵來自 `<環境>.secrets.env`」（只印鍵名，
+  不印值），方便確認真的套用到了。
+- **防呆**：`config/env/*.secrets.env` 在 `.gitignore` 裡；若該忽略規則被移除（2026-10-13
+  發生過一次），只要對應的 `.secrets.env` 存在，`env:check` 與每個 `build:*` / `start:*`
+  **都會 exit 1**，而不是默默把密鑰 commit 出去。
+- 檔名 `*.secrets.env` 不會被當成環境名（`with-env.mjs` 只認 `<name>.env`），
+  `secrets.env.example` 是範本、不含真實值，刻意 commit。
+- **CI runner 不要用這個機制**（每次都是全新 runner，檔案不會留下），改用 §2.1b 的
+  secret store 做法。
 
 ### 2.4 🚩 不要 commit `.env` 檔，也不要建 `.env.uat` / `.env.prd`
 
@@ -229,7 +279,10 @@ build-prd:
 `.env`、`.env.local`、`.env.$(NODE_ENV)` 與 `.env.$(NODE_ENV).local`，而
 **`NODE_ENV` 只接受 `production` / `development` / `test`** —— 沒有 `uat`、也沒有
 `prd` 這種合法值（這正是本倉要自己寫 `scripts/with-env.mjs` 的原因，見 §2.0）。
-所以那兩個檔案從頭到尾不會被讀取，分環境值請改用 `config/env/<環境>.env`。
+所以那兩個檔案從頭到尾不會被讀取。**要分環境的值請改放**：公開值→
+`config/env/<環境>.env`（commit）；密鑰→`config/env/<環境>.secrets.env`（git-ignored，
+§2.3a）。後者就是「同一台機器預先配好多個環境、只靠指令切換」的正規做法，
+`.env.uat` / `.env.prd` 想達成的目的由它承擔。
 
 **③ `.env.local` 會悄悄蓋掉 `config/env/prd.env`，把生產站打成 localhost ＋ noindex。**
 這是三個問題裡最嚴重的，因為它不會報錯：
