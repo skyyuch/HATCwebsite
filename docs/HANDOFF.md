@@ -29,9 +29,19 @@
 >    驗法＝`curl https://www.hatcmarket.com/robots.txt` 應為 `Allow: /`、
 >    頁面 `name="robots"` 應為 `index, follow`、canonical 應為正式網域。
 > B. **兩個憑證的輪換** —— 業主 2026-10-13 決定**兩個都換**：`PAYLOAD_SECRET`
->    與生產 MongoDB 的 root 密碼（都已進 Gitee 的 git 歷史；倉是私有的，所以沒有公開
+>    與 MongoDB 的 root 密碼（都已進 Gitee 的 git 歷史；倉是私有的，所以沒有公開
 >    洩漏，但協作者永久可見）。步驟已寫給開發端，另建議改用非 root 的 `readWrite`
 >    專用帳號、並把 27017 從公網收回。**待追問是否已執行。**
+>    ⚠ **UAT 與生產目前用同一組 root 密碼 `Gold1234`**（第六十三輪追加從開發端的
+>    `config/env/*.env` 看到）—— 輪換時兩台必須各用不同密碼，否則一台被攻破另一台也沒了。
+> D. **開發端已連續兩次把憑證寫進 commit 的檔案**（2026-10-13 兩次 push）。第二次是
+>    `DATABASE_URI` 進了全部三份 `config/env/*.env`，導致 `build:prd`／`build:uat`／
+>    `build:local` 與 CI 的 `env:check` **全部 exit 1、整個建置無法開始**。
+>    已移除並把替代做法寫進他們會看到的三個地方（三份檔案的檔頭、`with-env.mjs` 的
+>    錯誤訊息、`DEPLOYMENT.md` §2.0／§2.3）。**下一棒同步前務必先
+>    `git fetch gitee master` 並 `git diff` 檢查，不要假設他們沒有再改。**
+>    另外他們的 `local.env` 曾指向 UAT 資料庫 —— 那個檔案是共用的，等於強制每個開發者
+>    的 `npm run dev` 都讀寫 UAT 資料。本機請連自己的 Mongo。
 > C. **`www.hatchk.com` 與 `www.hatcmarket.com` 的關係** —— 業主確認新官網部署在
 >    `www.hatcmarket.com`（已寫進 FACTS 與 `config/env/prd.env`），但**哪個是主站、
 >    要不要 301 導向或 canonical 互指，業主尚未說明**。不得自行推定，也不得在頁面上
@@ -39,9 +49,12 @@
 >
 > ### 第六十二輪新增的待業主項目
 >
-> a. **UAT 站台網域** —— 業主未提供，所以 `config/env/uat.env` 的 `NEXT_PUBLIC_SITE_URL`
->    **刻意留空**（空值會 fallback 到 `http://localhost:3000`）。UAT 主機請自行設定該變數，
->    否則 canonical／sitemap 會指到 localhost。拿到正式的 UAT 網域後填進 `uat.env` 即可。
+> a. ~~UAT 站台網域~~ —— **已結案（2026-10-13 第六十三輪追加）**：開發團隊提供
+>    **`https://www.666678910.com`**，業主確認採用，已填進 `config/env/uat.env`。
+>    DNS 驗證過它與 UAT 行情閘道 `node.666678910.com` 指向同一台 UAT 主機
+>    （`8.210.7.28`），生產站 `www.hatcmarket.com` 在 AWS ELB，兩者不同機器。
+>    **刻意不寫進 `HATC_FACTS.md`**（測試網域不是公司對外事實），紅線＝這個網域
+>    只能出現在 `uat.env`，不得進生產建置、不得出現在任何頁面內容裡。
 > b. **UAT 的開戶／登入／客服入口** —— 業主 2026-10-12 決定**三個全部留空**：HATC 沒有
 >    UAT 版的入口，而把生產入口放進 UAT 會讓測試人員在測試站開到真帳戶。按鈕沒有目的地
 >    本來就不渲染，所以留空是安全的。**不要自己編一個 UAT 網域。**
@@ -184,13 +197,39 @@
 >   `/announcements/announcements`。**不是 bug**（slug 合法、頁面 200），但如果要改，
 >   在 `/admin` 改該欄即可（`autoSlug` 會正規化）。
 >
-> ### 5. 驗收
+> ### 5. 同輪追加（同日第二次 pull）：開發端又把 `DATABASE_URI` 寫進三份 commit 的檔案
+>
+> 業主在交付後問「怎麼分 uat 跟 PRD」，接著開發端 push 了 `25be3e8`。業主要求檢查，
+> 結果是**做錯了，而且後果是硬性阻塞**：`DATABASE_URI`（含 root 密碼）進了
+> **全部三份** `config/env/{local,uat,prd}.env`，實測 `env:check`（CI）、`build:prd`、
+> `build:uat`、`build:local` **全部 exit 1 —— 整個建置不會開始**。
+> 他們的站還活著，說明他們實際上跑的是**裸的 `npm run build`**（不套環境檔），
+> 所以那三行既危險又根本沒被讀取（連線來自部署機上 git-ignored 的 `.env`）。
+>
+> - 🚩 **先用 DNS 查清機器歸屬，不要憑連線字串猜**：`www.666678910.com` 與
+>   `node.666678910.com` 都解析到 **`8.210.7.28`＝UAT 主機**；`www.hatcmarket.com`
+>   在 **AWS ELB**、`node.hatcmarket.com` 是另一個 IP。所以他們的 `prd.env` 寫
+>   `127.0.0.1` 指的是生產機本機的 Mongo，**並沒有「三個環境共用生產庫」**
+>   （我一開始的推測是錯的，查了 DNS 才確定）。真正的問題是 `local.env` 指向 UAT 庫
+>   ——那個檔案是共用的，等於強制每個開發者的 `npm run dev` 都讀寫 UAT 資料。
+> - **業主拍板**：① 我移除三處 `DATABASE_URI` 並同步回 Gitee，附說明給開發端；
+>   ② **保留**他們填的 UAT 網域 `https://www.666678910.com`（結案待辦 a 項）。
+> - **根因修復（光靠註解擋不住，他們犯了兩次）**：替代做法現在寫在他們一定會看到的
+>   三個地方 —— ① 三份 `config/env/*.env` 的檔頭各加一段「放這裡會讓建置 exit 1，
+>   請改放主機環境變數」並附 `export` 範例；② **`with-env.mjs` 的錯誤訊息改成
+>   `SECRET_PLACEMENT_HELP`**，被擋下來時直接列出兩個正確位置與指令（已實測輸出）；
+>   ③ `DEPLOYMENT.md` §2.0 補上「被擋＝exit 1，不是警告」。
+> - `local.env` 的檔頭另外點明**本機要連自己的 Mongo**，因為該檔共用。
+>
+> ### 6. 驗收
 >
 > `lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／
 > `i18n:check` 三語 **730 鍵**（本輪未動文案）／`env:check` 綠／`pkill` 後 `rm -rf .next`
-> 冷建綠、**53 筆 ● SSG**。`npm start` 實測六頁 200（含 `/announcements/announcements`）、
-> `/admin` 與 `/api/users/me` 200、公告「測試」從 CMS 正常讀出。
-> **本輪沒有改任何程式邏輯**（只有 `robots.ts` 的一行註解），所以沒有 UI 回歸風險。
+> 冷建綠、**53 筆 ● SSG ＋ 7 筆 Dynamic**。`npm start` 實測六頁 200（含
+> `/announcements/announcements`）、`/admin` 與 `/api/users/me` 200、公告「測試」從 CMS
+> 正常讀出。`build:prd` 與 `build:uat` 的 `robots.txt`／canonical／`robots` meta 都實測過。
+> **本輪沒有改任何前台程式邏輯**（只有 `robots.ts` 一行註解＋`with-env.mjs` 的錯誤訊息），
+> 所以沒有 UI 回歸風險。
 >
 > ---
 >

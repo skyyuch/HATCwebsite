@@ -1005,9 +1005,33 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  （第五十七輪清空後沒有復發，符合「行銷 global 要留空」紅線）；`announcements` 有業主自己
  發的 1 則。⚠ 業主把該則的「網址代稱」填成 `announcements` → 網址 `/announcements/announcements`
  （**不是 bug**，slug 合法、頁面 200）。
- - **本輪沒有改任何程式邏輯**（只有 `robots.ts` 一行註解），故無 UI 回歸風險。驗收：
- `lint` 0 error／`tsc`／`i18n:check` 730 鍵／`env:check`／冷建 **53 筆 ● SSG**／
- `npm start` 六頁 200＋`/admin`＋`/api/users/me` 200＋公告從 CMS 讀出。
+ - **同輪追加（同日第二次 pull，業主要求檢查開發端的 `25be3e8`）**：他們把 `DATABASE_URI`
+ （含 root 密碼）寫進**全部三份** `config/env/*.env` → 實測 `env:check`（CI）／`build:prd`／
+ `build:uat`／`build:local` **全部 exit 1，整個建置不會開始**（`SECRET_KEY_PATTERN` 命中）。
+ 他們的站還活著＝實際跑的是**裸 `npm run build`**，那三行根本沒被讀取（連線來自部署機上
+ git-ignored 的 `.env`）。業主拍板：移除三處並同步回 Gitee；**保留**他們填的 UAT 網域。
+ - **🚩 查機器歸屬要用 DNS，不要憑連線字串猜**：`www.666678910.com`／`node.666678910.com`
+ → **`8.210.7.28`＝UAT 主機**；`www.hatcmarket.com` → **AWS ELB**；`node.hatcmarket.com`
+ → 另一個 IP。所以 `prd.env` 的 `127.0.0.1` 是生產機本機 Mongo，**沒有「三環境共用生產庫」**
+ （我第一時間的推測錯了，查 DNS 才確定——日後遇到類似狀況先查再講）。真正的問題是
+ `local.env` 指向 UAT 庫：該檔共用，等於強制每個開發者 `npm run dev` 都讀寫 UAT 資料。
+ - **UAT 網域＝`https://www.666678910.com`**（業主確認 2026-10-13，已填 `config/env/uat.env`，
+ 結案第六十二輪待辦 a）。**刻意不寫進 FACTS**（測試網域不是公司對外事實）。紅線：只能出現在
+ `uat.env`，**不得進生產建置、不得出現在任何頁面內容**（同一條紅線讓
+ `platformVisuals.ts` 的 `WEB_TERMINAL_HOST` 永遠寫生產網域）。UAT 仍 `SITE_INDEXABLE=false`。
+ - **🚩 根因修復（檔頭註解擋不住，他們犯了兩次）**：替代做法現在寫在他們一定會看到的三個
+ 地方 —— ① 三份 `config/env/*.env` 檔頭各加「放這裡會讓建置 exit 1」＋`export` 範例；
+ ② **`with-env.mjs` 新增 `SECRET_PLACEMENT_HELP`**，被擋時直接印出兩個正確位置與指令
+ （已實測輸出）；③ `DEPLOYMENT.md` §2.0 補「被擋＝exit 1，不是警告」。
+ **日後再加任何擋人的檢查，錯誤訊息要自己說出替代做法**，別只指向文件。
+ - **⚠ UAT 與生產目前同一組 root 密碼 `Gold1234`** → 輪換時兩台必須各用不同密碼。
+ - **⚠ 同步前務必 `git fetch gitee master` ＋ `git diff` 逐項審**：`sync-gitee.sh` 建的 tree
+ 完全等於本地 HEAD，會無聲刪掉開發端直接 commit 到 Gitee 的任何檔案；反之他們的改動也可能
+ 是必要修復（如 next 16.3.3）。**不要假設他們沒再改。**
+ - **本輪沒有改任何前台程式邏輯**（只有 `robots.ts` 一行註解＋`with-env.mjs` 的錯誤訊息），
+ 故無 UI 回歸風險。驗收：`lint` 0 error／`tsc`／`i18n:check` 730 鍵／`env:check`／冷建
+ **53 筆 ● SSG ＋ 7 筆 Dynamic**／`npm start` 六頁 200＋`/admin`＋`/api/users/me` 200＋
+ 公告從 CMS 讀出；`build:prd`＋`build:uat` 的 `robots.txt`／canonical／`robots` meta 實測過。
 
 - **2026-10-12 (第六十二輪): 分環境配置 local / uat / prd 上線。**
  業主原話：「做分不同的環境配置文件出來…把那些開戶等的域名也放到這個配置文件中，這樣每次打包

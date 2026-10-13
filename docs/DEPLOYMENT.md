@@ -77,6 +77,11 @@ npm run dev                                # 本機（自動套 local）
 這條有機器把關：`npm run env:check`（CI 會跑，`build:*` 也會順手檢查當前環境檔）會擋下
 任何名稱像憑證的鍵（`SECRET`／`TOKEN`／`PASSWORD`／`*_KEY`／`DATABASE_URI`）。
 
+> ⚠ **被擋下來不只是「警告」——`build:*` 會 exit 1，整個建置不會開始。** 2026-10-13
+> 開發端把 `DATABASE_URI` 寫進全部三份檔案，結果 `build:prd`／`build:uat`／`build:local`
+> 與 CI 的 `env:check` 全部中止。錯誤訊息本身會列出該放哪裡（主機環境變數或部署機上
+> 手動建立的 `.env`），照著做即可。
+
 ### 2.1 必填（只能放主機環境變數或 git-ignored 的 `.env`）
 
 ```bash
@@ -92,7 +97,7 @@ DATABASE_URI=mongodb://user:password@host:27017/hatc-cms?authSource=admin
 
 | 變數 | 用途 | 現況 |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | canonical / hreflang / sitemap / robots | prd 已填 `https://www.hatcmarket.com`（業主確認 2026-10-13）；**UAT 業主未提供網域，`uat.env` 留空，請在 UAT 主機自行設定** |
+| `NEXT_PUBLIC_SITE_URL` | canonical / hreflang / sitemap / robots | prd＝`https://www.hatcmarket.com`、uat＝`https://www.666678910.com`（均 2026-10-13 業主確認） |
 | `SITE_INDEXABLE` | `false` ＝ `robots.txt` 全站 disallow ＋ 每頁 `noindex` | `local`/`uat` 為 `false`、`prd` 為 `true`。未設定時預設可索引 |
 | `NEXT_PUBLIC_ANALYTICS_ID` | 追蹤 ID（工具待定，目前佔位不輸出任何標籤） | 留空 |
 | `CONTACT_WHATSAPP` / `_PHONE` / `_EMAIL` / `_LIVECHAT` | 客服聯絡方式的**後備** | prd 帶已核可的電話／電郵；UAT 刻意留空 |
@@ -101,6 +106,8 @@ DATABASE_URI=mongodb://user:password@host:27017/hatc-cms?authSource=admin
 > `NEXT_PUBLIC_SITE_URL` 未設定時會 fallback 到 `http://localhost:3000`，**正式站一定要設**，
 > 否則 canonical 與 sitemap 會指到 localhost。
 > ⚠ **UAT 一定要 `SITE_INDEXABLE=false`**，否則會和生產站搶同一批內容的排名。
+> ⚠ **UAT 網域只能出現在 `uat.env`**：`666678910.com` 不得進入生產建置，也不得出現在任何
+> 頁面內容裡（同一條紅線讓 `platformVisuals.ts` 的 `WEB_TERMINAL_HOST` 永遠寫生產網域）。
 >
 > ⚠ **後面 7 個營運連結後備也屬於建置期**（第六十二輪實測）。它們沒有 `NEXT_PUBLIC_`
 > 前綴，但頁面是 SSG：`getSiteSettings()` 在 **prerender 時**就被讀掉並寫進靜態 HTML，

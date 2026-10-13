@@ -83,6 +83,26 @@ function parseEnvFile(path) {
  */
 const SECRET_KEY_PATTERN = /SECRET|TOKEN|PASSWORD|_KEY$|^DATABASE_URI$/;
 
+/**
+ * Printed whenever a credential is found in a committed config file. It spells
+ * out the two correct places because the message is the only documentation
+ * someone sees at the moment they hit this — the dev team put `DATABASE_URI`
+ * into all three files twice (第六十三輪) despite the header comments.
+ */
+const SECRET_PLACEMENT_HELP = `secrets must live in the host's environment or the git-ignored .env, not in a committed file.
+
+  Host environment (recommended for servers):
+    export DATABASE_URI='mongodb://<user>:<pass>@<host>:27017/hatc-cms?authSource=admin'
+    export PAYLOAD_SECRET="$(openssl rand -base64 32)"
+
+  Or a .env created by hand on that machine (never committed):
+    DATABASE_URI=mongodb://<user>:<pass>@<host>:27017/hatc-cms?authSource=admin
+    PAYLOAD_SECRET=<any long random string>
+
+  config/env/*.env is for public per-environment values only (site domain,
+  SITE_INDEXABLE, quote-gateway host, operational-link fallbacks).
+  See docs/DEPLOYMENT.md §2.3.`;
+
 function secretKeysIn(path) {
   return parseEnvFile(path)
     .map(([key]) => key)
@@ -104,10 +124,7 @@ function checkAllFiles() {
 
   if (problems.length) {
     for (const problem of problems) console.error(`[with-env] ✗ ${problem}`);
-    fail(
-      'secrets must live in host environment variables or the git-ignored .env ' +
-        '(docs/DEPLOYMENT.md §2.3)'
-    );
+    fail(SECRET_PLACEMENT_HELP);
   }
 
   console.log(`[with-env] ✓ ${environments.join(', ')} contain no credentials`);
@@ -141,10 +158,10 @@ if (!existsSync(envFile)) {
 
 const leaked = secretKeysIn(envFile);
 if (leaked.length) {
-  fail(
-    `config/env/${envName}.env declares credential-like key(s) ${leaked.join(', ')} — ` +
-      'that file is committed; move them to a host environment variable or .env'
+  console.error(
+    `[with-env] ✗ config/env/${envName}.env declares credential-like key(s) ${leaked.join(', ')}`
   );
+  fail(SECRET_PLACEMENT_HELP);
 }
 
 const locallyDefined = localKeyNames();
