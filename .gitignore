@@ -30,7 +30,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
+# 🚩 Must stay ignored. These hold credentials (PAYLOAD_SECRET, the MongoDB
+# connection string with its password, the quote-gateway crypt secret). The
+# GitHub remote is public, and git history cannot be un-published. Public
+# per-environment values belong in the committed config/env/*.env instead,
+# which `npm run env:check` scans for credential-like keys.
 .env*
 !.env.example
 
@@ -43,3 +48,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# archives (delivery snapshots, design reference bundles)
+*.zip
