@@ -1,6 +1,12 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-13（第六十三輪：**開發端已部署，本輪同步他們的改動＋導出 CMS 資料**
+> 最後更新：2026-10-13（第六十四輪：**部署後沒有行情** —— 從外部證明**閘道／UAT 遊客組／
+> UAT 密鑰全都正常**（本機當場取到三個產品的即時價），問題在部署主機自己的設定；用端點
+> 自身的 60 秒失敗快取當指紋，證明主機**有**設 `QUOTE_GATEWAY_URL`，失敗落在與閘道的那次
+> 對話。並補上可診斷性：原本兩條**完全靜默**的失敗路徑現在會各印一次 log，另加
+> **需管理員登入**的自我檢測端點 `/api/market/diagnostics`（`{ok:false}` 契約不變、
+> 密鑰永不外洩）。詳見下方第六十四輪。
+> 第六十三輪：**開發端已部署，同步他們的改動＋導出 CMS 資料**
 > —— 採納 `next` 16.3.3，拒絕他們 commit 進 Gitee 的三份含憑證 `.env` 檔；**正式網域改為
 > `https://www.hatcmarket.com`**（業主確認）；導出 `hatc-cms` 全庫＋`media/` 實體檔案給開發
 > 匯入。**查出一個不會報錯但會讓官網完全不被搜尋引擎收錄的部署問題**（`.env.local` 蓋掉
@@ -14,11 +20,24 @@
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
-## ▶ 下一輪任務（業主已指定：**部署後沒有行情**）
+## ▶ 下一輪任務（第六十四輪已把行情問題收斂到部署主機，等開發端回覆）
 
-> 業主 2026-10-13 交棒原話：「下一輪我想看看，因為部署了到服務器，但目前是沒有行情。」
+> **✅ 第六十四輪（2026-10-13）完成：行情失效的範圍已從外部證實，並補上可診斷性。
+> 詳見下方「🟢 第六十四輪」。** 結論兩句話：**閘道、UAT 遊客交易組、我們手上的 UAT 密鑰
+> 全都是好的**（本機實測當場取到金 4184.65／銀 60.231／公斤條 900.04）；**問題在部署主機
+> 自己的設定**，而且部署主機**確實有設 `QUOTE_GATEWAY_URL`**（用端點自身的 60 秒失敗快取
+> 指紋從外部證明的，見下方方法），所以失敗發生在「對閘道的那一次對話」裡。
 >
-> ### 🔎 交棒前已做的前置診斷（請從這裡接手，不要重新摸索）
+> ### ▶ 下一棒要做的事
+>
+> 1. **等業主把下面這段問題轉給開發端**（已整理成可直接貼的文字，見「🟢 第六十四輪」第 4 節）。
+>    最快的一條：請他們把這一版部署上去，登入 `/admin` 後開
+>    **`https://www.666678910.com/api/market/diagnostics`**，`verdict` 一句話就會說出原因。
+> 2. 拿到 `verdict` 後對照 `docs/DEPLOYMENT.md` §5.1 的表格處理。**多數情況官網不必改碼**
+>    （不是改他們的啟動指令，就是後端把產品配進遊客交易組）。
+> 3. 其餘未結案項見下方 A–D、a–d、0–8。
+>
+> ### 仍然成立的背景（第六十三輪查到，不要重新摸索）
 >
 > **① 🚩 最重要的發現：`www.hatcmarket.com` 目前跑的不是我們這個站。**
 > 實測（2026-10-13 20:00 左右）：
@@ -53,26 +72,11 @@
 > 實測閘道**正常回 AES-256-GCM 信封**，所以閘道與 UAT 遊客組沒壞
 > （第四十三輪確認 UAT 遊客組有 29 個白名單符號，含金／銀／公斤條）。
 >
-> **④ 由此推出的首要假設：部署主機缺 `QUOTE_HTTP_CRYPT_SECRET`。**
-> `QUOTE_GATEWAY_URL` 在 `config/env/uat.env` 裡（公開值，已 commit），但密鑰**刻意不在倉內**
-> → 若主機沒設，`decodeBody()` 會丟
-> `QUOTE_HTTP_CRYPT_SECRET is required for this gateway` → `getLiveQuotes()` catch 後回 null。
-> **第一件事請請業主向開發端確認主機是否設了這個變數**，值要拿 **UAT** 那一組
-> （閘道專案 `deploy/env/*.env`；⚠ prd 與 uat 不同，且 h5 的 `env.prd.uts` 把生產值寫成了 UAT 值）。
-> 現在有正規放法了：`config/env/uat.secrets.env`（第六十三輪追加，git-ignored）或主機環境變數。
-> 其餘待排除的可能：主機對外網路不通（AWS 安全群組／egress）、他們 build 與 start 用了不同環境名。
->
-> ### 🚩 本輪發現的程式面缺口（可作為下一輪的實作項，建議先問業主）
->
-> **`{ok:false}` 完全不帶原因，而且兩種失敗模式一行 log 都沒有**：
-> ① `QUOTE_GATEWAY_URL` 沒設 → `gatewayConfig()` 回 null → `getLiveQuotes()` 直接 return null（無 log）；
-> ② 遊客白名單為空 → `loadQuotes()` 回 `[]`（只有註解，無 log）。
-> 只有「丟例外」那條路會 `console.warn`。**遠端診斷等於沒有訊號**，這也是本輪只能靠
-> 黑箱推測的原因。建議加：啟動／首次失敗時各 warn 一次並說明原因（**不得印密鑰**），
-> 或一個需要授權、不洩漏密鑰的診斷端點。紅線不變：**端點回傳形狀不能改**
-> （`{ok:false}` 是契約），**不得因為診斷就把失敗原因吐給匿名訪客**。
->
-> ### 其餘：第六十三輪移交給開發端、仍需追問結果的事項
+> **④ 第六十三輪的首要假設（主機缺 `QUOTE_HTTP_CRYPT_SECRET`）已被第六十四輪縮小但未排除。**
+> 第六十四輪證明主機**有**設 `QUOTE_GATEWAY_URL`，所以剩下的是「對閘道那一次對話」失敗：
+> 密鑰沒設／值不對、主機對外網路不通、或它連的是**生產**閘道（生產遊客組沒配產品）。
+> ⚠ UAT 與生產密鑰不同（閘道專案 `deploy/env/*.env`；h5 的 `env.prd.uts` 把生產值寫成了
+> UAT 值）。正規放法＝`config/env/uat.secrets.env`（git-ignored）或主機環境變數。
 >
 > ### 🚩 第六十三輪移交給開發端、需要追問結果的事項
 >
@@ -176,6 +180,99 @@
 >   （舊說明要求的 `npm run migrate` 指令已不存在）；② **頁面文案類 global 要保持留空**
 >   （填入就會永久覆蓋內建三語文案，日後修正看不見）；③ **按鈕沒有目的地就不顯示**
 >   （模擬帳戶、會員登入）是設計行為不是 bug；④ **交易條件刻意不開放後台編輯**（治理設計）。
+## 🟢 第六十四輪（實作，2026-10-13）：部署後沒有行情 —— 從外部定位 ＋ 補上可診斷性
+
+> 業主指定題目：「部署了到服務器，但目前是沒有行情。」業主本輪拍板**兩件一起做**
+> （補可診斷性 ＋ 同時請開發端回答兩個精準問題），診斷範圍選**「log ＋ 需管理員登入的
+> 自我檢測端點」**。
+
+### 1. 先把範圍從外部查清楚（沒有伺服器存取權也能做到的程度）
+
+- **閘道那一端完全正常。** 用本機 `.env` 裡的 UAT 密鑰重跑一次完整握手
+  （`POST /v1/context/resolve {"scene":"guest"}` → `GET /v1/market/symbol-detail`），
+  當場取到 **XAUUSD 4184.65／XAGUSD 60.231／RKGCNH 900.04**，遊客白名單 **29 個代號、
+  三個產品都在**。所以**閘道、UAT 遊客交易組、我們手上的 UAT 密鑰三者都沒問題**。
+- 🚩 **部署主機「有」設 `QUOTE_GATEWAY_URL` —— 這是從外部用快取指紋證明的，方法記下來。**
+  `getDailyBars()` 失敗時會把空結果寫進 **60 秒**的 `barCache`，而 `gatewayConfig()` 回 null
+  那條路**在寫快取之前就 return**。於是對 `www.666678910.com` 量測：
+  `/api/market/bars?symbol=XAGUSD` 冷呼叫 **0.32s**，接下來 60 秒內都是 **0.13s**，
+  等 65 秒後再打又變 **0.44s**，然後立刻再打回到 0.13s；而**不被代理的 `EURUSD`**
+  （在 `MARKET_SYMBOLS` 之外，更早就 return）**每一次都是 0.13s 基準值**。
+  有快取行為＝走到了 `loadBars()`＝**設定存在且真的對閘道發了請求**。
+  → 失敗點落在「與閘道的那一次對話」裡。
+  **慣例：下次要從外部判斷遠端程式走到哪一步，先找程式自己的快取 TTL 當探針，
+  不必等對方給 log。**
+- 生產閘道 `node.hatcmarket.com` 也活著（回 AES 信封），但**UAT 密鑰解不開它**
+  → 證實文件寫的「prd 與 uat 密鑰不同」屬實。
+
+### 2. 補上可診斷性（本輪的程式改動）
+
+- **`src/lib/marketQuotes.ts`**：新增 `report(key, message, ok)` ——
+  **狀態改變時才印一次**（不洗版，但故障與恢復都看得到），`clearReport()` 讓同一個
+  故障日後復發時會再印。原本**完全靜默**的兩條路現在都有訊息：
+  ① `QUOTE_GATEWAY_URL` 沒設（訊息直接點名最可能的原因＝**用裸 `npm start` 啟動**，
+  因為它是 runtime 變數，只有 `start:uat`／`start:prd` 會帶進去）；
+  ② 遊客白名單缺我們的產品（印出**缺哪幾個**、白名單總數、以及「該閘道的遊客交易組
+  沒配產品」的判讀）。既有的例外訊息也補上**閘道主機名**（公開值，`config/env/*.env`
+  裡就有），這樣 log 一眼看得出連的是 UAT 還是生產。恢復時印
+  `live quotes active from <host>: XAUUSD, XAGUSD, RKGCNH`。
+- **新端點 `GET /api/market/diagnostics`（`src/app/api/market/diagnostics/route.ts`）**＝
+  端到端自我檢測，**需登入且必須是全權角色**（未登入 401／非全權 403）。回傳
+  `verdict`（一句話結論）＋`gateway.{configured,host,secretConfigured}`＋
+  `guestContext.allowedSymbolCount`＋`symbols[]`（三個產品各自 ok／no-tick／error／
+  not-whitelisted ＋ bid）。**刻意跳過報價快取**，看到的是當下狀態。
+  權限沿用 CMS 角色矩陣（`createLocalReq({user}, payload)` → `hasFullAccess(req)`），
+  不另寫一套判斷。
+- **紅線落地**：`/api/market/{quotes,bars}` 的 **`{ok:false}` 回傳形狀完全沒動**（那是契約）；
+  失敗原因**不對匿名訪客公開**；**密鑰永不出現在 log 或回應裡**，連長度都不報
+  （只有 `secretConfigured` 布林）。
+  ⚠ 這支端點不能放進 Payload config 的 `endpoints`：`marketQuotes.ts` 有
+  `import 'server-only'`，進了 config graph 會讓 `payload` CLI 整個掛掉（第三十二輪的教訓）。
+  所以做成 Next route handler，用 `payload.auth({headers})` 自己認證。
+- **順手修掉同類 bug**：`/api/dev-revalidate` 還在用 `revalidateTag(tag,'max')`，
+  那是 stale-while-revalidate，**第一次重新整理仍是舊值**——正是第六十一輪修掉的那個毛病，
+  只是這支 dev 工具漏改。改成 `{expire: 0}`。
+
+### 3. 三種狀態都實機驗過（`npm run build && npm start`，不是 `next dev`）
+
+| 情境 | `verdict` | log |
+| --- | --- | --- |
+| 正常（本機接 UAT 閘道） | `Live quotes are working: node.666678910.com is serving all 3 products.` | `live quotes active from node.666678910.com: XAUUSD, XAGUSD, RKGCNH` |
+| `QUOTE_GATEWAY_URL=`（空） | 點名 `start:uat`／`start:prd` 與裸 `npm start` | 只印一次（quotes 與 bars 兩支都走到也只一行） |
+| 密鑰錯誤 | `Cannot resolve a guest context from node.666678910.com: …` ＋ 提醒 UAT／生產不同 | 同訊息，**grep 不到密鑰字串** |
+
+匿名 401／非全權角色 403 都實測過（臨時建全權與受限兩個帳號，**驗完已刪除**，
+DB 只剩業主本人的帳號）。
+
+### 4. 要請業主轉給開發端的問題（本輪的另一半）
+
+> 1. 新官網目前在 `www.666678910.com`，首頁沒有行情。請問**實際的啟動指令是什麼**？
+>    必須是 `npm run build:uat` 之後 `npm run start:uat`（或 `start:prd` 對應 `build:prd`）。
+>    **`QUOTE_GATEWAY_URL` 是 runtime 變數，裸 `npm start` 不會帶進去**，行情就一定是空的。
+> 2. 主機上有沒有設 **`QUOTE_HTTP_CRYPT_SECRET`**？要用 **UAT** 那一組
+>    （閘道專案 `deploy/env/*.env`；⚠ 交易端 H5 的 `env.prd.uts` 把生產值寫錯成 UAT 值，
+>    不要照抄）。放 `config/env/uat.secrets.env`（git-ignored）或主機環境變數。
+> 3. 伺服器 log 裡有沒有 **`[marketQuotes]`** 開頭的行？有的話請整行貼回來。
+> 4. 部署這一版之後，登入 `/admin` 再開 **`/api/market/diagnostics`**，把 `verdict` 貼回來——
+>    一句話就會說出原因。
+
+### 5. 驗收
+
+`lint`（0 error，僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit`／`i18n:check`
+三語 730 鍵（**未新增任何 i18n 鍵**：診斷輸出是給維運看的英文 JSON，不是站台文案）／
+`env:check`／`pkill` → `rm -rf .next` → `build` 綠，**所有頁面維持 ● SSG**，
+新路由是預期的 ƒ Dynamic。未動 schema，故 `generate:types` 無變更。
+
+### 6. 待業主／開發端
+
+- (a) 上面第 4 節的四個問題 —— **本輪結果取決於他們的回覆**。
+- (b) 若 `verdict` 是「遊客交易組沒配產品」，那就是第四十三輪那個**非本倉**的阻塞：
+  後端配好產品後官網不需改碼即自動變真。
+- (c) 正式網域切換時，`QUOTE_GATEWAY_URL` 會跟著 `prd.env` 變成 `node.hatcmarket.com`，
+  **密鑰也必須同時換成生產那一組**，否則會從「沒行情」變成「解不開信封」。
+
+---
+
 ## ▶ 下一步（下一位 agent）
 
 > **✅ 第六十三輪（2026-10-13）完成：同步開發端的部署改動 ＋ 導出 CMS 資料給開發匯入。**

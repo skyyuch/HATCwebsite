@@ -962,6 +962,42 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  修正後第 1 次就新。另驗過**只 revalidate tag、沒有 `revalidatePath` 的 global**
  （`site-settings.phone` → `/privacy` 聯絡卡）也是第一次就更新。
 
+- **2026-10-13 (第六十四輪): 部署後沒有行情 —— 從外部定位 ＋ 補上可診斷性。**
+ 業主：「部署了到服務器，但目前是沒有行情。」業主拍板**兩件一起做**（補診斷 ＋ 同時請開發端
+ 回答精準問題），診斷範圍選**「log ＋ 需管理員登入的自我檢測端點」**。
+ - **結論：閘道那一端完全正常，問題在部署主機的設定。** 用本機 `.env` 的 UAT 密鑰重跑完整握手，
+ 當場取到 XAUUSD 4184.65／XAGUSD 60.231／RKGCNH 900.04，遊客白名單 29 個代號三個產品都在。
+ 生產閘道 `node.hatcmarket.com` 也活著但**UAT 密鑰解不開**（證實 prd／uat 密鑰確實不同）。
+ - **🚩 從外部判斷遠端走到哪一步＝拿程式自己的快取 TTL 當指紋（新慣例）。**
+ `getDailyBars()` 失敗會寫 **60 秒** `barCache`，而「`QUOTE_GATEWAY_URL` 沒設」那條路
+ **在寫快取之前就 return**。實測 `www.666678910.com`：`bars?symbol=XAGUSD` 冷呼叫 0.32s →
+ 60 秒內都 0.13s → 65 秒後 0.44s → 立刻再打 0.13s；而**不被代理的 `EURUSD`**（更早 return）
+ **每次都是 0.13s 基準**。有快取行為＝走到了 `loadBars()`＝**主機有設閘道位址且真的發了請求**
+ → 失敗落在「與閘道的那一次對話」。**不必等對方給 log 就能縮小範圍。**
+ - **`src/lib/marketQuotes.ts` 新增 `report(key,message,ok)`＝狀態改變時才印一次**
+ （不洗版，故障與恢復都看得到；`clearReport()` 讓日後復發會再印）。原本**完全靜默**的兩條路
+ 現在都有訊息：① `QUOTE_GATEWAY_URL` 沒設（訊息直接點名最可能的原因＝**裸 `npm start`**，
+ 因為它是 runtime 變數，只有 `start:uat`／`start:prd` 帶得進去）；② 遊客白名單缺我們的產品
+ （印缺哪幾個、白名單總數、判讀）。既有例外訊息補上**閘道主機名**（公開值），一眼看出連的是
+ UAT 還是生產。
+ - **新端點 `GET /api/market/diagnostics`**（`src/app/api/market/diagnostics/route.ts`）＝
+ 端到端自我檢測，**需登入且全權角色**（未登入 401／非全權 403），回 `verdict` 一句話結論＋
+ `gateway.{configured,host,secretConfigured}`＋`guestContext.allowedSymbolCount`＋`symbols[]`。
+ **跳過報價快取**。權限沿用 CMS 角色矩陣（`createLocalReq({user}, payload)`→`hasFullAccess`），
+ 不另寫一套。⚠ **不可放進 Payload config 的 `endpoints`**：`marketQuotes.ts` 有 `server-only`，
+ 進 config graph 會讓 `payload` CLI 掛掉（第三十二輪教訓）→ 做成 Next route handler。
+ - **紅線落地**：`/api/market/{quotes,bars}` 的 **`{ok:false}` 形狀完全沒動**（契約）；失敗原因
+ **不對匿名訪客公開**；**密鑰永不出現在 log 或回應**，連長度都不報（只有 `secretConfigured`
+ 布林，實測 grep 不到）。**日後新增任何診斷一律照這三條。**
+ - **順修**：`/api/dev-revalidate` 還在用 `revalidateTag(tag,'max')`（stale-while-revalidate →
+ 第一次重新整理仍是舊值），改 `{expire: 0}`，與第六十一輪的 `safeRevalidateTag` 一致。
+ - **驗收**：三種狀態都用 `npm run build && npm start` 實機驗過（正常／`QUOTE_GATEWAY_URL=` 空／
+ 密鑰錯誤），匿名 401／受限角色 403 實測（臨時帳號**驗完已刪**）。`lint` 0 error／`tsc`／
+ `i18n:check` **730 鍵不變**（診斷輸出是給維運的英文 JSON，**不是站台文案，不開 i18n 鍵**）／
+ `env:check`／冷建綠且全頁維持 ● SSG。未動 schema。
+ - **`DEPLOYMENT.md` §5.1 已改寫**成「先開 `/api/market/diagnostics` → 對照 verdict 表格」，
+ 並在 §5 記下 **UAT 閘道與遊客交易組已驗證正常**（UAT 沒行情＝主機設定問題，不是閘道）。
+
 - **2026-10-13 (第六十三輪): 開發端已部署 —— 同步他們的改動、導出 CMS 資料、正式網域改
  `www.hatcmarket.com`。SUPERSEDES 第六十二輪 `config/env/prd.env` 的 `hatchk.com`。**
  業主原話：「開發已經部署完了，他說有些東西改了，否則一直報錯。你做 2 件事：1. 先 pull 最新

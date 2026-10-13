@@ -12,7 +12,10 @@ export async function GET() {
   if (process.env.NODE_ENV === 'production') {
     return new NextResponse('Not found', {status: 404});
   }
+  // `{expire: 0}`, not `'max'` — see src/lib/revalidateContent.ts. `'max'` only
+  // marks the entry stale, so the first reload after seeding still showed the
+  // old value, which defeats the whole point of this helper.
   const tags = Object.values(CACHE_TAGS);
-  for (const t of tags) revalidateTag(t, 'max');
+  for (const t of tags) revalidateTag(t, {expire: 0});
   return NextResponse.json({revalidated: tags});
 }

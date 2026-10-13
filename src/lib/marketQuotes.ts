@@ -39,17 +39,78 @@ const BAR_COUNT = 30;
  */
 const BAR_WINDOW_LIMIT = 60;
 
-type GatewayConfig = {baseUrl: string; secret: string};
+type GatewayConfig = {baseUrl: string; host: string; secret: string};
+
+/** Host part of the gateway URL. Public — it ships in `config/env/*.env`. */
+function gatewayHost(baseUrl: string): string {
+  try {
+    return new URL(baseUrl).host;
+  } catch {
+    return baseUrl;
+  }
+}
 
 function gatewayConfig(): GatewayConfig | null {
   const baseUrl = process.env.QUOTE_GATEWAY_URL?.trim().replace(/\/+$/, '');
   if (!baseUrl) return null;
-  return {baseUrl, secret: process.env.QUOTE_HTTP_CRYPT_SECRET?.trim() ?? ''};
+  return {
+    baseUrl,
+    host: gatewayHost(baseUrl),
+    secret: process.env.QUOTE_HTTP_CRYPT_SECRET?.trim() ?? ''
+  };
 }
 
 /** True when a quote gateway is configured for this environment. */
 export function hasQuoteGateway(): boolean {
   return gatewayConfig() !== null;
+}
+
+/**
+ * Diagnostic logging for the ways live quotes can go missing.
+ *
+ * Two of them used to be entirely silent — an unset `QUOTE_GATEWAY_URL` and a
+ * guest whitelist without our products — which left a deployed site with no
+ * signal beyond `{ok:false}`, and `{ok:false}` is also the normal answer when
+ * everything is merely degraded (第六十四輪). A message is printed when the
+ * reported state for a key *changes*, so a lasting outage logs once while a
+ * recovery, and any later relapse, both stay visible.
+ *
+ * 🚩 Never log the response-crypt secret, or any part of it.
+ */
+const reportedState = new Map<string, string>();
+
+function report(key: string, message: string, ok = false): void {
+  if (reportedState.get(key) === message) return;
+  reportedState.set(key, message);
+  (ok ? console.info : console.warn)(`[marketQuotes] ${message}`);
+}
+
+/** Forget a key's last state so the next failure is logged again. */
+function clearReport(key: string): void {
+  reportedState.delete(key);
+}
+
+/**
+ * Gateway config for a live read, reporting its absence once. Diagnostics use
+ * `gatewayConfig()` directly — a manual probe should not rewrite the log state.
+ */
+function gatewayForRead(): GatewayConfig | null {
+  const config = gatewayConfig();
+  if (!config) {
+    report(
+      'gateway',
+      'QUOTE_GATEWAY_URL is not set — serving sample data. It ships in ' +
+        'config/env/<env>.env, so the server has to be started with the ' +
+        'matching script (npm run start:uat / start:prd), not a bare npm start.'
+    );
+    return null;
+  }
+  clearReport('gateway');
+  return config;
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 type CryptEnvelope = {codec: string; iv: string; tag: string; data: string};
@@ -207,9 +268,25 @@ let quoteInflight: Promise<LiveQuote[]> | null = null;
 
 async function loadQuotes(config: GatewayConfig): Promise<LiveQuote[]> {
   const context = await resolveGuestContext(config);
-  const wanted = MARKET_SYMBOLS.filter((entry) =>
-    context.allowedSymbols.includes(entry.symbol)
-  );
+  const allowed = context.allowedSymbols;
+  const wanted = MARKET_SYMBOLS.filter((entry) => allowed.includes(entry.symbol));
+
+  if (wanted.length < MARKET_SYMBOLS.length) {
+    const missing = MARKET_SYMBOLS.filter((entry) => !allowed.includes(entry.symbol))
+      .map((entry) => entry.symbol)
+      .join(', ');
+    report(
+      'whitelist',
+      `${config.host} does not whitelist ${missing} for guests ` +
+        `(${allowed.length} symbol(s) allowed)` +
+        (wanted.length === 0
+          ? " — that gateway's guest trade group has no HATC products " +
+            'configured, so no live quote is possible. Serving sample data.'
+          : '.')
+    );
+  } else {
+    clearReport('whitelist');
+  }
 
   // The guest trade group has no products configured for these symbols — the
   // gateway would answer 403 for every request, so don't ask.
@@ -239,7 +316,7 @@ async function loadQuotes(config: GatewayConfig): Promise<LiveQuote[]> {
  * labelled sample data.
  */
 export async function getLiveQuotes(): Promise<LiveQuote[] | null> {
-  const config = gatewayConfig();
+  const config = gatewayForRead();
   if (!config) return null;
 
   const cached = quoteCache;
@@ -255,13 +332,19 @@ export async function getLiveQuotes(): Promise<LiveQuote[] | null> {
   try {
     const quotes = await quoteInflight;
     quoteCache = {ts: Date.now(), quotes};
+    if (quotes.length > 0) {
+      report(
+        'quotes',
+        `live quotes active from ${config.host}: ${quotes
+          .map((quote) => quote.symbol)
+          .join(', ')}`,
+        true
+      );
+    }
     return quotes.length > 0 ? quotes : null;
   } catch (error) {
     // A quote outage must never break the page; log once and fall back.
-    console.warn(
-      '[marketQuotes] live quotes unavailable:',
-      error instanceof Error ? error.message : String(error)
-    );
+    report('quotes', `live quotes unavailable from ${config.host}: ${errorMessage(error)}`);
     quoteCache = {ts: Date.now(), quotes: []};
     return null;
   } finally {
@@ -293,7 +376,14 @@ async function loadBars(
   symbol: string
 ): Promise<MarketBar[]> {
   const context = await resolveGuestContext(config);
-  if (!context.allowedSymbols.includes(symbol)) return [];
+  if (!context.allowedSymbols.includes(symbol)) {
+    report(
+      `bars:${symbol}`,
+      `${config.host} does not whitelist ${symbol} for guests — ` +
+        'no chart can be drawn for it.'
+    );
+    return [];
+  }
 
   const query = new URLSearchParams({
     symbol,
@@ -325,7 +415,7 @@ async function loadBars(
 export async function getDailyBars(
   symbol: string
 ): Promise<MarketBar[] | null> {
-  const config = gatewayConfig();
+  const config = gatewayForRead();
   if (!config) return null;
   if (!MARKET_SYMBOLS.some((entry) => entry.symbol === symbol)) return null;
 
@@ -344,16 +434,161 @@ export async function getDailyBars(
   try {
     const bars = await pending;
     barCache.set(symbol, {ts: Date.now(), bars});
+    if (bars.length > 0) clearReport(`bars:${symbol}`);
     return bars.length > 0 ? bars : null;
   } catch (error) {
     // A chart outage must never break the page; log once and draw nothing.
-    console.warn(
-      `[marketQuotes] daily bars unavailable for ${symbol}:`,
-      error instanceof Error ? error.message : String(error)
+    report(
+      `bars:${symbol}`,
+      `daily bars unavailable for ${symbol} from ${config.host}: ${errorMessage(error)}`
     );
     barCache.set(symbol, {ts: Date.now(), bars: []});
     return null;
   } finally {
     barInflight.delete(symbol);
   }
+}
+
+export type GatewaySymbolCheck = {
+  symbol: string;
+  display: string;
+  whitelisted: boolean;
+  status: 'ok' | 'no-tick' | 'error' | 'not-whitelisted';
+  bid: number | null;
+  error: string | null;
+};
+
+export type GatewayDiagnostics = {
+  checkedAt: string;
+  /** One sentence naming the blocker, or confirming the feed is healthy. */
+  verdict: string;
+  gateway: {
+    configured: boolean;
+    /** Host only; the response-crypt secret is never reported, not even its length. */
+    host: string | null;
+    secretConfigured: boolean;
+  };
+  guestContext: {ok: boolean; allowedSymbolCount: number | null; error: string | null};
+  symbols: GatewaySymbolCheck[];
+};
+
+/**
+ * End-to-end self-test of the quote feed, for the admin-only diagnostics route.
+ *
+ * `{ok:false}` from the public endpoints is a contract ("no real data, keep
+ * showing sample"), so it deliberately carries no reason. This is where the
+ * reason lives — behind authentication, because the blockers it names (which
+ * gateway this server talks to, whether a secret is set, what the guest trade
+ * group allows) are operational details, not public information.
+ *
+ * 🚩 The report must never contain the secret itself. It bypasses the quote
+ * cache so a 60-second-old failure can't be mistaken for the current state.
+ */
+export async function runGatewayDiagnostics(): Promise<GatewayDiagnostics> {
+  const checkedAt = new Date().toISOString();
+  const config = gatewayConfig();
+
+  if (!config) {
+    return {
+      checkedAt,
+      verdict:
+        'QUOTE_GATEWAY_URL is not set on this server. It ships in ' +
+        'config/env/<env>.env, so start the server with the matching script ' +
+        '(npm run start:uat / start:prd) or set the variable on the host.',
+      gateway: {configured: false, host: null, secretConfigured: false},
+      guestContext: {ok: false, allowedSymbolCount: null, error: null},
+      symbols: []
+    };
+  }
+
+  const gateway = {
+    configured: true,
+    host: config.host,
+    secretConfigured: config.secret.length > 0
+  };
+
+  let context: GuestContext;
+  try {
+    context = await resolveGuestContext(config);
+  } catch (error) {
+    const message = errorMessage(error);
+    return {
+      checkedAt,
+      verdict: gateway.secretConfigured
+        ? `Cannot resolve a guest context from ${config.host}: ${message}. ` +
+          'Check that this host can reach the gateway and that ' +
+          'QUOTE_HTTP_CRYPT_SECRET matches that gateway (UAT and production differ).'
+        : `QUOTE_HTTP_CRYPT_SECRET is not set, so the response from ${config.host} ` +
+          'cannot be decrypted. Put the value for this gateway in ' +
+          'config/env/<env>.secrets.env or the host environment.',
+      gateway,
+      guestContext: {ok: false, allowedSymbolCount: null, error: message},
+      symbols: []
+    };
+  }
+
+  const symbols = await Promise.all(
+    MARKET_SYMBOLS.map(async (entry): Promise<GatewaySymbolCheck> => {
+      const base = {symbol: entry.symbol, display: entry.display};
+      if (!context.allowedSymbols.includes(entry.symbol)) {
+        return {...base, whitelisted: false, status: 'not-whitelisted', bid: null, error: null};
+      }
+
+      try {
+        const body = await gatewayFetch(
+          config,
+          `/v1/market/symbol-detail?symbol=${encodeURIComponent(entry.symbol)}` +
+            `&contextToken=${encodeURIComponent(context.token)}`
+        );
+        const quote = toQuote(entry, body as SymbolDetail);
+        return {
+          ...base,
+          whitelisted: true,
+          status: quote ? 'ok' : 'no-tick',
+          bid: quote?.bid ?? null,
+          error: null
+        };
+      } catch (error) {
+        return {
+          ...base,
+          whitelisted: true,
+          status: 'error',
+          bid: null,
+          error: errorMessage(error)
+        };
+      }
+    })
+  );
+
+  const live = symbols.filter((entry) => entry.status === 'ok');
+  const missing = symbols.filter((entry) => !entry.whitelisted).map((entry) => entry.symbol);
+
+  let verdict: string;
+  if (live.length === symbols.length) {
+    verdict = `Live quotes are working: ${config.host} is serving all ${live.length} products.`;
+  } else if (missing.length === symbols.length) {
+    verdict =
+      `${config.host} resolves a guest context with ${context.allowedSymbols.length} ` +
+      'symbol(s) whitelisted, but none of them are HATC products. Configure the ' +
+      'guest trade group on that gateway — or point this server at the gateway ' +
+      'whose guest group already has them.';
+  } else {
+    const detail = symbols
+      .filter((entry) => entry.status !== 'ok')
+      .map((entry) => `${entry.symbol}: ${entry.error ?? entry.status}`)
+      .join('; ');
+    verdict = `${config.host} is reachable but ${symbols.length - live.length} of ${symbols.length} products have no quote — ${detail}`;
+  }
+
+  return {
+    checkedAt,
+    verdict,
+    gateway,
+    guestContext: {
+      ok: true,
+      allowedSymbolCount: context.allowedSymbols.length,
+      error: null
+    },
+    symbols
+  };
 }

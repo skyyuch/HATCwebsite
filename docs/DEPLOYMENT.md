@@ -416,31 +416,43 @@ npm run payload -- run scripts/seed-announcements.ts    # 公告分類（重要�
   `demo\DirectCustomer\GUEST\DEFAULT\Standard` 在業務後台**沒有配置產品**，
   因此回 403 `SYMBOL_NOT_ALLOWED`，首頁會停在示意數據。
   **後端把產品配好後，官網不需改任何程式碼就會自動變成真實報價。**
+- ✅ **UAT 閘道這一端是通的**（2026-10-13 第六十四輪實測）：`node.666678910.com`
+  的遊客交易組有 29 個白名單代號，含金／銀／人民幣公斤條，三個都取得到即時報價。
+  所以 UAT 站台若沒有行情，問題在**部署主機的設定**，不是閘道或交易組，照 §5.1 查。
 
 ### 5.1 沒有行情時的排查順序
 
-`{ok:false}` 本身不帶原因（契約是「沒有真資料，前台維持示意」），所以照以下順序查：
+`{ok:false}` 本身不帶原因（契約是「沒有真資料，前台維持示意」），所以站台自己備了一支
+**需要管理員登入**的自我檢測端點（第六十四輪新增）：
+
+1. 用管理員帳號登入 `/admin`（同一個瀏覽器）。
+2. 開 `https://<站台>/api/market/diagnostics`。
+
+它會直接給出結論（`verdict`），並列出：連到哪一個閘道（`gateway.host`）、密鑰有沒有設
+（`gateway.secretConfigured`，**不會印出密鑰本身**）、遊客白名單有幾個代號
+（`guestContext.allowedSymbolCount`）、三個產品各自取不取得到報價（`symbols[]`）。
+它會跳過報價快取，所以看到的是當下狀態。未登入回 401、非全權角色回 403 ——
+這些是營運細節，不對匿名訪客公開。
+
+| `verdict` 開頭 | 意思 | 怎麼修 |
+| --- | --- | --- |
+| `QUOTE_GATEWAY_URL is not set…` | 伺服器啟動時沒有這個變數 | 多半是**用裸 `npm start` 啟動**。這是 runtime 變數，只有 `npm run start:uat` / `start:prd` 會帶進去，而且 `build:*` 與 `start:*` 必須用同一個環境名。 |
+| `QUOTE_HTTP_CRYPT_SECRET is not set…` | 有閘道位址、沒有密鑰 | 放進 `config/env/<環境>.secrets.env`（§2.3a）或主機環境變數。 |
+| `Cannot resolve a guest context…` | 連得到但解不開，或連不到 | 密鑰與該閘道不符（⚠ **UAT 與生產是不同的值**，去閘道專案 `deploy/env/*.env` 取；交易端 H5 的 `env.prd.uts` 把生產值寫錯成 UAT 值，不要照抄那份），或主機對外網路不通。 |
+| `…none of them are HATC products` | 閘道活著，但該閘道的遊客交易組沒配產品 | 業務後台把金／銀／人民幣公斤條配進遊客交易組（見上面的已知阻塞），官網不需改碼。 |
+| `Live quotes are working…` | 後端沒問題 | 前台若仍是示意，問題在瀏覽器到本站這一段（CDN／WAF 擋掉或快取了 `/api/market/*`）。 |
+
+伺服器 log 會印同一批訊息（前綴 `[marketQuotes]`），而且**只在狀態改變時印一次**：
+故障與恢復都看得到，但不會洗版。恢復時是 `live quotes active from <host>: …`。
+
+需要從主機手動確認對外網路與閘道時：
 
 ```bash
-curl -s https://<站台>/api/market/quotes          # {"ok":false} = 以下任一項沒過
+curl -s -m 10 -X POST "$QUOTE_GATEWAY_URL/v1/context/resolve" \
+  -H 'Content-Type: application/json' -d '{"scene":"guest"}'
 ```
 
-1. **主機有沒有設 `QUOTE_HTTP_CRYPT_SECRET`？** 這是最常見的一項——`QUOTE_GATEWAY_URL`
-   在 commit 的 `config/env/<環境>.env` 裡，但密鑰刻意不在倉內，必須另外放
-   `config/env/<環境>.secrets.env`（§2.3a）或主機環境變數。沒設的話解信封會失敗。
-   ⚠ **UAT 與生產是不同的值**（去閘道專案 `deploy/env/*.env` 取；交易端 H5 的
-   `env.prd.uts` 把生產值寫錯成 UAT 值，不要照抄那份）。
-2. **`build` 與 `start` 是不是用了同一個環境名？** 不同環境名會拿到不同閘道位址。
-3. **閘道本身活著嗎？** 從部署主機上打一次：
-   ```bash
-   curl -s -m 10 -X POST "$QUOTE_GATEWAY_URL/v1/context/resolve" \
-     -H 'Content-Type: application/json' -d '{"scene":"guest"}'
-   ```
-   回 `{"codec":"aes-256-gcm",…}` 的信封＝閘道正常（在主機上測還能順便驗對外網路是否通）。
-4. **訪客交易組有沒有配產品？** 見上面的已知阻塞。
-5. **看伺服器 log**：`[marketQuotes] live quotes unavailable: …`。
-   ⚠ 只有「丟出例外」那條路徑會印這行；**閘道位址沒設**與**白名單為空**目前是靜默的
-   （已記錄為待改善項，見 `docs/HANDOFF.md` 第六十四輪前置診斷）。
+回 `{"codec":"aes-256-gcm",…}` 的信封＝閘道正常。
 
 ---
 
