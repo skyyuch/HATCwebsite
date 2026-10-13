@@ -32,6 +32,18 @@ Build SEO in from the start, not as an afterthought.
   `robots.txt` into `Disallow: /` **and** emits `noindex, nofollow` on every page.
   Both layers are needed — `robots.txt` only blocks crawling, not indexing of a URL
   someone links to. It is build-time, so a UAT build must set it before `next build`.
+  - 🚩 **A `.env.local` on the deployment host silently wins over `config/env/prd.env`
+    (第六十三輪).** `.env.local` is loaded by Next even when `NODE_ENV=production`, and
+    `scripts/with-env.mjs` deliberately leaves any key it declares alone — so
+    `npm run build:prd` does **not** override it. The dev team's committed `.env.local`
+    carried `SITE_INDEXABLE=false` + `NEXT_PUBLIC_SITE_URL=http://localhost:3000`,
+    which would have made the production site emit localhost canonicals and a
+    site-wide noindex **with no error and a perfectly normal-looking page**. Production
+    hosts must not have a `.env.local`; verification curls are in DEPLOYMENT §2.4.
+- **Production host = `https://www.hatcmarket.com`** (owner 2026-10-13, recorded in
+  `HATC_FACTS.md`). The relationship between it and the older `www.hatchk.com` is
+  **not yet clarified by the owner** — do not add a redirect, a cross-canonical or a
+  page that lists both domains.
 - `siteUrl` falls back to `http://localhost:3000`. Read it with `||`, never `??`:
   an empty `NEXT_PUBLIC_SITE_URL=` used to pass through as `''` and break every
   prerender with `ERR_INVALID_URL` from `new URL(siteUrl)`.

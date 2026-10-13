@@ -962,6 +962,53 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  修正後第 1 次就新。另驗過**只 revalidate tag、沒有 `revalidatePath` 的 global**
  （`site-settings.phone` → `/privacy` 聯絡卡）也是第一次就更新。
 
+- **2026-10-13 (第六十三輪): 開發端已部署 —— 同步他們的改動、導出 CMS 資料、正式網域改
+ `www.hatcmarket.com`。SUPERSEDES 第六十二輪 `config/env/prd.env` 的 `hatchk.com`。**
+ 業主原話：「開發已經部署完了，他說有些東西改了，否則一直報錯。你做 2 件事：1. 先 pull 最新
+ 代碼；2. 把現有 db 的資料導出，我要給開發導入。」三個方向題業主拍板：① 正式網域＝
+ **`https://www.hatcmarket.com`**（開發端實際部署的網域，已寫進 FACTS）；② Gitee 上三份含
+ 憑證的 `.env` 檔**移除＋附說明給開發端**；③ `PAYLOAD_SECRET` 與 MongoDB root 密碼**都輪換**。
+ - **開發端的 `gitee/master` 多了 `745b8be`＋`e563949`（只動 5 個檔案），逐項審過**：
+ ✅ 採納 `next` 16.3.0→**16.3.3**（patch，應是「否則一直報錯」的修復）與 `.gitignore` 的
+ `*.zip`；❌ 拒絕他們「刪掉 `.gitignore` 的 `.env*` 忽略 ＋ commit `.env.local`／`.env.uat`／
+ `.env.prd`」—— 那三份檔案有**生產 MongoDB 的 root 連線字串（含密碼）** 與 **`PAYLOAD_SECRET`**
+ （Payload 簽後台登入 JWT 的金鑰，洩漏＝可偽造任何管理員 token）。本輪以 API 實測確認
+ **GitHub `origin` 是 PUBLIC**、Gitee 倉私有（匿名 403）→ 憑證推上 GitHub 就收不回。
+ `.gitignore` 已恢復忽略並補上為何不能動的註解；內容另存倉外 `~/Desktop/hatc-dev-env-backup-*`。
+ - **🚩 慣例：部署機上不得存在 `.env.local`。** 第六十二輪「第二層依鍵名讓路」的設計意味著
+ `.env.local`／`.env` 裡出現過的鍵，`with-env.mjs` **完全不碰** → **跑 `npm run build:prd`
+ 也不會覆蓋它**。開發端那份 `.env.local` 寫著 `NEXT_PUBLIC_SITE_URL=http://localhost:3000`
+ ＋`SITE_INDEXABLE=false`，而 `.env.local` 在 `NODE_ENV=production` **也會**被 Next 載入
+ → canonical／`hreflang`／`sitemap.xml` 指向 localhost、`robots.txt` 變 `Disallow: /`、
+ 每頁 `noindex, nofollow` ＝ **官網完全不被搜尋引擎收錄，而畫面一切正常、零錯誤訊息**。
+ 永久說明＋驗收 `curl` 已寫進 **`docs/DEPLOYMENT.md` §2.4**。
+ - **🚩 `.env.uat`／`.env.prd` 這種檔名永遠不會生效**（已查 `node_modules/next/dist/docs`
+ 的 Environment Variable Load Order）：Next 只讀 `.env`、`.env.local`、`.env.$(NODE_ENV)`、
+ `.env.$(NODE_ENV).local`，而 `NODE_ENV` 只接受 `production`／`development`／`test`。
+ 這正是本倉要自己寫 `scripts/with-env.mjs` 的原因。**日後有人再建這種檔案，答案不變。**
+ - **網域**：`config/env/prd.env`（檔頭＋`NEXT_PUBLIC_SITE_URL`）、`src/app/robots.ts` 註解、
+ `DEPLOYMENT.md` §2.0／§2.1a 全改為 `www.hatcmarket.com`；**`HATC_FACTS.md`
+ 「Official contact & website」新增一條已核可事實**。⚠ **`www.hatchk.com` 與
+ `www.hatcmarket.com` 的關係（主站／301／canonical 互指）業主尚未說明** → 不得自行推定，
+ 不得在頁面上並列兩個網域。`CONTACT_EMAIL=info@hatchk.com` **不跟著改**（FACTS 核可的電郵，
+ 與站台網域無關）。
+ - **CMS 導出（`~/Desktop/hatc-cms-export-20261013/`，倉外）**：`hatc-cms.archive.gz`
+ （`mongodump --archive --gzip`，18 collection／**144 筆**／含索引）＋**`media.tar.gz`
+ （106 個實體檔案）**＋`README-匯入說明.md`＋`給開發端-環境變數與憑證處理.md`。
+ 🚩 **DB 與 media 必須一起交付**：`media/` 被 `.gitignore` 排除、不在 git 裡，而 DB 的
+ `media` collection 只存檔名／尺寸 metadata → 只匯 DB 會讓後台媒體庫全破圖、學院 49 篇封面
+ 與出入金 4 張背景圖全部 404；容器部署還要把 `media/` 掛持久化 volume。
+ - **🚩 驗導出一定要真的還原到臨時庫**：`mongorestore --dryRun` **不會**讀出文件數
+ （回報 0 documents，看起來像空檔）。本輪還原到 `hatc-restore-test` 驗到 144 筆／0 失敗／
+ 索引／`users.hash`／localized 結構，驗完 `dropDatabase()`。
+ - **順手確認的治理狀態**：`funding-page` global **只有 4 個圖片欄有值、文字欄全空**
+ （第五十七輪清空後沒有復發，符合「行銷 global 要留空」紅線）；`announcements` 有業主自己
+ 發的 1 則。⚠ 業主把該則的「網址代稱」填成 `announcements` → 網址 `/announcements/announcements`
+ （**不是 bug**，slug 合法、頁面 200）。
+ - **本輪沒有改任何程式邏輯**（只有 `robots.ts` 一行註解），故無 UI 回歸風險。驗收：
+ `lint` 0 error／`tsc`／`i18n:check` 730 鍵／`env:check`／冷建 **53 筆 ● SSG**／
+ `npm start` 六頁 200＋`/admin`＋`/api/users/me` 200＋公告從 CMS 讀出。
+
 - **2026-10-12 (第六十二輪): 分環境配置 local / uat / prd 上線。**
  業主原話：「做分不同的環境配置文件出來…把那些開戶等的域名也放到這個配置文件中，這樣每次打包
  不同環境就不用去改域名。」四個方向題業主拍板：① **UAT 的開戶／登入／客服一律留空**

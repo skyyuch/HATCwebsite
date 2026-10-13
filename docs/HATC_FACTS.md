@@ -21,7 +21,17 @@
 > 客服／開戶／聯絡等 **operational 連結仍一律走 CMS `SiteSettings`，不得硬編**；
 > 本節僅作為「已核可事實」的參考記錄。
 
-- 官方網站：`https://www.hatchk.com/zh-HK`
+- 官方網站（既有站台，業主 GitBook 登錄）：`https://www.hatchk.com/zh-HK`
+- **本專案（新官網）的正式部署網域：`https://www.hatcmarket.com`**
+  （業主確認 2026-10-13 第六十三輪。開發團隊已將本倉部署於此網域，與交易端
+  `h5.hatcmarket.com`、行情閘道 `node.hatcmarket.com` 同一家族。）
+  - 用途：`NEXT_PUBLIC_SITE_URL` 的生產值，決定 canonical、`hreflang`、
+    `sitemap.xml` 與 `robots.txt` 的 host。程式端唯一來源＝
+    [`config/env/prd.env`](../config/env/prd.env)（`npm run build:prd` 載入）。
+  - ⚠ 這是**建置期**值，會被烤進靜態 HTML，無法在 runtime 切換；換網域必須
+    改這個檔案並重新 `build:prd`。
+  - ⚠ `www.hatchk.com` 與 `www.hatcmarket.com` 的關係（哪個是主站、是否需要
+    301 導向或 canonical 互指）**業主尚未說明**，不得自行推定或在頁面上並列。
 - 客戶服務電話：`(852) 2322 2888`
 - 電郵：`info@hatchk.com`
 - 香港地址：香港九龍觀塘偉業街 223 號宏利金融中心 B 座 8 樓 808A 室

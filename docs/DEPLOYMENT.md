@@ -45,7 +45,7 @@ revalidate**。部署兩步：**備好 MongoDB → `build` → `start`**（Mongo
 ```
 config/env/local.env     # 本機開發
 config/env/uat.env       # UAT / 驗收
-config/env/prd.env       # 生產（www.hatchk.com）
+config/env/prd.env       # 生產（www.hatcmarket.com）
 ```
 
 用對應的 npm script 套用：
@@ -92,7 +92,7 @@ DATABASE_URI=mongodb://user:password@host:27017/hatc-cms?authSource=admin
 
 | 變數 | 用途 | 現況 |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | canonical / hreflang / sitemap / robots | prd 已填 `https://www.hatchk.com`；**UAT 業主未提供網域，`uat.env` 留空，請在 UAT 主機自行設定** |
+| `NEXT_PUBLIC_SITE_URL` | canonical / hreflang / sitemap / robots | prd 已填 `https://www.hatcmarket.com`（業主確認 2026-10-13）；**UAT 業主未提供網域，`uat.env` 留空，請在 UAT 主機自行設定** |
 | `SITE_INDEXABLE` | `false` ＝ `robots.txt` 全站 disallow ＋ 每頁 `noindex` | `local`/`uat` 為 `false`、`prd` 為 `true`。未設定時預設可索引 |
 | `NEXT_PUBLIC_ANALYTICS_ID` | 追蹤 ID（工具待定，目前佔位不輸出任何標籤） | 留空 |
 | `CONTACT_WHATSAPP` / `_PHONE` / `_EMAIL` / `_LIVECHAT` | 客服聯絡方式的**後備** | prd 帶已核可的電話／電郵；UAT 刻意留空 |
@@ -148,6 +148,45 @@ DATABASE_URI=mongodb://user:password@host:27017/hatc-cms?authSource=admin
 - **`WEB_TERMINAL_HOST`（`src/components/platforms/platformVisuals.ts`）刻意不跟著環境變。**
   它是平台截圖外框位址列印出來的字，紅線是**UAT 網域不得出現在官網任何畫面**，
   所以永遠是生產網域 `h5.hatcmarket.com`（`HATC_FACTS.md` 已核可）。
+
+### 2.4 🚩 不要 commit `.env` 檔，也不要建 `.env.uat` / `.env.prd`
+
+> 這一節是 2026-10-13（第六十三輪）實際發生過的事故紀錄。開發端在 Gitee 上把
+> `.gitignore` 的 `.env*` 忽略整段刪除，並 commit 了 `.env.local`、`.env.uat`、
+> `.env.prd` 三份檔案。那三份檔案已在同步時移除，`.env*` 的忽略規則不要再動。
+
+**① 憑證不能進 git。** 那三份檔案裡有生產 MongoDB 的 root 連線字串（含密碼）與
+`PAYLOAD_SECRET`。`PAYLOAD_SECRET` 是 Payload 簽發後台登入 JWT 的金鑰，洩漏等於
+可以偽造任何管理員的登入 token。git 歷史無法事後收回，而本專案的 GitHub remote
+是**公開倉**。密鑰請放主機環境變數，或放在 git-ignored 的 `.env`（部署時手動建立、
+不要 commit）。
+
+**② `.env.uat` 與 `.env.prd` 這兩個檔名不會生效。** Next 只載入
+`.env`、`.env.local`、`.env.$(NODE_ENV)` 與 `.env.$(NODE_ENV).local`，而
+**`NODE_ENV` 只接受 `production` / `development` / `test`** —— 沒有 `uat`、也沒有
+`prd` 這種合法值（這正是本倉要自己寫 `scripts/with-env.mjs` 的原因，見 §2.0）。
+所以那兩個檔案從頭到尾不會被讀取，分環境值請改用 `config/env/<環境>.env`。
+
+**③ `.env.local` 會悄悄蓋掉 `config/env/prd.env`，把生產站打成 localhost ＋ noindex。**
+這是三個問題裡最嚴重的，因為它不會報錯：
+
+- `.env.local` 在 `NODE_ENV=production` 時**也會**被 Next 載入，而且優先於 `.env`。
+- `scripts/with-env.mjs` 刻意對「已出現在 `.env.local` / `.env` 的鍵」讓路（§2.0），
+  所以即使跑 `npm run build:prd`，`config/env/prd.env` 的值也**不會**覆蓋它。
+- 開發端那份 `.env.local` 寫的是 `NEXT_PUBLIC_SITE_URL=http://localhost:3000` 與
+  `SITE_INDEXABLE=false` → 生產站的 canonical、`hreflang`、`sitemap.xml` 全部指向
+  `http://localhost:3000`，`robots.txt` 變成 `Disallow: /`，每一頁再補一個
+  `noindex, nofollow`。**結果是官網完全不會被搜尋引擎收錄**，而頁面看起來一切正常。
+
+**部署機上的正確狀態**：沒有 `.env.local`；`.env` 只放 `PAYLOAD_SECRET` 與
+`DATABASE_URI`（或連 `.env` 都不要，直接用主機環境變數）；其餘跑 `npm run build:prd`
+由 `config/env/prd.env` 提供。驗收方式：
+
+```bash
+curl -s https://<站台>/robots.txt                      # 必須是 Allow: /，host 為正式網域
+curl -s https://<站台>/zh-Hant | grep -o 'rel="canonical"[^>]*'   # 必須是正式網域
+curl -s https://<站台>/zh-Hant | grep -o 'name="robots" content="[^"]*"'  # 必須是 index, follow
+```
 
 ---
 
