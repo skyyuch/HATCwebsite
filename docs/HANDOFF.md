@@ -14,10 +14,65 @@
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
-## ▶ 下一輪任務（業主尚未指定）
+## ▶ 下一輪任務（業主已指定：**部署後沒有行情**）
 
-> 第六十三輪（同步開發端改動＋導出 CMS 資料）已完成，見下方「▶ 下一步」。
-> **下一輪要做什麼業主還沒指定**，請從下面的未結案清單請業主挑一項，或等業主提出新需求。
+> 業主 2026-10-13 交棒原話：「下一輪我想看看，因為部署了到服務器，但目前是沒有行情。」
+>
+> ### 🔎 交棒前已做的前置診斷（請從這裡接手，不要重新摸索）
+>
+> **① 🚩 最重要的發現：`www.hatcmarket.com` 目前跑的不是我們這個站。**
+> 實測（2026-10-13 20:00 左右）：
+>
+> | 網址 | 實際內容 |
+> | --- | --- |
+> | `https://www.hatcmarket.com/` | 307 → **`/zh-HK`**，`<title>華安泰昌 \| 首頁` |
+> | `https://www.hatchk.com/zh-HK` | **同一個站**（同標題） |
+> | `https://www.hatcmarket.com/zh-Hant` | **307**（我們的 locale 不存在） |
+> | `https://www.hatcmarket.com/api/*` | `{"code":1,"message":"系统繁忙！","data":[]}`（**別的後端**） |
+> | `https://www.hatcmarket.com/robots.txt` | 回 **HTML**（`class="dark --font-primary …"`，不是我們的 markup） |
+> | **`https://www.666678910.com/zh-Hant`** | ✅ **我們的站**（`華安泰昌有限公司 HATC Group Limited`） |
+>
+> 也就是說：**新官網目前只部署在 UAT 網域**，`www.hatcmarket.com` 還是既有站（和
+> `www.hatchk.com` 同一個）。所謂「部署到服務器」＝部署到 `www.666678910.com`。
+> 這同時給了待辦 C 一個資料點：**兩個網域現在服務同一個既有站**。
+> ⚠ `HATC_FACTS.md` 寫的 `www.hatcmarket.com`＝業主確認的**目標**網域，不是現狀。
+>
+> **② 我們的站在 UAT 網域上是健康的，而且確實走 `build:uat`。**
+> `robots.txt` 是 `Disallow: /`、每頁 `noindex, nofollow`、canonical＝`https://www.666678910.com/zh-Hant`
+> → `config/env/uat.env` 的 `NEXT_PUBLIC_SITE_URL`＋`SITE_INDEXABLE=false` 有生效，
+> **代表他們用的是我們的 npm script，不是裸 `npm run build`**（第六十三輪的情況已改善）。
+> `/admin` 200、`/api/users/me` 回 `{"user":null,…}` → **資料庫接上了**。
+> 首頁 HTML 仍標「示意數據」＝降級狀態正確，**畫面上沒有任何不實標籤，不是 UI bug**。
+> （HTML 裡同時搜得到「即時報價」字樣是正常的：那是傳給 client 元件的標籤 prop，
+> 真資料到了才會用上，不要誤判成「示意數字掛即時標籤」。）
+>
+> **③ 行情端點回 `{"ok":false}`，而 UAT 閘道本身是活的。**
+> `https://www.666678910.com/api/market/{quotes,bars}` 都是 `{"ok":false}`
+> （**這是設計上的正常答案**＝「沒有真資料，前台請維持示意」，不是 500）。
+> 我從本機 `POST https://node.666678910.com/v1/context/resolve {"scene":"guest"}`
+> 實測閘道**正常回 AES-256-GCM 信封**，所以閘道與 UAT 遊客組沒壞
+> （第四十三輪確認 UAT 遊客組有 29 個白名單符號，含金／銀／公斤條）。
+>
+> **④ 由此推出的首要假設：部署主機缺 `QUOTE_HTTP_CRYPT_SECRET`。**
+> `QUOTE_GATEWAY_URL` 在 `config/env/uat.env` 裡（公開值，已 commit），但密鑰**刻意不在倉內**
+> → 若主機沒設，`decodeBody()` 會丟
+> `QUOTE_HTTP_CRYPT_SECRET is required for this gateway` → `getLiveQuotes()` catch 後回 null。
+> **第一件事請請業主向開發端確認主機是否設了這個變數**，值要拿 **UAT** 那一組
+> （閘道專案 `deploy/env/*.env`；⚠ prd 與 uat 不同，且 h5 的 `env.prd.uts` 把生產值寫成了 UAT 值）。
+> 現在有正規放法了：`config/env/uat.secrets.env`（第六十三輪追加，git-ignored）或主機環境變數。
+> 其餘待排除的可能：主機對外網路不通（AWS 安全群組／egress）、他們 build 與 start 用了不同環境名。
+>
+> ### 🚩 本輪發現的程式面缺口（可作為下一輪的實作項，建議先問業主）
+>
+> **`{ok:false}` 完全不帶原因，而且兩種失敗模式一行 log 都沒有**：
+> ① `QUOTE_GATEWAY_URL` 沒設 → `gatewayConfig()` 回 null → `getLiveQuotes()` 直接 return null（無 log）；
+> ② 遊客白名單為空 → `loadQuotes()` 回 `[]`（只有註解，無 log）。
+> 只有「丟例外」那條路會 `console.warn`。**遠端診斷等於沒有訊號**，這也是本輪只能靠
+> 黑箱推測的原因。建議加：啟動／首次失敗時各 warn 一次並說明原因（**不得印密鑰**），
+> 或一個需要授權、不洩漏密鑰的診斷端點。紅線不變：**端點回傳形狀不能改**
+> （`{ok:false}` 是契約），**不得因為診斷就把失敗原因吐給匿名訪客**。
+>
+> ### 其餘：第六十三輪移交給開發端、仍需追問結果的事項
 >
 > ### 🚩 第六十三輪移交給開發端、需要追問結果的事項
 >
@@ -50,10 +105,15 @@
 >    **下一棒若再看到他們把憑證放進 commit 檔案，先確認他們知道這個機制存在。**
 >    另外他們的 `local.env` 曾指向 UAT 資料庫 —— 那個檔案是共用的，等於強制每個開發者
 >    的 `npm run dev` 都讀寫 UAT 資料。本機請連自己的 Mongo。
-> C. **`www.hatchk.com` 與 `www.hatcmarket.com` 的關係** —— 業主確認新官網部署在
+> C. **`www.hatchk.com` 與 `www.hatcmarket.com` 的關係** —— 業主確認新官網**將**部署在
 >    `www.hatcmarket.com`（已寫進 FACTS 與 `config/env/prd.env`），但**哪個是主站、
 >    要不要 301 導向或 canonical 互指，業主尚未說明**。不得自行推定，也不得在頁面上
 >    並列兩個網域。
+>    ⚠ **2026-10-13 實測：這兩個網域現在服務的是同一個既有站**（`/zh-HK`、`/api/*` 由
+>    別的後端回答），**我們的新站只在 `https://www.666678910.com`**。所以正式切換還沒發生
+>    ——切換時必須改用 `build:prd`＋`start:prd`（才會拿到正式網域與 `SITE_INDEXABLE=true`）、
+>    刪掉部署機上的 `.env.local`（待辦 A），並把 `QUOTE_GATEWAY_URL` 連同**生產**的
+>    `QUOTE_HTTP_CRYPT_SECRET` 一起換成生產閘道。
 >
 > ### 第六十二輪新增的待業主項目
 >

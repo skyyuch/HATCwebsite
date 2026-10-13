@@ -1052,6 +1052,15 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  - **⚠ 同步前務必 `git fetch gitee master` ＋ `git diff` 逐項審**：`sync-gitee.sh` 建的 tree
  完全等於本地 HEAD，會無聲刪掉開發端直接 commit 到 Gitee 的任何檔案；反之他們的改動也可能
  是必要修復（如 next 16.3.3）。**不要假設他們沒再改。**
+ - **🚩 交棒前實測（2026-10-13 20:00）：`www.hatcmarket.com` 跑的不是我們這個站。**
+ 該網域 307→`/zh-HK`、`<title>華安泰昌 | 首頁`、`/api/*` 回 `{"code":1,"message":"系统繁忙！"}`
+ （別的後端）、`/robots.txt` 回 HTML —— 與 `www.hatchk.com/zh-HK` **是同一個既有站**；
+ `/zh-Hant` 直接 307（我們的 locale 不存在）。**我們的新站只在 `https://www.666678910.com`**
+ （`/zh-Hant` 200、`robots.txt` `Disallow: /`、`noindex`、canonical 指該網域 → 確實走
+ `build:uat`；`/admin` 200、`/api/users/me` 正常 → DB 已接上）。所以「開發已部署」＝部署在
+ **測試網域**，正式切換尚未發生。`HATC_FACTS.md` 已加註「`www.hatcmarket.com` 是目標網域、
+ 不是現狀」。**慣例：部署狀態一律自己 `curl` 驗（看 locale 前綴、`/api/` 的回應形狀、
+ `robots.txt` 是否為 text），不要因為業主說「部署好了」就假設那個網域已經是我們的站。**
  - **本輪沒有改任何前台程式邏輯**（只有 `robots.ts` 一行註解＋`with-env.mjs` 的錯誤訊息），
  故無 UI 回歸風險。驗收：`lint` 0 error／`tsc`／`i18n:check` 730 鍵／`env:check`／冷建
  **53 筆 ● SSG ＋ 7 筆 Dynamic**／`npm start` 六頁 200＋`/admin`＋`/api/users/me` 200＋

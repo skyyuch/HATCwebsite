@@ -417,6 +417,31 @@ npm run payload -- run scripts/seed-announcements.ts    # 公告分類（重要�
   因此回 403 `SYMBOL_NOT_ALLOWED`，首頁會停在示意數據。
   **後端把產品配好後，官網不需改任何程式碼就會自動變成真實報價。**
 
+### 5.1 沒有行情時的排查順序
+
+`{ok:false}` 本身不帶原因（契約是「沒有真資料，前台維持示意」），所以照以下順序查：
+
+```bash
+curl -s https://<站台>/api/market/quotes          # {"ok":false} = 以下任一項沒過
+```
+
+1. **主機有沒有設 `QUOTE_HTTP_CRYPT_SECRET`？** 這是最常見的一項——`QUOTE_GATEWAY_URL`
+   在 commit 的 `config/env/<環境>.env` 裡，但密鑰刻意不在倉內，必須另外放
+   `config/env/<環境>.secrets.env`（§2.3a）或主機環境變數。沒設的話解信封會失敗。
+   ⚠ **UAT 與生產是不同的值**（去閘道專案 `deploy/env/*.env` 取；交易端 H5 的
+   `env.prd.uts` 把生產值寫錯成 UAT 值，不要照抄那份）。
+2. **`build` 與 `start` 是不是用了同一個環境名？** 不同環境名會拿到不同閘道位址。
+3. **閘道本身活著嗎？** 從部署主機上打一次：
+   ```bash
+   curl -s -m 10 -X POST "$QUOTE_GATEWAY_URL/v1/context/resolve" \
+     -H 'Content-Type: application/json' -d '{"scene":"guest"}'
+   ```
+   回 `{"codec":"aes-256-gcm",…}` 的信封＝閘道正常（在主機上測還能順便驗對外網路是否通）。
+4. **訪客交易組有沒有配產品？** 見上面的已知阻塞。
+5. **看伺服器 log**：`[marketQuotes] live quotes unavailable: …`。
+   ⚠ 只有「丟出例外」那條路徑會印這行；**閘道位址沒設**與**白名單為空**目前是靜默的
+   （已記錄為待改善項，見 `docs/HANDOFF.md` 第六十四輪前置診斷）。
+
 ---
 
 ## 6. 更新內容後如何生效

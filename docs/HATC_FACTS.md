@@ -23,8 +23,11 @@
 
 - 官方網站（既有站台，業主 GitBook 登錄）：`https://www.hatchk.com/zh-HK`
 - **本專案（新官網）的正式部署網域：`https://www.hatcmarket.com`**
-  （業主確認 2026-10-13 第六十三輪。開發團隊已將本倉部署於此網域，與交易端
-  `h5.hatcmarket.com`、行情閘道 `node.hatcmarket.com` 同一家族。）
+  （業主確認 2026-10-13 第六十三輪。與交易端 `h5.hatcmarket.com`、行情閘道
+  `node.hatcmarket.com` 同一家族。）
+  - ⚠ **這是目標網域，不是目前狀態。** 2026-10-13 實測 `www.hatcmarket.com` 服務的
+    仍是**既有站台**（`/zh-HK`，與 `www.hatchk.com` 相同，`/api/*` 由另一個後端回答）；
+    本倉的新站目前只部署在測試網域上。正式切換尚未發生——不得據此對外宣稱新站已上線。
   - 用途：`NEXT_PUBLIC_SITE_URL` 的生產值，決定 canonical、`hreflang`、
     `sitemap.xml` 與 `robots.txt` 的 host。程式端唯一來源＝
     [`config/env/prd.env`](../config/env/prd.env)（`npm run build:prd` 載入）。
@@ -32,6 +35,7 @@
     改這個檔案並重新 `build:prd`。
   - ⚠ `www.hatchk.com` 與 `www.hatcmarket.com` 的關係（哪個是主站、是否需要
     301 導向或 canonical 互指）**業主尚未說明**，不得自行推定或在頁面上並列。
+    （已知的事實只有：兩者目前服務同一個既有站。）
 - 客戶服務電話：`(852) 2322 2888`
 - 電郵：`info@hatchk.com`
 - 香港地址：香港九龍觀塘偉業街 223 號宏利金融中心 B 座 8 樓 808A 室
