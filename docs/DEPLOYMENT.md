@@ -123,6 +123,41 @@ curl -s https://web.hatcmarket.com/zh-Hant | grep -o 'name="robots"[^>]*'     # 
 > **不會**讀 `prd.secrets.env`。改用 `stg` 之後若行情消失，先確認生產的
 > `QUOTE_HTTP_CRYPT_SECRET` 在主機環境變數裡，或已複製一份到 `stg.secrets.env`。
 
+### 2.0b 預覽主機的實際組態（2026-10-14 第六十七輪實地確認）
+
+`web.hatcmarket.com` 這台機器的事實，**排查前先看這一節，不要重新摸索**：
+
+| 項目 | 值 |
+| --- | --- |
+| 專案目錄 | `/project/hatc-web`（**第六十七輪起是 GitHub 的 git checkout**） |
+| 程序管理 | **寶塔面板 → 網站 → Node項目 → `hatc_web`**（不是 pm2，`pm2 list` 是空的） |
+| 啟動指令 | 面板「設置 → 啟動選項」下拉選 `start:stg`（切換正式網域時改回 `start:prd`） |
+| node | `/www/server/nodejs/v22.22.3/bin/node`（**不在一般使用者的 PATH**） |
+| 登入帳號 | `ubuntu`，但檔案與程序都屬 `root` → 每個指令都要 `sudo` |
+| 密鑰 | 全部四個都在 `config/env/<環境>.secrets.env`，**機器上沒有 `.env`** |
+| 行情閘道 | **同一台機器**的另一個 Node 項目（`mt5_quote_gateway_prd`） |
+| nginx | **不在這台機器上**（對外 IP 13.251.150.207 ≠ 本機對外 18.141.19.148，前面另有一層反向代理） |
+
+兩個會絆倒人的點：
+
+- `sudo npm …` 會失敗，因為 `sudo` 的 PATH 裡沒有 node。要寫成
+  `sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH npm ci`。
+- 寶塔的 pm2 執行檔 shebang 是 `#!/usr/bin/env node`，同樣要補 PATH 才跑得動
+  （但這個站不歸 pm2 管，平常用不到）。
+
+更新流程（目錄已是 git checkout，不必再解壓縮）：
+
+```bash
+cd /project/hatc-web
+sudo git pull
+sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH npm ci
+sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH npm run build:stg
+# 最後在面板按 hatc_web → 重啟
+```
+
+⚠ `media/`（後台上傳的檔案）與 `config/env/*.secrets.env` 都被 git 忽略，**換目錄或
+重建時必須手動搬過去**，否則媒體庫整片破圖、行情與資料庫連不上。
+
 ### 2.1 必填（只能放主機環境變數或 git-ignored 的 `.env`）
 
 ```bash

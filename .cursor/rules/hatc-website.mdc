@@ -1094,6 +1094,17 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  - **驗收**：`lint` 0 error／`tsc`／`i18n:check` **730 鍵不變**（純視覺，無新文案）／
  `env:check`／冷建綠 ● SSG；實測降級路徑、`bars?symbol=EURUSD` 仍 `{ok:false}`（品種鎖未放寬）、
  `diagnostics` 匿名 401。
+ - **🚩 同輪已部署到 `web.hatcmarket.com`（業主授權），並把預覽站從 `start:prd` 換成
+ `start:stg`**：`robots.txt` 轉 `Disallow: /`、每頁 `noindex, nofollow`、canonical 改指
+ 自己的網域（原本三項全錯，canonical 指向服務**另一個站**的 `www.hatcmarket.com`）。
+ `/project/hatc-web` 同時從「解壓縮目錄」改成 **GitHub 的 git checkout**（開發端無法
+ `git pull` 正是他們停在舊版的原因）。**主機組態（寶塔 Node項目在管、node 在
+ `/www/server/nodejs/v22.22.3/bin`、`sudo` PATH 陷阱、閘道同機、nginx 不在本機）全部寫進
+ `DEPLOYMENT.md` §2.0b，排查前先看，不要重新摸索。**
+ - **🚩 驗線上畫面務必先繞過瀏覽器快取**（`?cachebust=…`）：第一次測時拿到部署前的 bundle，
+ 看起來像「閃動功能壞掉」。**比對 HTML 引用的 `.css` 檔名與瀏覽器實際載入的是否相同**＝最快的
+ 判別法（不一致就是快取）。SSE 實測 22 秒 30 幀、間隔平均散佈（非 2.0 秒整數）＝確認走推送且
+ 未被反向代理緩衝。
 
 - **2026-10-13 (第六十四輪 追加查證；未改程式碼)**：① **判斷對方部署到哪一版，就打那一版新增
  的路由**——`/api/market/diagnostics` 在 UAT 回 **404 ＝ 還是舊建置**（Gitee `master` 早已有

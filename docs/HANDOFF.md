@@ -352,7 +352,30 @@ nginx 預設 `proxy_buffering on`，會把 tick 累積成一陣一陣。回應�
 - `LiveQuotesProvider` 在分頁隱藏時**關閉** SSE（伺服器端因此能釋放上游 socket），
   回到前台再開。
 
-### 7. 驗收
+### 7. 已部署到 `web.hatcmarket.com`（2026-10-14，業主授權我直接上）
+
+本輪**同時**把預覽主機從 `start:prd` 換成 **`start:stg`**，並把 `/project/hatc-web`
+從「解壓縮的目錄」改成 **GitHub 的 git checkout**（開發端先前無法 `git pull`，這也是他們
+一直停在舊版的原因）。主機實際組態（寶塔 Node項目、node 路徑、sudo PATH 陷阱等）
+已寫進 `DEPLOYMENT.md` **§2.0b**，下一棒不必重新摸索。
+
+線上實測結果：
+
+- `robots.txt` → `Disallow: /`、每頁 `noindex, nofollow`、canonical →
+  `web.hatcmarket.com`（先前三項全錯，canonical 指向服務**另一個站**的 `www.hatcmarket.com`）
+- `/api/market/stream` **22 秒 30 幀，間隔 0.23–2.23 秒平均散佈** → 前面那層 nginx
+  有認 `X-Accel-Buffering: no`，**沒有被緩衝**；間隔多在 0.5 秒而非整齊的 2.0 秒，
+  也同時證明走的是 WebSocket 推送而非降級輪詢
+- 瀏覽器實測三個品種持續跳動，`price-flash-up`／`price-flash-down` 兩個方向都有出現
+
+🚩 **驗線上畫面務必先繞過瀏覽器快取**（`?cachebust=…`）。第一次測時瀏覽器給的是部署前的
+bundle，樣式表雜湊與 `curl` 拿到的 HTML 不一致，看起來像「閃動功能壞掉」，實際上只是舊快取。
+**比對 HTML 裡的 `.css` 檔名與瀏覽器實際載入的是否相同**，是最快的判別法。
+
+舊版目錄保留為 `/project/hatc-web.bak-20261014`（含舊 `node_modules` 與 112MB 的
+`homeindex.zip`），確認穩定後可刪。
+
+### 8. 驗收
 
 `lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit`／`i18n:check`
 **三語 730 鍵不變**（本輪沒有任何新文案，閃動是純視覺）／`env:check`／冷建綠且全頁維持
