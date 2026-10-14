@@ -67,6 +67,16 @@ function secretsFileFor(name) {
  * values. Multiline values are deliberately unsupported — keep these files
  * flat (anything complex belongs in a host environment variable anyway).
  */
+/**
+ * Minimal `.env` parser: `KEY=value`, optional `export `, `#` comments, and
+ * surrounding quotes stripped.
+ *
+ * 🚩 Keep values that contain spaces, parentheses or other shell metacharacters
+ * **quoted** in `config/env/*.env`. This parser does not care either way, but
+ * people do `set -a; . config/env/prd.env` when debugging on a host, and an
+ * unquoted `CONTACT_PHONE=(852) 2322 2888` aborts that sourcing with a baffling
+ * `2322: command not found` — every variable after it silently ends up empty.
+ */
 function parseEnvFile(path) {
   const entries = [];
   for (const rawLine of readFileSync(path, 'utf8').split('\n')) {
