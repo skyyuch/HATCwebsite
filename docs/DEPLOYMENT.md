@@ -502,6 +502,36 @@ npm run start:prd      # 預設 3000 埠；請用反向代理掛上 TLS
 2. 建立第一個管理者帳號 —— `onInit` 會自動建立 full-access 的 `Administrator` 角色並指派給它。
 3. 之後可在「角色」自建權限較小的角色給編輯人員（欄位級權限，`Roles` 只有全權角色能管）。
 
+### 3.3 登入不了 `/admin`（帳號救援，第六十九輪新增）
+
+🚩 **本站沒有設定寄信服務**，所以登入畫面的「忘記密碼」寄不出重設信 —— 救援只能在主機上做。
+**不要直接改資料庫的 `users.hash`**（雜湊與 salt 必須配對產生），用這支走 Payload Local API
+的腳本：
+
+```bash
+cd /project/hatc-web
+N="sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH"     # §2.0b 的 PATH 陷阱
+
+# 1. 有哪些帳號？誰被鎖了？（唯讀，不印任何雜湊）
+$N npm run payload -- run scripts/admin-recover.ts
+
+# 2. 解鎖
+$N npm run payload -- run scripts/admin-recover.ts -- --unlock you@example.com
+
+# 3. 重設密碼（密碼走環境變數，不會留在 shell 歷史或 ps 裡）
+$N ADMIN_NEW_PASSWORD='…' npm run payload -- run scripts/admin-recover.ts -- --reset you@example.com
+```
+
+先跑第 1 步再決定做什麼，常見原因有三個，症狀在登入畫面上看起來一模一樣：
+
+- **帳號被鎖**：Payload 預設連續錯 5 次就鎖 **10 分鐘**，期間即使密碼正確也一律回
+  「電子郵件或密碼錯誤」。等 10 分鐘或跑 `--unlock`。
+- **信箱不對**：第 1 步會把資料庫裡的信箱列出來。
+- **帳號沒有角色**（例如換庫之後）：第 1 步會標 `NO ROLE — cannot use /admin`。
+
+⚠ **正式站與 UAT 是兩個獨立的資料庫、兩套使用者**，在測試站建的帳號在正式站不存在
+（反之亦然）。要確認自己連到哪一個，比對 `/api/announcements?limit=0` 的 `totalDocs`。
+
 ---
 
 ## 4. 上線前後台必填清單
