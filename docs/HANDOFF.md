@@ -1,6 +1,13 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-14（第六十六輪：**品牌圖示 ＋ 社群分享預覽卡** —— favicon 原本是
+> 最後更新：2026-10-14（第六十七輪：**報價改為推送，價格跳動 0.3 秒內上畫面**。業主回報
+> 「報價輪詢不應做成這樣…現在這樣太差了」。原本是瀏覽器每 5 秒問一次，中間的每一次跳動
+> 全部看不到。現在伺服器對閘道開**一條 WebSocket**、以 **SSE** 分送給所有訪客，
+> 實測 **20 秒 43 筆**（原本 4 筆），並加上漲綠跌紅的閃動提示。
+> 🚩 業主要的「1 秒 4 次」**市場本身給不出來**——生產閘道每 300 毫秒向 MT5 取一次且只在
+> 價格真的變動時才推，實測黃金約 1.2–1.6 次/秒，硬湊成固定 4 次只能重送同一個價格。
+> 詳見下方第六十七輪。
+> 第六十六輪：**品牌圖示 ＋ 社群分享預覽卡** —— favicon 原本是
 > **Next.js 範本預設圖示**，而且全站**完全沒有 `og:image`**，所以貼到 WhatsApp／Telegram／
 > Facebook 只有純文字。現在圖示是從真實 wordmark 取出的「A ＋ 綠三角」（16px 仍可辨識），
 > 分享卡是 1200×630 深色品牌卡，學院文章用自己的封面。本輪查出三個會無聲出錯的機制：
@@ -29,8 +36,18 @@
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
-## ▶ 下一輪任務（第六十六輪做了圖示／分享卡；行情與網域切換仍在等開發端）
+## ▶ 下一輪任務（第六十七輪做了即時推送；網域切換仍未發生）
 
+> **✅ 第六十七輪（2026-10-14）完成：報價即時推送（WebSocket → SSE）＋ 價格閃動。**
+> 詳見下方「🟢 第六十七輪」。**本輪同時把預覽主機從 `prd` 設定改成 `stg`**（業主授權
+> 由我直接部署）——預覽站先前是 `index, follow` 且 canonical／sitemap 全指
+> `www.hatcmarket.com`（服務的是另一個既有站）。
+>
+> **✅ 2026-10-14 實測：生產行情已經正常。** `https://web.hatcmarket.com/api/market/quotes`
+> 回 `{"ok":true}`（黃金 4164.2）——第六十五輪補上的空值密鑰確實是唯一根因。
+> 另以生產密鑰直接連 `node.hatcmarket.com` 實測：**WebSocket 推送可用**，握手 91ms、
+> 第一筆 tick 176ms、三個產品全部接受訂閱。
+>
 > **✅ 第六十六輪（2026-10-14）完成：品牌圖示 ＋ 社群分享預覽卡。** 詳見下方
 > 「🟢 第六十六輪」。上線前要記得：分享卡的 `og:image` 是絕對網址，**只有在部署主機
 > 用對環境（`build:stg` 或正式的 `build:prd`）時才抓得到圖**。
@@ -244,6 +261,108 @@
 >   （舊說明要求的 `npm run migrate` 指令已不存在）；② **頁面文案類 global 要保持留空**
 >   （填入就會永久覆蓋內建三語文案，日後修正看不見）；③ **按鈕沒有目的地就不顯示**
 >   （模擬帳戶、會員登入）是設計行為不是 bug；④ **交易條件刻意不開放後台編輯**（治理設計）。
+## 🟢 第六十七輪（實作，2026-10-14）：報價改為推送 ＋ 價格閃動
+
+> 業主原話：「我想做報價輪詢，不應做成這樣，可以做 1 秒 4 口，現在這樣太差了。」
+
+### 1. 🚩 先更正需求本身：「1 秒 4 次」是市場給不出來的
+
+生產閘道 `TICK_INTERVAL_MS=300`（UAT 400），而且 `WsGateway.pushTicks` **對每個 session
+按 `fingerprint(symbol|bid|ask|spread|last|volume|datetimeMsc)` 去重**——價格沒動就不推。
+以生產閘道實測 20 秒：**黃金 24 筆（1.21/s）、人民幣公斤條 15 筆、白銀 12 筆**。
+所以固定每秒 4 次只能靠**重送同一個價格**，那是讓畫面看起來在動而已。
+
+本輪的驗收標準改成「**每一次真實價格變動都在 0.3 秒內上畫面**」：
+實測 SSE **20 秒 43 筆、連續重複 0 筆**（原本 5 秒輪詢＝20 秒 4 筆）。
+
+### 2. 架構：一條上游 WebSocket → SSE 扇出
+
+```
+閘道 wss://node.*/ws ──(1 條/每個 Node 程序)──> 本站 marketQuoteHub
+                                                     │
+                      /api/market/stream (SSE) ──────┴──> 每位訪客
+```
+
+- **`src/lib/marketGateway.ts`（新）**＝從 `marketQuotes.ts` 抽出的共用底層：設定、
+  AES-256-GCM 信封、guest context 握手、狀態變更才印一次的 `report()`。
+  HTTP 讀取與 WebSocket 兩條路**共用同一份**，不要再各自複製一份解密／握手邏輯。
+- **`src/lib/marketQuoteHub.ts`（新）**＝單例 tick hub。第一位訂閱者進來才連線，
+  最後一位離開 **30 秒**後斷開（閒置站台不佔連線）。
+- **`src/app/api/market/stream/route.ts`（新）**＝SSE。**payload 與
+  `/api/market/quotes` 完全相同**（含 `{ok:false}` 契約），兩者不得分岔。
+
+**🚩 tick 只有 bid/ask，沒有日統計。** 漲跌幅需要 `tickStat.PriceClose`、最高／最低需要
+`BidHigh/BidLow`，那些只有 HTTP `symbol-detail` 有。所以 hub 以 HTTP 快照打底
+（每 **60 秒**刷新一次），WebSocket 的 tick 疊在上面、用存下來的 `previousClose` 重算漲跌。
+為此 `marketQuotes.ts` 新增 `getQuoteSnapshots()`（回傳 `{quote, previousClose}`），
+`getLiveQuotes()` 變成它的 `.map()`。
+
+**降級是分層的，不是全有全無**：
+① WebSocket 連不上／這個 runtime 沒有 `WebSocket` → hub 自動改用**每 2 秒** HTTP 快照，
+照樣走 SSE 推給前台（仍比舊的 5 秒好）；② 瀏覽器開不了 SSE（連續 3 次 error）→
+`LiveQuotesProvider` 自動退回輪詢 `/api/market/quotes`；③ 完全沒有行情 → `{ok:false}`
+→ 前台照舊顯示「示意數據」。
+
+**不浪費頻寬的兩個細節**：hub 的 `emit()` 以 `symbol:bid:ts:high:low` 做指紋，**狀態沒變
+就不送**（否則降級時會每 2 秒送一筆一模一樣的 `{"ok":false}`）；SSE 端再以 **200 毫秒**
+合併視窗，三個品種同時跳動只送一幀。
+
+### 3. 🚩 Node 22 的全域 `WebSocket`，不要加 `ws` 套件
+
+`marketQuoteHub.ts` 用的是 **Node 內建的全域 `WebSocket`**（v22 起穩定，生產主機是
+v22.22.3）。閘道的 WS **沒有 origin 檢查**（`server.on('upgrade')` 只看 pathname），
+而且 **WS 訊息是明文 JSON、不套 AES 信封**（只有 HTTP 回應才套），所以伺服器端連線
+不需要任何額外相依。若日後 runtime 沒有全域 `WebSocket`，hub 會自己印一行 log 並退回輪詢。
+
+**contextToken 過期不會殺掉已連上的 socket**：閘道只在 handshake 時 `contextStore.get()`，
+之後 session 持有的是 context **物件參照**（TTL 10 分鐘，`QuoteContextStore`）。
+所以**不需要**為了續約定期重連。斷線偵測改用**應用層 ping/pong**（每 30 秒 `{"op":"ping"}`，
+75 秒完全沒有任何 frame 才判定死亡）——**不能用「多久沒 tick」判斷**，週末休市本來就不會有 tick。
+
+### 4. 🚩 SSE 最大的部署風險是反向代理的緩衝
+
+nginx 預設 `proxy_buffering on`，會把 tick 累積成一陣一陣。回應已帶
+**`X-Accel-Buffering: no`** ＋ `Cache-Control: no-transform`，nginx 認這個 header，
+**正常不需要改 nginx 設定**。每 15 秒送一次 `: ping` 註解，避免代理因閒置切斷。
+驗收指令寫在 `DEPLOYMENT.md` §5（不需登入即可跑）。
+
+### 5. 價格閃動（業主選定）
+
+`src/components/market/FlashOnChange.tsx` ＋ `globals.css` 的
+`.price-flash-up/.price-flash-down`（450ms，emerald/red 淡出，`prefers-reduced-motion`
+下不動畫）。套在四處：首頁跑馬燈、hero 金價卡、服務區金／銀價卡、`/trading` 即時價格欄。
+
+三個實作重點：
+- **傳數值、不要傳格式化後的字串**（`value={quote?.bid ?? null}`）：格式化會四捨五入，
+  兩個不同價格可能印出同一串字，那一次跳動就不會閃。示意資料一律傳 `null`＝永不閃。
+- **CSS 動畫不會自己重播**：同一個 class 還掛著時再次變動不會重新觸發，所以用
+  `key={nonce}` 讓那個 `<span>` 重新掛載。
+- **🚩 不能用 `useRef` 在 render 期間比較前後值**——本倉的 React 編譯器 lint
+  （`react-hooks/refs`）會直接報 error。改用 React 官方的「render 期間比較
+  `useState` 存的上一次 props」寫法。
+- 閃動用 `background-color` ＋ `box-shadow` 同色擴散，**不加 padding**，否則跑馬燈
+  每跳一次就位移一次。
+
+### 6. 其他
+
+- `sparkline` 取樣改成**每 2 秒最多一點**、保留 90 點（≈3 分鐘）。推送後每秒好幾筆，
+  若照單全收，48 點只剩 30 秒視窗、線會變成雜訊。畫的仍然只有**實際觀測到的價格**。
+- `/api/market/diagnostics` 加 `stream` 區塊（`mode`: `push`/`polled`/`idle`、
+  `socketOpen`、`subscribers`、`lastTickAgoMs`）。**密鑰相關輸出一字未改**。
+- `LiveQuotesProvider` 在分頁隱藏時**關閉** SSE（伺服器端因此能釋放上游 socket），
+  回到前台再開。
+
+### 7. 驗收
+
+`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit`／`i18n:check`
+**三語 730 鍵不變**（本輪沒有任何新文案，閃動是純視覺）／`env:check`／冷建綠且全頁維持
+● SSG。`npm start` 實測：SSE 20 秒 43 幀、`{ok:false}` 降級路徑（`QUOTE_GATEWAY_URL=`
+空值）正確、`/api/market/bars?symbol=EURUSD` 仍 `{ok:false}`（品種鎖未放寬）、
+`diagnostics` 匿名 401、三語首頁與 `/trading` 皆 200。瀏覽器實測 8 秒內跑馬燈出現
+27 個不同價格、閃動 class 持續出現。
+
+---
+
 ## 🟢 第六十六輪（實作，2026-10-14）：品牌圖示 ＋ 社群分享預覽卡
 
 > 業主原話：「我看到 favicon 是沒有 hatc 的 logo，需要更換。另外…在不同媒介（例如 whatsapp,

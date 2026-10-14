@@ -3,6 +3,7 @@ import {
   formatPrice,
   type LiveQuote
 } from '@/lib/marketQuoteTypes';
+import FlashOnChange from '@/components/market/FlashOnChange';
 import {SAMPLE_PRICE_CARDS} from '../sampleMarketData';
 
 /**
@@ -69,8 +70,13 @@ function PriceCard({
           </span>
         ) : null}
       </div>
-      <div className="mt-3 font-[family-name:var(--font-ticker)] text-[22px] font-bold text-gold">
-        {value}
+      <div className="mt-3">
+        <FlashOnChange
+          value={quote?.bid ?? null}
+          className="inline-block font-[family-name:var(--font-ticker)] text-[22px] font-bold text-gold"
+        >
+          {value}
+        </FlashOnChange>
       </div>
     </div>
   );

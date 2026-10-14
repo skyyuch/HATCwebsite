@@ -5,6 +5,7 @@ import {
   formatPrice,
   MARKET_SYMBOLS
 } from '@/lib/marketQuoteTypes';
+import FlashOnChange from '@/components/market/FlashOnChange';
 import {
   useLiveQuote,
   useQuoteHistory
@@ -72,9 +73,12 @@ export default function HeroPriceCard({
       </div>
 
       <div className="mt-5 flex items-end gap-3">
-        <span className="font-[family-name:var(--font-ticker)] text-[32px] font-extrabold leading-none text-white">
+        <FlashOnChange
+          value={quote?.bid ?? null}
+          className="font-[family-name:var(--font-ticker)] text-[32px] font-extrabold leading-none text-white"
+        >
           {value}
-        </span>
+        </FlashOnChange>
         {change ? (
           <span
             className={

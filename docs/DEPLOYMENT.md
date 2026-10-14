@@ -445,9 +445,27 @@ npm run payload -- run scripts/seed-announcements.ts    # 公告分類（重要�
 
 ## 5. 行情（MT5 報價）接線
 
-- 架構：**瀏覽器 → 本站 `/api/market/quotes`、`/api/market/bars`（server BFF）→ 行情閘道**。
+- 架構：**瀏覽器 → 本站 `/api/market/*`（server BFF）→ 行情閘道**。
   **瀏覽器絕對不可直連閘道**（閘道 CORS 不放行本站、回應是 AES-256-GCM 信封、
   握手需要 server-only 的 contextToken）。
+- **即時報價走推送（第六十七輪）**：本站伺服器對閘道開**一條** WebSocket
+  （`/ws?contextToken=…`），收到 tick 後以 **SSE `/api/market/stream`** 分送給所有線上訪客，
+  價格變動約 0.2–0.3 秒內上畫面。**閘道負載與訪客人數無關**（一個 Node 程序一條上游連線，
+  最後一位訪客離開 30 秒後自動斷開）。
+  `/api/market/quotes` 與 `/api/market/bars` **保留不變**：前者是瀏覽器無法維持 SSE 時的
+  後備（payload 完全相同），後者是首頁日 K。
+  - ⚠ **SSE 最容易被反向代理的緩衝打壞**：nginx 預設 `proxy_buffering on` 會把每一筆
+    tick 累積起來、變成每隔幾十秒一次爆發。本站已在回應送出 **`X-Accel-Buffering: no`**
+    ＋`Cache-Control: no-transform`，nginx 會據此對這個回應關閉緩衝，**正常情況不需要改
+    nginx 設定**。若經過的是其他代理（Cloudflare、ALB、寶塔的自訂設定）而行情變成一陣一陣，
+    就要替 `/api/market/stream` 關閉 buffering 並把讀取逾時調大於 15 秒
+    （本站每 15 秒送一次心跳註解）。
+  - 驗收（任何環境都可直接跑，**不需要登入**）：
+    ```bash
+    curl -sN --max-time 20 https://<站台>/api/market/stream | grep -c '^data:'
+    ```
+    有行情時 20 秒內應有**數十筆**（實測 UAT 約 40–50 筆）；只有 1–2 筆且都是
+    `{"ok":false}` ＝沒有行情，照 §5.1 查；筆數正常但**全部擠在最後一次送達**＝代理在緩衝。
 - 代理**只接受黃金／白銀／人民幣公斤條**三個代號。閘道的訪客白名單另有 26 個外匯／指數代號，
   本站刻意不代理它們（紅線：不得把外匯／指數呈現為 HATC 產品）。
 - `{ok:false}` 是**正常回應**，不是錯誤 —— 前台會自動顯示標示清楚的示意數據。
@@ -468,7 +486,9 @@ npm run payload -- run scripts/seed-announcements.ts    # 公告分類（重要�
 
 它會直接給出結論（`verdict`），並列出：連到哪一個閘道（`gateway.host`）、密鑰有沒有設
 （`gateway.secretConfigured`，**不會印出密鑰本身**）、遊客白名單有幾個代號
-（`guestContext.allowedSymbolCount`）、三個產品各自取不取得到報價（`symbols[]`）。
+（`guestContext.allowedSymbolCount`）、三個產品各自取不取得到報價（`symbols[]`），
+以及推送狀態（`stream`）：`mode` ＝ `push`（WebSocket 正常）／`polled`（socket 連不上，
+已退回每 2 秒輪詢，畫面仍會更新但較慢）／`idle`（目前沒有訪客，正常）。
 它會跳過報價快取，所以看到的是當下狀態。未登入回 401、非全權角色回 403 ——
 這些是營運細節，不對匿名訪客公開。
 

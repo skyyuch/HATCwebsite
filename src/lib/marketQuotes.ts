@@ -1,6 +1,18 @@
 import 'server-only';
 
-import {createDecipheriv, createHash} from 'node:crypto';
+import {
+  clearReport,
+  errorMessage,
+  gatewayConfig,
+  gatewayFetch,
+  gatewayForRead,
+  hasQuoteGateway,
+  report,
+  resolveGuestContext,
+  toNumber,
+  type GatewayConfig,
+  type GuestContext
+} from './marketGateway';
 import {
   MARKET_SYMBOLS,
   type LiveQuote,
@@ -8,13 +20,16 @@ import {
 } from './marketQuoteTypes';
 
 /**
- * Live quote reader for the MT5 quote gateway (mt5-tcp-quote-gateway-node).
+ * HTTP quote reader for the MT5 quote gateway (mt5-tcp-quote-gateway-node).
  *
- * Why this runs server-side only:
- * 1. The gateway's CORS allow-list only contains the h5/admin hosts, so a
- *    browser on the HATC site cannot call it directly.
- * 2. Gateway HTTP responses are wrapped in an AES-256-GCM envelope whose key is
- *    a static shared secret. That secret must stay out of the client bundle.
+ * This module owns the request/response side of the feed: a snapshot of the
+ * current quotes (symbol detail + day statistics) and the daily bars behind the
+ * homepage chart. The low-latency tick stream lives in `marketQuoteHub.ts`,
+ * which layers WebSocket ticks on top of the snapshots produced here — the
+ * ticks carry no day statistics, so previous close / high / low still come from
+ * this path.
+ *
+ * Why this runs server-side only: see `marketGateway.ts`.
  *
  * Quotes are REAL market data, not approved company facts: they are not
  * trading conditions and must never be written into docs/HATC_FACTS.md. When
@@ -23,13 +38,11 @@ import {
  * sample data.
  */
 
-export {MARKET_SYMBOLS};
+export {MARKET_SYMBOLS, hasQuoteGateway};
 export type {LiveQuote, MarketBar};
 
-const CONTEXT_RENEW_MARGIN_MS = 60_000;
 const QUOTE_CACHE_TTL_MS = 2_000;
 const BAR_CACHE_TTL_MS = 60_000;
-const REQUEST_TIMEOUT_MS = 8_000;
 
 /** Daily bars kept for the homepage chart. */
 const BAR_COUNT = 30;
@@ -39,234 +52,72 @@ const BAR_COUNT = 30;
  */
 const BAR_WINDOW_LIMIT = 60;
 
-type GatewayConfig = {baseUrl: string; host: string; secret: string};
-
-/** Host part of the gateway URL. Public — it ships in `config/env/*.env`. */
-function gatewayHost(baseUrl: string): string {
-  try {
-    return new URL(baseUrl).host;
-  } catch {
-    return baseUrl;
-  }
-}
-
-function gatewayConfig(): GatewayConfig | null {
-  const baseUrl = process.env.QUOTE_GATEWAY_URL?.trim().replace(/\/+$/, '');
-  if (!baseUrl) return null;
-  return {
-    baseUrl,
-    host: gatewayHost(baseUrl),
-    secret: process.env.QUOTE_HTTP_CRYPT_SECRET?.trim() ?? ''
-  };
-}
-
-/** True when a quote gateway is configured for this environment. */
-export function hasQuoteGateway(): boolean {
-  return gatewayConfig() !== null;
-}
-
-/**
- * Diagnostic logging for the ways live quotes can go missing.
- *
- * Two of them used to be entirely silent — an unset `QUOTE_GATEWAY_URL` and a
- * guest whitelist without our products — which left a deployed site with no
- * signal beyond `{ok:false}`, and `{ok:false}` is also the normal answer when
- * everything is merely degraded (第六十四輪). A message is printed when the
- * reported state for a key *changes*, so a lasting outage logs once while a
- * recovery, and any later relapse, both stay visible.
- *
- * 🚩 Never log the response-crypt secret, or any part of it.
- */
-const reportedState = new Map<string, string>();
-
-function report(key: string, message: string, ok = false): void {
-  if (reportedState.get(key) === message) return;
-  reportedState.set(key, message);
-  (ok ? console.info : console.warn)(`[marketQuotes] ${message}`);
-}
-
-/** Forget a key's last state so the next failure is logged again. */
-function clearReport(key: string): void {
-  reportedState.delete(key);
-}
-
-/**
- * Gateway config for a live read, reporting its absence once. Diagnostics use
- * `gatewayConfig()` directly — a manual probe should not rewrite the log state.
- */
-function gatewayForRead(): GatewayConfig | null {
-  const config = gatewayConfig();
-  if (!config) {
-    report(
-      'gateway',
-      'QUOTE_GATEWAY_URL is not set — serving sample data. It ships in ' +
-        'config/env/<env>.env, so the server has to be started with the ' +
-        'matching script (npm run start:uat / start:prd), not a bare npm start.'
-    );
-    return null;
-  }
-  clearReport('gateway');
-  return config;
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
-
-type CryptEnvelope = {codec: string; iv: string; tag: string; data: string};
-
-function isCryptEnvelope(body: unknown): body is CryptEnvelope {
-  if (typeof body !== 'object' || body === null) return false;
-  const candidate = body as Record<string, unknown>;
-  return (
-    candidate.codec === 'aes-256-gcm' &&
-    typeof candidate.iv === 'string' &&
-    typeof candidate.tag === 'string' &&
-    typeof candidate.data === 'string'
-  );
-}
-
-/**
- * Unwraps the gateway's optional AES-256-GCM envelope. Plain responses (crypt
- * disabled on the gateway) pass through untouched.
- */
-function decodeBody(body: unknown, secret: string): unknown {
-  if (!isCryptEnvelope(body)) return body;
-  if (!secret) {
-    throw new Error('QUOTE_HTTP_CRYPT_SECRET is required for this gateway');
-  }
-
-  const key = createHash('sha256').update(secret, 'utf8').digest();
-  const decipher = createDecipheriv(
-    'aes-256-gcm',
-    key,
-    Buffer.from(body.iv, 'base64')
-  );
-  decipher.setAuthTag(Buffer.from(body.tag, 'base64'));
-  const plain = Buffer.concat([
-    decipher.update(Buffer.from(body.data, 'base64')),
-    decipher.final()
-  ]).toString('utf8');
-
-  return JSON.parse(plain);
-}
-
-async function gatewayFetch(
-  config: GatewayConfig,
-  path: string,
-  init?: RequestInit
-): Promise<unknown> {
-  const response = await fetch(`${config.baseUrl}${path}`, {
-    ...init,
-    cache: 'no-store',
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
-  });
-
-  const body = decodeBody(await response.json(), config.secret);
-  if (!response.ok) {
-    const code =
-      typeof body === 'object' && body !== null
-        ? String((body as Record<string, unknown>).code ?? response.status)
-        : String(response.status);
-    throw new Error(`gateway ${path} failed: ${code}`);
-  }
-
-  return body;
-}
-
-type GuestContext = {token: string; allowedSymbols: string[]; expiresAt: number};
-
-let contextCache: GuestContext | null = null;
-let contextInflight: Promise<GuestContext> | null = null;
-
-/**
- * Resolves (and caches) a guest quote context. The gateway derives the guest
- * trade group from the business backend, so the returned whitelist is whatever
- * that group has configured — possibly empty.
- */
-async function resolveGuestContext(config: GatewayConfig): Promise<GuestContext> {
-  const cached = contextCache;
-  if (cached && cached.expiresAt - CONTEXT_RENEW_MARGIN_MS > Date.now()) {
-    return cached;
-  }
-  if (contextInflight) return contextInflight;
-
-  contextInflight = (async () => {
-    const body = await gatewayFetch(config, '/v1/context/resolve', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({scene: 'guest'})
-    });
-
-    const result = (body as {result?: Record<string, unknown>}).result ?? {};
-    const token = String(result.contextToken ?? '');
-    if (!token) throw new Error('gateway returned no contextToken');
-
-    const context: GuestContext = {
-      token,
-      allowedSymbols: Array.isArray(result.allowedSymbols)
-        ? result.allowedSymbols.map((item) => String(item))
-        : [],
-      expiresAt: Number(result.expiresAt ?? 0) || Date.now() + 5 * 60_000
-    };
-    contextCache = context;
-    return context;
-  })();
-
-  try {
-    return await contextInflight;
-  } catch (error) {
-    contextCache = null;
-    throw error;
-  } finally {
-    contextInflight = null;
-  }
-}
-
-function toNumber(value: unknown): number | null {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
 type SymbolDetail = {
   latestTick?: Record<string, unknown> | null;
   tickStat?: Record<string, unknown> | null;
 };
 
-function toQuote(
+/**
+ * A quote plus the day statistics the tick stream cannot supply. The gateway's
+ * WebSocket ticks carry bid/ask only, so the hub recomputes change against the
+ * `previousClose` captured here.
+ */
+export type QuoteSnapshot = {
+  quote: LiveQuote;
+  /** Previous session close, or null when the gateway did not report one. */
+  previousClose: number | null;
+};
+
+function toSnapshot(
   entry: {symbol: string; display: string},
   detail: SymbolDetail
-): LiveQuote | null {
+): QuoteSnapshot | null {
   const tick = detail.latestTick;
   const bid = toNumber(tick?.bid);
   if (bid === null || bid <= 0) return null;
 
   const stat = detail.tickStat ?? {};
-  const previousClose = toNumber(stat.PriceClose);
-  const change =
-    previousClose !== null && previousClose > 0 ? bid - previousClose : null;
+  const reportedClose = toNumber(stat.PriceClose);
+  const previousClose =
+    reportedClose !== null && reportedClose > 0 ? reportedClose : null;
+  const change = previousClose !== null ? bid - previousClose : null;
 
   return {
-    symbol: entry.symbol,
-    display: entry.display,
-    bid,
-    ask: toNumber(tick?.ask) ?? bid,
-    digits: toNumber(tick?.digits) ?? 2,
-    change,
-    changePercent:
-      change !== null && previousClose
-        ? (change / previousClose) * 100
-        : null,
-    high: toNumber(stat.BidHigh),
-    low: toNumber(stat.BidLow),
-    ts: toNumber(tick?.datetimeMsc) ?? Date.now()
+    previousClose,
+    quote: {
+      symbol: entry.symbol,
+      display: entry.display,
+      bid,
+      ask: toNumber(tick?.ask) ?? bid,
+      digits: toNumber(tick?.digits) ?? 2,
+      change,
+      changePercent:
+        change !== null && previousClose ? (change / previousClose) * 100 : null,
+      high: toNumber(stat.BidHigh),
+      low: toNumber(stat.BidLow),
+      ts: toNumber(tick?.datetimeMsc) ?? Date.now()
+    }
   };
 }
 
-let quoteCache: {ts: number; quotes: LiveQuote[]} | null = null;
-let quoteInflight: Promise<LiveQuote[]> | null = null;
+/** Fetches one symbol's detail and maps it onto a quote snapshot. */
+async function fetchSnapshot(
+  config: GatewayConfig,
+  context: GuestContext,
+  entry: {symbol: string; display: string}
+): Promise<QuoteSnapshot | null> {
+  const body = await gatewayFetch(
+    config,
+    `/v1/market/symbol-detail?symbol=${encodeURIComponent(entry.symbol)}` +
+      `&contextToken=${encodeURIComponent(context.token)}`
+  );
+  return toSnapshot(entry, body as SymbolDetail);
+}
 
-async function loadQuotes(config: GatewayConfig): Promise<LiveQuote[]> {
+let quoteCache: {ts: number; snapshots: QuoteSnapshot[]} | null = null;
+let quoteInflight: Promise<QuoteSnapshot[]> | null = null;
+
+async function loadSnapshots(config: GatewayConfig): Promise<QuoteSnapshot[]> {
   const context = await resolveGuestContext(config);
   const allowed = context.allowedSymbols;
   const wanted = MARKET_SYMBOLS.filter((entry) => allowed.includes(entry.symbol));
@@ -293,21 +144,56 @@ async function loadQuotes(config: GatewayConfig): Promise<LiveQuote[]> {
   if (wanted.length === 0) return [];
 
   const settled = await Promise.allSettled(
-    wanted.map(async (entry) => {
-      const body = await gatewayFetch(
-        config,
-        `/v1/market/symbol-detail?symbol=${encodeURIComponent(entry.symbol)}` +
-          `&contextToken=${encodeURIComponent(context.token)}`
-      );
-      return toQuote(entry, body as SymbolDetail);
-    })
+    wanted.map((entry) => fetchSnapshot(config, context, entry))
   );
 
-  const quotes: LiveQuote[] = [];
+  const snapshots: QuoteSnapshot[] = [];
   for (const result of settled) {
-    if (result.status === 'fulfilled' && result.value) quotes.push(result.value);
+    if (result.status === 'fulfilled' && result.value) snapshots.push(result.value);
   }
-  return quotes;
+  return snapshots;
+}
+
+/**
+ * Current quotes with their day statistics, or null when no live data is
+ * available. Shared by the public endpoint and the tick hub, so one upstream
+ * read serves both.
+ */
+export async function getQuoteSnapshots(): Promise<QuoteSnapshot[] | null> {
+  const config = gatewayForRead();
+  if (!config) return null;
+
+  const cached = quoteCache;
+  if (cached && Date.now() - cached.ts < QUOTE_CACHE_TTL_MS) {
+    return cached.snapshots.length > 0 ? cached.snapshots : null;
+  }
+  if (quoteInflight) {
+    const snapshots = await quoteInflight;
+    return snapshots.length > 0 ? snapshots : null;
+  }
+
+  quoteInflight = loadSnapshots(config);
+  try {
+    const snapshots = await quoteInflight;
+    quoteCache = {ts: Date.now(), snapshots};
+    if (snapshots.length > 0) {
+      report(
+        'quotes',
+        `live quotes active from ${config.host}: ${snapshots
+          .map((snapshot) => snapshot.quote.symbol)
+          .join(', ')}`,
+        true
+      );
+    }
+    return snapshots.length > 0 ? snapshots : null;
+  } catch (error) {
+    // A quote outage must never break the page; log once and fall back.
+    report('quotes', `live quotes unavailable from ${config.host}: ${errorMessage(error)}`);
+    quoteCache = {ts: Date.now(), snapshots: []};
+    return null;
+  } finally {
+    quoteInflight = null;
+  }
 }
 
 /**
@@ -316,40 +202,8 @@ async function loadQuotes(config: GatewayConfig): Promise<LiveQuote[]> {
  * labelled sample data.
  */
 export async function getLiveQuotes(): Promise<LiveQuote[] | null> {
-  const config = gatewayForRead();
-  if (!config) return null;
-
-  const cached = quoteCache;
-  if (cached && Date.now() - cached.ts < QUOTE_CACHE_TTL_MS) {
-    return cached.quotes.length > 0 ? cached.quotes : null;
-  }
-  if (quoteInflight) {
-    const quotes = await quoteInflight;
-    return quotes.length > 0 ? quotes : null;
-  }
-
-  quoteInflight = loadQuotes(config);
-  try {
-    const quotes = await quoteInflight;
-    quoteCache = {ts: Date.now(), quotes};
-    if (quotes.length > 0) {
-      report(
-        'quotes',
-        `live quotes active from ${config.host}: ${quotes
-          .map((quote) => quote.symbol)
-          .join(', ')}`,
-        true
-      );
-    }
-    return quotes.length > 0 ? quotes : null;
-  } catch (error) {
-    // A quote outage must never break the page; log once and fall back.
-    report('quotes', `live quotes unavailable from ${config.host}: ${errorMessage(error)}`);
-    quoteCache = {ts: Date.now(), quotes: []};
-    return null;
-  } finally {
-    quoteInflight = null;
-  }
+  const snapshots = await getQuoteSnapshots();
+  return snapshots ? snapshots.map((snapshot) => snapshot.quote) : null;
 }
 
 function toBar(entry: unknown): MarketBar | null {
@@ -535,17 +389,12 @@ export async function runGatewayDiagnostics(): Promise<GatewayDiagnostics> {
       }
 
       try {
-        const body = await gatewayFetch(
-          config,
-          `/v1/market/symbol-detail?symbol=${encodeURIComponent(entry.symbol)}` +
-            `&contextToken=${encodeURIComponent(context.token)}`
-        );
-        const quote = toQuote(entry, body as SymbolDetail);
+        const snapshot = await fetchSnapshot(config, context, entry);
         return {
           ...base,
           whitelisted: true,
-          status: quote ? 'ok' : 'no-tick',
-          bid: quote?.bid ?? null,
+          status: snapshot ? 'ok' : 'no-tick',
+          bid: snapshot?.quote.bid ?? null,
           error: null
         };
       } catch (error) {

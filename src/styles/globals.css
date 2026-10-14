@@ -133,3 +133,50 @@
   left: var(--space-4);
   top: var(--space-4);
 }
+
+/* Live-price direction cue (see components/market/FlashOnChange.tsx).
+   The tint is painted with a box-shadow as well as a background so it extends
+   past the glyphs without changing the element's box — a padded flash would
+   shift the ticker on every tick. The same emerald/red pair is used on the
+   dark homepage and the light /trading table. */
+@keyframes hatc-price-flash-up {
+  from {
+    background-color: rgba(16, 185, 129, 0.3);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.3);
+  }
+  to {
+    background-color: transparent;
+    box-shadow: 0 0 0 4px transparent;
+  }
+}
+
+@keyframes hatc-price-flash-down {
+  from {
+    background-color: rgba(239, 68, 68, 0.3);
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.3);
+  }
+  to {
+    background-color: transparent;
+    box-shadow: 0 0 0 4px transparent;
+  }
+}
+
+.price-flash-up,
+.price-flash-down {
+  border-radius: 3px;
+}
+
+.price-flash-up {
+  animation: hatc-price-flash-up 450ms ease-out;
+}
+
+.price-flash-down {
+  animation: hatc-price-flash-down 450ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .price-flash-up,
+  .price-flash-down {
+    animation: none;
+  }
+}

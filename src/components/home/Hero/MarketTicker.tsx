@@ -1,6 +1,7 @@
 'use client';
 
 import {formatChange, formatPrice} from '@/lib/marketQuoteTypes';
+import FlashOnChange from '@/components/market/FlashOnChange';
 import {useLiveQuotes} from '@/components/market/LiveQuotesProvider';
 import {SAMPLE_TICKER} from '../sampleMarketData';
 
@@ -23,12 +24,14 @@ export default function MarketTicker({
     ? live.map((quote) => ({
         symbol: quote.display,
         value: formatPrice(quote.bid, quote.digits),
+        bid: quote.bid,
         change: formatChange(quote),
         up: (quote.change ?? 0) >= 0
       }))
     : SAMPLE_TICKER.map((quote) => ({
         symbol: quote.symbol,
         value: quote.value,
+        bid: null,
         change: quote.change,
         up: quote.dir === 'up'
       }));
@@ -46,9 +49,12 @@ export default function MarketTicker({
             ) : null}
             <div className="flex shrink-0 items-baseline gap-2 font-[family-name:var(--font-ticker)]">
               <span className="text-xs text-[#8c94a1]">{q.symbol}</span>
-              <span className="text-[13px] font-semibold text-[#ebedf2]">
+              <FlashOnChange
+                value={q.bid}
+                className="text-[13px] font-semibold text-[#ebedf2]"
+              >
                 {q.value}
-              </span>
+              </FlashOnChange>
               {q.change ? (
                 <span
                   className={

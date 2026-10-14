@@ -5,6 +5,7 @@ import {
   formatPrice,
   type LiveQuote
 } from '@/lib/marketQuoteTypes';
+import FlashOnChange from '@/components/market/FlashOnChange';
 import {
   useLiveQuote,
   useLiveQuotes
@@ -144,7 +145,9 @@ function PriceCells({symbol}: {symbol: string}) {
   return (
     <>
       <td className="px-5 py-4 text-right font-[family-name:var(--font-ticker)] text-base font-semibold text-[var(--trd-navy)]">
-        {quote ? formatPrice(quote.bid, quote.digits) : '—'}
+        <FlashOnChange value={quote?.bid ?? null}>
+          {quote ? formatPrice(quote.bid, quote.digits) : '—'}
+        </FlashOnChange>
       </td>
       <td
         className={cn(

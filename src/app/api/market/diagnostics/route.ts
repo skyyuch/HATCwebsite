@@ -2,6 +2,7 @@ import {NextResponse} from 'next/server';
 import {createLocalReq} from 'payload';
 import type {TypedUser} from 'payload';
 
+import {getStreamDiagnostics} from '@/lib/marketQuoteHub';
 import {runGatewayDiagnostics} from '@/lib/marketQuotes';
 import {getPayloadClient, hasDb} from '@/lib/payload';
 import {hasFullAccess} from '@/payload/access';
@@ -43,7 +44,8 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.json({error: 'Unauthorized'}, {status: 401});
   if (!fullAccess) return NextResponse.json({error: 'Forbidden'}, {status: 403});
 
-  return NextResponse.json(await runGatewayDiagnostics(), {
-    headers: {'Cache-Control': 'no-store'}
-  });
+  return NextResponse.json(
+    {...(await runGatewayDiagnostics()), stream: getStreamDiagnostics()},
+    {headers: {'Cache-Control': 'no-store'}}
+  );
 }
