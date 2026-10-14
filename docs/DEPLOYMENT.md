@@ -699,6 +699,18 @@ sudo cat /proc/$PID/environ | tr '\0' '\n' | grep -oE '^(DATABASE_URI|PAYLOAD_SE
 > ⚠ 要用 `sudo cat … | tr`，**不要** `sudo tr … < /proc/…` —— `<` 這個重導向是由你自己的
 > shell（非 root）執行的，會 `Permission denied`，而且看起來像「變數沒設定」。
 > 同理 `sudo -E` 在多數系統被忽略，取 node 路徑請用 `sudo readlink -f /proc/$PID/exe`。
+>
+> 🚩 **只能看 `next-server` 那個 PID**（2026-10-14 實地踩到）。`start:prd` 會起兩層：
+> 外層 `node scripts/with-env.mjs prd next start` 把變數 **注入給子程序**、自己並不持有。
+> 外層的命令列同樣含有 `next start`，所以 `pgrep -f "next start" | head -1` 很可能抓到它
+> （PID 較小），結果**無論金鑰填得對不對都回 0**。保險寫法是全部列出來再看：
+>
+> ```bash
+> for PID in $(pgrep -f next); do
+>   printf '%s  %s  MT_API_KEY=' "$PID" "$(tr '\0' ' ' < /proc/$PID/cmdline | cut -c1-55)"
+>   grep -c '^MT_API_KEY=..' /proc/$PID/environ
+> done
+> ```
 
 **修法**：把值補進 `config/env/<環境>.secrets.env`（檔案多半是 root 擁有 → `sudo nano`），
 然後**重啟即可，不需要重新 build**（`QUOTE_HTTP_CRYPT_SECRET` 是 runtime 變數）。
