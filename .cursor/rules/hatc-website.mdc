@@ -1026,6 +1026,26 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  只能出現在 `config/env/stg.env`，不得出現在任何頁面內容。文件＝`DEPLOYMENT.md` §2.0／**§2.0a**。
  - **慣例**：要在非正式網域上預覽生產建置時，**不要叫人臨時 `export` 兩個變數**
  （看不見、無法複查）——新增一份 commit 的環境檔，一行指令切換。
+ - **🎉 當天結案（業主 SSH 進生產主機實測）**：根因＝`config/env/prd.secrets.env` 的
+ **`QUOTE_HTTP_CRYPT_SECRET=` 有鍵名但值是空的**（其餘三個密鑰都填了）。補值→重啟
+ （**runtime 變數，不需重新 build**）→ **生產行情已上線**。
+ - **🚩 「生產遊客交易組沒配產品」的阻塞已解除**（第四十三輪起記錄）：本輪用生產密鑰
+ 實測 `node.hatcmarket.com` ＝ **29 個白名單、三個產品都在**，取到金 4167.74／銀 59.261／
+ 公斤條 896.54 ＋ 51 根日 K。**日後排查不要再預設是這個原因**（`DEPLOYMENT.md` §5 已改寫）。
+ 生產密鑰位置＝閘道專案 `deploy/env/prd.env`（prd ≠ uat，本倉 `.env` 是 uat 那組；
+ `real.env` 該欄為空）。**值不得寫進本倉任何檔案或對話**，要傳用 `| pbcopy`。
+ - **🚩 遠端診斷的三個坑（已寫進 `DEPLOYMENT.md` §5.2）**：① `sudo tr … < /proc/$PID/environ`
+ 會 `Permission denied` —— `<` 是**呼叫者的 shell** 執行的，`sudo` 只套到 `tr`；要
+ `sudo cat … | tr`。②「grep 到鍵名」≠ 有值，要 `grep -c '^KEY=..'` 才分得出空值。
+ ③ `sudo -E` 多半被忽略，node 路徑用 `sudo readlink -f /proc/$PID/exe`。
+ - **部署環境事實**：AWS ＋**寶塔面板 (aaPanel)**，node 在 `/www/server/nodejs/…/bin/node`，
+ 站台跑 `with-env.mjs prd next start`，無 `.env.local`（正確）。
+ 🚩 **`/project/hatc-web` 不是 git repo** → 他們用複製／解壓部署、**無法 `git pull`**，
+ 這就是他們一直停在舊版（診斷端點 404、沒有 `stg.env`）的原因。要更新須另約方式。
+ - **報價「更新很慢」不是 bug**：端點實測即時（每次回當下 tick），慢的是前端
+ `LiveQuotesProvider` 的 `POLL_INTERVAL_MS = 5_000`（且 `document.hidden` 暫停）。
+ 要更靈敏可降到 2–3 秒，**伺服器 2 秒快取使閘道壓力不變**，但需重新 build；業主未定案。
+ 首頁 K 線是**日 K**／60 秒輪詢，本來就幾乎不動。
 
 - **2026-10-13 (第六十四輪 追加查證；未改程式碼)**：① **判斷對方部署到哪一版，就打那一版新增
  的路由**——`/api/market/diagnostics` 在 UAT 回 **404 ＝ 還是舊建置**（Gitee `master` 早已有

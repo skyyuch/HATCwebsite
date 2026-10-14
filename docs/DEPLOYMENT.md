@@ -451,13 +451,12 @@ npm run payload -- run scripts/seed-announcements.ts    # 公告分類（重要�
 - 代理**只接受黃金／白銀／人民幣公斤條**三個代號。閘道的訪客白名單另有 26 個外匯／指數代號，
   本站刻意不代理它們（紅線：不得把外匯／指數呈現為 HATC 產品）。
 - `{ok:false}` 是**正常回應**，不是錯誤 —— 前台會自動顯示標示清楚的示意數據。
-- 🚩 **已知阻塞（非本倉 bug）**：生產環境的訪客交易組
-  `demo\DirectCustomer\GUEST\DEFAULT\Standard` 在業務後台**沒有配置產品**，
-  因此回 403 `SYMBOL_NOT_ALLOWED`，首頁會停在示意數據。
-  **後端把產品配好後，官網不需改任何程式碼就會自動變成真實報價。**
-- ✅ **UAT 閘道這一端是通的**（2026-10-13 第六十四輪實測）：`node.666678910.com`
-  的遊客交易組有 29 個白名單代號，含金／銀／人民幣公斤條，三個都取得到即時報價。
-  所以 UAT 站台若沒有行情，問題在**部署主機的設定**，不是閘道或交易組，照 §5.1 查。
+- ✅ **兩個閘道都已驗證可用**：`node.666678910.com`（UAT，2026-10-13 第六十四輪）與
+  **`node.hatcmarket.com`（生產，2026-10-14 第六十五輪）** 的遊客交易組都有 **29 個白名單
+  代號**，含金／銀／人民幣公斤條，三個都取得到即時報價與日 K。
+  **「生產遊客交易組沒配產品」這個從第四十三輪記錄到第六十四輪的阻塞已經解除**，
+  後端已把產品配好 —— 日後排查不要再預設是這個原因。
+- 因此**站台沒有行情＝部署主機自己的設定問題**，照 §5.1 查。
 
 ### 5.1 沒有行情時的排查順序
 
@@ -478,8 +477,38 @@ npm run payload -- run scripts/seed-announcements.ts    # 公告分類（重要�
 | `QUOTE_GATEWAY_URL is not set…` | 伺服器啟動時沒有這個變數 | 多半是**用裸 `npm start` 啟動**。這是 runtime 變數，只有 `npm run start:uat` / `start:prd` 會帶進去，而且 `build:*` 與 `start:*` 必須用同一個環境名。 |
 | `QUOTE_HTTP_CRYPT_SECRET is not set…` | 有閘道位址、沒有密鑰 | 放進 `config/env/<環境>.secrets.env`（§2.3a）或主機環境變數。 |
 | `Cannot resolve a guest context…` | 連得到但解不開，或連不到 | 密鑰與該閘道不符（⚠ **UAT 與生產是不同的值**，去閘道專案 `deploy/env/*.env` 取；交易端 H5 的 `env.prd.uts` 把生產值寫錯成 UAT 值，不要照抄那份），或主機對外網路不通。 |
-| `…none of them are HATC products` | 閘道活著，但該閘道的遊客交易組沒配產品 | 業務後台把金／銀／人民幣公斤條配進遊客交易組（見上面的已知阻塞），官網不需改碼。 |
+| `…none of them are HATC products` | 閘道活著，但該閘道的遊客交易組沒配產品 | 業務後台把金／銀／人民幣公斤條配進遊客交易組，官網不需改碼。（兩個閘道目前都已配好，見 §5。） |
 | `Live quotes are working…` | 後端沒問題 | 前台若仍是示意，問題在瀏覽器到本站這一段（CDN／WAF 擋掉或快取了 `/api/market/*`）。 |
+
+### 5.2 🚩 最常見的實際原因：密鑰那一行是空的（2026-10-14 第六十五輪）
+
+生產站第一次上線時沒有行情，真正的原因是 `config/env/prd.secrets.env` 裡
+**`QUOTE_HTTP_CRYPT_SECRET=` 這一行有鍵名、但沒有值**（其餘三個密鑰都填了）。
+空字串會讓解密直接失敗，症狀與「密鑰填錯」一模一樣。
+
+**`grep` 只看鍵名會被騙**（鍵名確實在），要這樣查：
+
+```bash
+cd /project/hatc-web
+grep -c '^QUOTE_HTTP_CRYPT_SECRET=..' config/env/prd.secrets.env   # 1=有值，0=空的
+grep -vE '^\s*(#|$)' config/env/prd.secrets.env | wc -l            # 行數＝密鑰個數（編輯後被折行會多出來）
+```
+
+**檢查「正在跑的程序」實際拿到什麼**（鍵名安全，不會印出值）：
+
+```bash
+PID=$(pgrep -f "next-server" | head -1)
+sudo cat /proc/$PID/environ | tr '\0' '\n' | grep -E '^(NODE_ENV|NEXT_PUBLIC_SITE_URL|SITE_INDEXABLE|QUOTE_GATEWAY_URL)='
+sudo cat /proc/$PID/environ | tr '\0' '\n' | grep -oE '^(DATABASE_URI|PAYLOAD_SECRET|QUOTE_HTTP_CRYPT_SECRET|MT_API_KEY)='
+```
+
+> ⚠ 要用 `sudo cat … | tr`，**不要** `sudo tr … < /proc/…` —— `<` 這個重導向是由你自己的
+> shell（非 root）執行的，會 `Permission denied`，而且看起來像「變數沒設定」。
+> 同理 `sudo -E` 在多數系統被忽略，取 node 路徑請用 `sudo readlink -f /proc/$PID/exe`。
+
+**修法**：把值補進 `config/env/<環境>.secrets.env`（檔案多半是 root 擁有 → `sudo nano`），
+然後**重啟即可，不需要重新 build**（`QUOTE_HTTP_CRYPT_SECRET` 是 runtime 變數）。
+驗證＝`curl -s https://<站台>/api/market/quotes | head -c 200` 應回 `{"ok":true,…}`。
 
 伺服器 log 會印同一批訊息（前綴 `[marketQuotes]`），而且**只在狀態改變時印一次**：
 故障與恢復都看得到，但不會洗版。恢復時是 `live quotes active from <host>: …`。

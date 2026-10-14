@@ -391,7 +391,45 @@ sitemap 用 `web.hatcmarket.com`。
 - `web.hatcmarket.com` **刻意不寫進 `HATC_FACTS.md`**（暫時位址不是公司對外事實，
   同 UAT 網域的處置）；它只出現在 `config/env/stg.env`，**不得出現在任何頁面內容**。
 
-### 4. 驗收
+### 4. 🎉 當天解決：生產站行情已上線（業主 SSH 進主機實測）
+
+開發端提供 IP／pem 後，業主自己連上生產主機（`/project/hatc-web`）跑完診斷，
+**根因確認＝`config/env/prd.secrets.env` 裡 `QUOTE_HTTP_CRYPT_SECRET=` 這一行是空的**
+（其餘三個密鑰都有填）。空字串讓解密直接失敗，症狀與密鑰填錯完全相同。
+補上值 → 重啟（**不需要重新 build**，這是 runtime 變數）→ **生產站行情正常**。
+
+- **🚩 「生產遊客交易組沒配產品」這個阻塞已經解除**（第四十三輪記錄、第六十四輪還在列）。
+  本輪用生產密鑰實測 `node.hatcmarket.com`：**29 個白名單代號、三個產品都在**，
+  當場取到金 4167.74／銀 59.261／公斤條 896.54 ＋ 51 根日 K。
+  **日後排查不要再預設是這個原因**；`DEPLOYMENT.md` §5 已改寫。
+- **生產密鑰的位置**＝閘道專案 `~/Desktop/mt5-web/mt5-tcp-quote-gateway-node/deploy/env/prd.env`
+  的 `QUOTE_HTTP_CRYPT_SECRET`（本輪比對確認：prd ≠ uat，本倉 `.env` 用的是 uat 那組；
+  `real.env` 該欄為空，不是生產值）。**值不得寫進本倉任何檔案或對話**；要給人就用
+  `… | pbcopy` 複製到剪貼簿。
+- **診斷指令的兩個坑（已寫進 `DEPLOYMENT.md` §5.2）**：① `sudo tr … < /proc/$PID/environ`
+  會 `Permission denied` —— `<` 重導向是**呼叫者的 shell** 執行的，`sudo` 只套用到 `tr`；
+  要寫 `sudo cat … | tr`。②「`grep` 鍵名有找到」不代表有值，要用
+  `grep -c '^KEY=..'`（至少兩個字元）才分得出空值。③ `sudo -E` 多半被忽略，
+  取 node 路徑用 `sudo readlink -f /proc/$PID/exe`。
+- **部署環境的事實**（下一棒會用到）：主機是 **AWS + 寶塔面板（aaPanel）**，
+  node 在 `/www/server/nodejs/v22.22.3/bin/node`，站台以
+  `node scripts/with-env.mjs prd next start` 執行；`.env.local` **不存在**（正確）。
+  🚩 **`/project/hatc-web` 不是 git repo**（`fatal: not a git repository`）—— 他們是用
+  複製／解壓部署的，**沒辦法 `git pull`**，這就是他們一直停在舊版（`/api/market/diagnostics`
+  回 404、`config/env/` 裡沒有 `stg.env`）的原因。要他們更新必須另外約定方式。
+
+### 5. 仍未解決（接續項）
+
+- **`web.hatcmarket.com` 還在跑 `start:prd`** → 預覽站仍是 `index, follow`、canonical
+  指向 `www.hatcmarket.com`（服務舊站）。本輪做好的 `stg` 環境**他們還沒拿到**
+  （見上面的 git 問題）。
+- **報價輪詢頻率**：業主覺得「很久才更新一口」。實測端點本身是即時的（每次都回當下
+  tick），慢的是前端 `LiveQuotesProvider` 的 `POLL_INTERVAL_MS = 5_000`（且
+  `document.hidden` 時暫停）。要更靈敏可降到 2–3 秒 —— **伺服器端有 2 秒快取，
+  所以對閘道的壓力完全不變**，只是自家伺服器多接幾次請求；需重新 build 才生效。
+  業主尚未決定，本輪未改。（K 線是**日 K**、60 秒輪詢，本來就幾乎不動，不是 bug。）
+
+### 6. 驗收
 
 `env:check`（含新環境）／`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／
 `tsc --noEmit`／`i18n:check` 三語 **730 鍵不變**（本輪未新增任何文案）／
