@@ -36,9 +36,46 @@
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
-## ▶ 下一輪任務（第六十八輪：首頁 K 線接即時報價 ＋ 可點選的產品切換）
+## ▶ 下一輪任務（第七十一輪：公告的繁中／英文標題缺失 —— 一鍵翻譯只能繁中→其他）
 
-> ## 🟩 2026-10-14 18:30 現況（最新，先看這段）
+> ## 🚨 2026-10-14 18:00 正式站目前有兩個實際問題（接手第一件事就是看這段）
+>
+> 業主在 `/admin` 看到多數公告顯示 `<無 標題>`，交棒處理。查下去發現**兩個**問題，
+> 一個是內容／流程問題（業主回報的那個），一個是**我的換號腳本跑到一半失敗留下的破壞**。
+>
+> **① 繁中（預設語系！）與英文站只看得到 3 則，簡中看得到 10 則。**
+> 實測（`?cb=` 繞過 nginx 快取）：`zh-Hant` 與 `en` 的列表計數都是 **3**，`zh-Hans` 是 **10**。
+> 原因＝那 7 則只有 `zh-Hans` 的 `title`，而 reader 的 `mapSummary` 會**丟掉該語系沒有標題
+> 的文件**（`src/lib/announcements.ts`）。`localization.fallback: true` 只讓非預設語系回退到
+> 預設語系，**預設語系本身沒有回退對象**，所以繁中就是空的 → 整則消失。
+> **🚩 根因已由程式碼確認（不是猜測）**：`src/lib/mt/translateDocument.ts` 第 95 行
+> `const source = localization.defaultLocale as Locale;` ⇒ **一鍵翻譯永遠是
+> 「繁中 → 簡中／英文」單向**，而且第 133 行只取**非空**的來源葉節點。同事是用**簡體**
+> 輸入的，所以來源（繁中）是空的 → 按翻譯等於什麼都沒做（`filled: 0`），不是「翻譯把標題
+> 弄不見了」。**下一輪要做的就是這件事**（選項見下方第 9 節）。
+>
+> **② 兩則公告的網址卡在 `tmp-renumber-<id>`，而且已經活在站上。**
+> `/zh-Hans/announcements/tmp-renumber-6acf1a3a875aad4551488b6c` 回 **200**，列表連結與
+> `sitemap.xml` 都收了它。這是 `scripts/renumber-announcements.ts` 第一次在正式站跑時
+> **跑到一半失敗**留下的：它分兩段寫入（先全部停到臨時 slug 再寫正式編號），而
+> `payload.update` **會重新驗證整份文件**、`title` 是 `required` 的 localized 欄位 →
+> 第三則（繁中標題為空）直接丟 `ValidationError: 以下欄位無效： 標題` → 中斷。
+> 前兩則（剛好就是有繁中標題的那兩則）已經停在臨時 slug，其餘八則沒動。
+> **已修**：改用 `payload.db.updateOne()`（slug 不是 localized、值也已算好，沒有 hook 要跑；
+> 繞過驗證正是對的——某則缺不缺翻譯是內容問題，不該擋住網址遷移），並加上**失敗自動回復**
+> ＋**接手已卡在 `tmp-renumber-` 的資料**＋列出缺預設語系標題的公告。本機以同樣的情境
+> （簡體-only 標題＋一則卡在 tmp）實測通過，也實測確認舊做法確實會丟那個驗證錯誤。
+>
+> **→ 請業主／開發在主機上重跑一次**（程式已在 GitHub／Gitee，先 `git pull` 冷建重啟）：
+> ```
+> npm run payload:prd -- run scripts/renumber-announcements.ts -- --dry-run   # 先看對照表
+> npm run payload:prd -- run scripts/renumber-announcements.ts
+> ```
+> 跑完到 `/admin` 隨便存一次公告（CLI 不會 revalidate），再清 nginx 快取（§2.0c）。
+> ⚠ **第 ① 個問題不會因此消失**——換號只是讓網址正確，繁中／英文仍然少 7 則，要等下一輪
+> 處理翻譯方向或 reader 的回退策略。
+
+> ## 🟩 2026-10-14 18:30 現況（先看這段）
 >
 > **✅ 第七十輪完成：公告與法律頁多了一組「去掉頭尾」的 webview 版本給 App／h5 嵌入
 > （`/<locale>/embed/…`，共四頁 × 三語 ＝ 12 條路由，全部 ● SSG）。**
@@ -548,6 +585,16 @@ embed 頁 `canonical`／`hreflang` **0 個**、embed 列表 `<header>/<footer>/<
 >   `--dry-run` 可先看對照表，**冪等**（已正確者印 `=`、回報 no change needed）。
 >   🚩 **兩段式更新**：`slug` 有 unique index，目標編號可能還被另一則佔著（互換的情況），
 >   所以先全部停到 `tmp-renumber-<id>` 再寫入正式編號。
+>   🚩 **第一版用 `payload.update`，在正式站跑到一半就掛了（已修）**：`payload.update`
+>   **會重新驗證整份文件**，而 `title` 是 `required` 的 **localized** 欄位 → 任何
+>   繁中標題為空的公告（＝同事用簡體輸入的那 7 則）直接丟
+>   `ValidationError: 以下欄位無效： 標題`，腳本中斷，前兩則已經停在臨時 slug 就留在那裡
+>   （正式站因此有兩個 `tmp-renumber-…` 網址活著回 200）。
+>   **改用 `payload.db.updateOne()`** —— `slug` 不是 localized、值也已算好，沒有 hook 需要跑，
+>   而「某則缺不缺翻譯」是內容問題、不該擋住網址遷移。同時補上**失敗自動回復**（把已停到
+>   臨時 slug 的還原）、**接手已卡在 `tmp-renumber-` 的資料**、以及列出缺預設語系標題的公告。
+>   **慣例：日後任何批次改 localized 集合的維運腳本，只要改的是非 localized 欄位，
+>   就用 `payload.db.updateOne`，不要用 `payload.update`**（否則缺翻譯的資料會讓整批中斷）。
 >   🚩 **CLI 不會 revalidate**（無 request context，`revalidateContent.ts` 按設計吞掉）→
 >   腳本結尾會提示「到 `/admin` 隨便存一次」，這樣列表／embed 列表／sitemap 才會更新。
 > - **驗收**：本機建四則測試資料實測 —— 同日兩則 → `2026-002`／`2026-003`（不是 `-2`）、
@@ -556,6 +603,40 @@ embed 頁 `canonical`／`hreflang` **0 個**、embed 列表 `<header>/<footer>/<
 >   `/zh-Hans/embed/announcements/2026-001` 皆 200、舊的 `/announcements/announcements`
 >   404、兩個列表的連結與 `/sitemap.xml` 都已指向新編號。`tsc`／`lint` 0 error／
 >   `generate:types` 僅 JSDoc 變動。
+
+### 9. 交棒給第七十一輪：公告的繁中／英文標題缺失（業主回報）
+
+> 業主原話：「之前同事一鍵翻譯後，標題會沒有」。**標題沒有被翻譯弄掉**——是從來沒有被填進去。
+> 已由程式碼確認的事實鏈：
+>
+> 1. `src/lib/mt/translateDocument.ts:95` — `const source = localization.defaultLocale`
+>    ⇒ 翻譯方向**固定是繁中 → 簡中／英文**，無法選來源語系。
+> 2. 同一支檔 `:133` — 只收集**非空**的來源葉節點。同事用簡體輸入 ⇒ 繁中為空 ⇒
+>    `sourceLeaves` 是空陣列 ⇒ 按鈕「成功」但 `filled: 0`。
+> 3. `src/lib/announcements.ts` 的 `mapSummary` — `if (!title || !slug) return null`
+>    ⇒ 該語系沒有標題的公告**整則從列表消失**（不是顯示空標題）。
+> 4. `payload.config` 的 `localization.fallback: true` 只讓非預設語系回退到**預設語系**；
+>    預設語系（繁中）本身沒有回退對象 ⇒ 簡體輸入的公告在繁中站等於不存在。
+>
+> **實測現況（2026-10-14 18:00，`?cb=` 繞過 nginx）**：`zh-Hant` 3 則／`zh-Hans` 10 則／
+> `en` 3 則。10 則裡只有 3 則三語齊全。
+>
+> **下一輪要先問業主的方向題（三條路，各有代價，不要自己選）**：
+>
+> | 做法 | 好處 | 代價 |
+> | --- | --- | --- |
+> | (a) 讓一鍵翻譯**可選來源語系**（或自動挑有內容的那個語系當來源） | 同事可以繼續用簡體作業，按一次就補齊另兩語 | 要改 `translateDocument.ts` 的 API 與按鈕 UI；「哪個語系才是正本」會變得不明確，校對責任要講清楚 |
+> | (b) 規定一律先填繁中，再按翻譯 | 零程式改動，正本語系明確（繁中是 `defaultLocale`，也是業主的主語系） | 純靠流程紀律；同事慣用簡體，很可能再犯；已經存在的 7 則還是要人工補 |
+> | (c) 讓 reader 在該語系沒有標題時**跨語系回退** | 公告永遠不會從列表消失 | 繁中讀者會看到簡體標題（內容治理問題，要業主同意）；而且會**掩蓋**翻譯沒做的事實，之後更難發現 |
+>
+> 我的建議是 **(a) ＋ (b) 並行**：先改成可選來源（根治「同事用簡體就等於沒翻」），同時把
+> 「正本語系」寫成明確規則。(c) 要不要做是另一個問題——它是防呆，但會讓缺翻譯變成看不見。
+> **無論選哪一條，現有 7 則的繁中／英文標題都需要有人補**（可以用一鍵翻譯產草稿再校對）。
+>
+> ⚠ 連帶要查的事：`announcements` 的 `excerpt`／`body` 也是 localized，同樣可能只有簡體。
+> `body` 空時詳情頁有「尚無內文」的後備文案，不會消失；但 `excerpt` 空只是少一段摘要。
+> 另外 **`title` 是 `required: true` 的 localized 欄位**，這就是換號腳本當初中斷的原因
+> （見第 8 節），日後任何用 `payload.update` 批次改公告的腳本都會踩到同一個坑。
 
 ## 🟢 第六十九輪（實作，2026-10-14）：`/funding` 示意數據退役 ＋ 全站「示意」稽核
 

@@ -1234,6 +1234,22 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
     **⚠ 舊網址會 404**，要請開發端別寫死編號（`DEPLOYMENT.md` §10.1 已註明）。
     **日後新增需要 slug 的集合**：標題是中文就用 `autoSerialSlug`，不要再把 localized
     標題當 slug 候選。
+  - **🚩 維運腳本改 localized 集合的非 localized 欄位，一律用 `payload.db.updateOne()`，
+    不要用 `payload.update()`。** 換號腳本第一版用了 `payload.update`，在正式站**跑到一半
+    中斷**：它會重新驗證整份文件，而 `announcements.title` 是 `required` 的 **localized**
+    欄位 → 任何預設語系（繁中）標題為空的公告直接丟
+    `ValidationError: 以下欄位無效： 標題`。後果是兩則公告**卡在 `tmp-renumber-<id>` 的網址
+    並活在正式站上**（回 200、還進了 sitemap）。`slug` 不是 localized、值也已算好，沒有 hook
+    需要跑，所以 db 層寫入才是對的——「某則缺不缺翻譯」是內容問題，不該擋住網址遷移。
+    **兩段式寫入的腳本必須有失敗回復**，否則臨時值會留在線上。
+  - **🚩 一鍵翻譯是「繁中 → 其他」單向，來源語系不可選**
+    （`src/lib/mt/translateDocument.ts:95` `source = localization.defaultLocale`，且 `:133`
+    只收集**非空**來源葉節點）。所以**同事用簡體輸入後按翻譯＝什麼都沒做**（`filled: 0`，
+    不報錯）。配上 reader 的 `mapSummary`（`!title → null`）與 `localization.fallback: true`
+    **只讓非預設語系回退到預設語系**（預設語系自己沒有回退對象），結果是**簡體輸入的公告在
+    繁中（預設語系）與英文站整則消失**——2026-10-14 實測 `zh-Hant` 3 則／`zh-Hans` 10 則。
+    **交棒第七十一輪處理**（選項與代價見 HANDOFF 第七十輪第 9 節，**要先問業主**）。
+    在那之前：**任何 localized 必填欄位都要三語齊全**，不要只填一個語系就以為翻譯會補上。
 
 - **2026-10-14 (第六十九輪): `/funding` 的「示意數據」退役 —— 出入金渠道改為對外正式資訊，
   並刪掉虛構後備。SUPERSEDES 第三十六／三十七輪把 `funding-methods` 當示意表的設計。**

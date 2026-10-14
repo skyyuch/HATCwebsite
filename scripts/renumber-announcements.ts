@@ -23,7 +23,7 @@
  * chronologically. Already-correct slugs are left alone, so this is safe to
  * re-run (it will report "no change needed").
  *
- * 🚩 Two things to know before running it on production:
+ * 🚩 Three things to know before running it on production:
  *
  * 1. **The old URLs stop working.** Nothing on the site links to a notice by a
  *    hard-coded slug, but anyone holding a copied link (or the App, if the dev
@@ -32,6 +32,17 @@
  *    context, so `revalidateContent.ts` swallows it by design). After running
  *    this, open any notice in `/admin` and press Save once: that triggers
  *    `afterChange`, which refreshes the list, the `/embed` list and the sitemap.
+ * 3. **Writes go through `payload.db.updateOne`, not `payload.update`.** The
+ *    first production run aborted half way and left two notices parked on their
+ *    temporary slug: `payload.update` re-validates the whole document, and
+ *    `title` is a required *localized* field, so every notice whose default
+ *    locale (zh-Hant) title is empty — which is most of them after a colleague
+ *    machine-translated from Simplified — threw a validation error. Whether a
+ *    notice is missing a translation is a content question; it must not stop a
+ *    URL migration. The database write skips hooks and validation, which is
+ *    exactly right here: `slug` is not localized and the value is already
+ *    computed. Anything parked on `tmp-renumber-…` is picked up and finished on
+ *    the next run, and a failure now rolls the temporary slugs back.
  */
 import {writeSync} from 'node:fs';
 
@@ -94,7 +105,19 @@ const changes = plan.filter((item) => item.from !== item.to);
 say(`${docs.length} announcement(s); ${changes.length} to renumber`);
 for (const item of plan) {
   const mark = item.from === item.to ? '=' : '→';
-  say(`  ${item.from || '(blank)'} ${mark} ${item.to}  ${item.title}`);
+  const stuck = item.from.startsWith('tmp-renumber-') ? '  ⚠ parked by a failed run' : '';
+  say(`  ${item.from || '(blank)'} ${mark} ${item.to}  ${item.title || '(no title in this locale)'}${stuck}`);
+}
+
+const untitled = plan.filter((item) => !item.title);
+if (untitled.length > 0) {
+  // Not this script's job to fix, but the owner needs to know: the reader drops
+  // a notice with no title in the requested locale, so these are invisible on
+  // the default-locale site even though they renumber fine.
+  say(
+    `\n⚠ ${untitled.length} notice(s) have no title in the default locale — they are hidden` +
+      ' from that locale\'s list until the translation is filled in.'
+  );
 }
 
 if (changes.length === 0) {
@@ -107,25 +130,41 @@ if (dryRun) {
   process.exit(0);
 }
 
-// Two passes: `slug` has a unique index, and a target serial may still be held
-// by another notice at this point (e.g. swapping two of them), so park every
-// changed row on a temporary slug first.
-for (const item of changes) {
-  await payload.update({
-    collection: 'announcements',
-    id: item.id,
-    data: {slug: `tmp-renumber-${item.id}`},
-    overrideAccess: true
-  });
+/**
+ * Database-level write: `slug` is not localized and the value is already
+ * computed, so there is nothing for the hooks to add — while `payload.update`
+ * would re-validate the required localized `title` and refuse to touch any
+ * notice that is missing a translation (see the header note).
+ */
+async function setSlug(id: string, slug: string): Promise<void> {
+  await payload.db.updateOne({collection: 'announcements', id, data: {slug}});
 }
 
-for (const item of changes) {
-  await payload.update({
-    collection: 'announcements',
-    id: item.id,
-    data: {slug: item.to},
-    overrideAccess: true
-  });
+// Two passes: `slug` is uniquely indexed and a target serial may still be held
+// by another notice at this point (e.g. swapping two of them), so park every
+// changed row on a temporary slug first.
+const parked: typeof changes = [];
+try {
+  for (const item of changes) {
+    await setSlug(item.id, `tmp-renumber-${item.id}`);
+    parked.push(item);
+  }
+
+  for (const item of changes) {
+    await setSlug(item.id, item.to);
+  }
+} catch (error) {
+  say(`\n✖ failed: ${error instanceof Error ? error.message : String(error)}`);
+  say('rolling back the temporary slugs…');
+  for (const item of parked) {
+    try {
+      await setSlug(item.id, item.from);
+    } catch {
+      say(`  could not restore ${item.id} to ${item.from} — still on its temporary slug`);
+    }
+  }
+  say('rolled back; nothing renumbered');
+  process.exit(1);
 }
 
 say('\nrenumbered. New addresses:');
