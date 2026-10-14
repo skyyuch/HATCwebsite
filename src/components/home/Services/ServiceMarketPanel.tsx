@@ -3,6 +3,7 @@
 import {useMemo, useState} from 'react';
 import {
   MARKET_SYMBOLS,
+  formatPrice,
   withLiveCandle,
   type LiveQuote,
   type MarketSymbol
@@ -16,8 +17,8 @@ import ServicePriceCards from './ServicePriceCards';
  * Market column of the gold-services section: daily candles + price cards.
  *
  * The cards pick which product the chart draws, and the selected product's
- * live tick re-prices the current day's candle so the chart tracks the market
- * between bar polls.
+ * live tick re-prices the current day's candle and the chart's price marker,
+ * so the chart tracks the market between bar polls.
  *
  * Both widgets read the same gateway, so the source label lives here once:
  * real data gets "live quotes" plus the feed disclaimer, otherwise the
@@ -58,12 +59,19 @@ export default function ServiceMarketPanel({
   );
 
   const live = Boolean(liveQuotes || bars);
+  const currentPrice = selectedQuote
+    ? {
+        value: selectedQuote.bid,
+        label: formatPrice(selectedQuote.bid, selectedQuote.digits)
+      }
+    : null;
 
   return (
     <div className="flex flex-col gap-5">
       <ServiceChart
         bars={bars}
         live={live}
+        currentPrice={currentPrice}
         locale={locale}
         labels={{
           title: labels.chartTitles[selected],

@@ -1147,6 +1147,13 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
     （`tickStat` 的**當日** BidHigh/BidLow）合併。**🚩 只有 tick 真正所屬的 bucket 可以動**
     （`quote.ts ∈ [last.time, last.time+24h)`）——跨日後閘道尚未發佈新 bucket，把昨天那根
     用今天的價格拉長＝畫出從未成交的蠟燭，違反「真價格旁不放假走勢」。
+  - **現價橫線 ＋ 價格標籤（業主選定，用來解決「看不出來在動」）**：蠟燭位移是次像素級，
+    但標籤數字每秒在跳（實測 12 秒 4,149.69→4,149.94）。🚩 **標籤必須是 HTML、不可用 SVG
+    `<text>`** —— 那張 svg 是 `preserveAspectRatio="none"` 橫向拉伸約 2.1 倍，文字會變形；
+    改成絕對定位 HTML 疊在 `relative` 容器、`top` 用百分比。🚩 `buildCandles` 已改名
+    **`buildPlot`，同時回傳 `y(price)`**，讓橫線與蠟燭**共用同一條價格尺規**。
+    **沒有即時報價就不畫**（示意模式或有 K 線無 tick），標籤不得把示意序列／過期 bar 收盤價
+    標成「現價」；標籤 `aria-hidden`（重複下方報價卡的數字）。
   - **報價卡改由 `MARKET_SYMBOLS` 驅動**（不再寫死兩張），所以卡片／跑馬燈／FACTS 的產品清單
     不可能漂移；順手補上原本缺席的**人民幣公斤條**。卡片＝`<button aria-pressed>`，選中金色外框，
     點擊切換上方日 K；`SAMPLE_PRICE_CARDS` 由陣列改 **`Record<MarketSymbol, …>`**（缺品種＝型別錯誤）。

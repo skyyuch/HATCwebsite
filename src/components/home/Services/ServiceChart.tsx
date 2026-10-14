@@ -47,17 +47,29 @@ const SAMPLE_SHAPES: Candle[] = SAMPLE_CANDLES.map((candle) => ({
 export default function ServiceChart({
   bars,
   live,
+  currentPrice,
   locale,
   labels
 }: {
   bars: MarketBar[] | null;
   /** True when real quotes are on screen elsewhere in the section. */
   live: boolean;
+  /**
+   * Latest traded price of the charted product, drawn as a marker line. Null
+   * whenever there is no live tick for it — the marker must never label a
+   * sample series or a stale bar close as the current price.
+   */
+  currentPrice: {value: number; label: string} | null;
   locale: string;
   labels: {title: string; daily: string; sample: string; unavailable: string};
 }) {
   const real = bars !== null;
-  const candles = real ? buildCandles(bars) : live ? [] : SAMPLE_SHAPES;
+  const plot = real ? buildPlot(bars) : null;
+  const candles = plot ? plot.candles : live ? [] : SAMPLE_SHAPES;
+  const marker =
+    plot && currentPrice
+      ? {label: currentPrice.label, top: (plot.y(currentPrice.value) / CHART_H) * 100}
+      : null;
   const axis = real
     ? barAxisLabels(bars, locale)
     : live
@@ -86,12 +98,16 @@ export default function ServiceChart({
         </span>
       </div>
 
-      <svg
-        aria-hidden
-        viewBox={`0 0 ${CHART_W} ${CHART_H}`}
-        preserveAspectRatio="none"
-        className="mt-4 h-40 w-full"
-      >
+      {/* The viewBox is stretched horizontally (preserveAspectRatio="none"), so
+          the price marker is HTML laid over the plot rather than SVG text,
+          which would come out distorted. */}
+      <div className="relative mt-4 h-40">
+        <svg
+          aria-hidden
+          viewBox={`0 0 ${CHART_W} ${CHART_H}`}
+          preserveAspectRatio="none"
+          className="absolute inset-0 h-full w-full"
+        >
         {GRID_LINES.map((y) => (
           <line
             key={y}
@@ -126,7 +142,27 @@ export default function ServiceChart({
             </g>
           );
         })}
-      </svg>
+        </svg>
+
+        {marker ? (
+          <>
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 border-t border-dashed border-gold/60"
+              style={{top: `${marker.top}%`}}
+            />
+            {/* Duplicates the selected product's price card, so it is hidden
+                from assistive tech rather than announced twice. */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute right-0 -translate-y-1/2 rounded-[3px] bg-gold px-1.5 py-0.5 font-[family-name:var(--font-ticker)] text-[11px] font-bold text-[var(--fig-ink)]"
+              style={{top: `${marker.top}%`}}
+            >
+              {marker.label}
+            </span>
+          </>
+        ) : null}
+      </div>
 
       <div className="mt-3 flex h-4 justify-between font-[family-name:var(--font-ticker)] text-[11px] text-[var(--fig-text-dim)]">
         {axis.map((label, index) => (
@@ -137,8 +173,16 @@ export default function ServiceChart({
   );
 }
 
-/** Maps a bar series into the panel's 300x160 viewBox (top-down y). */
-function buildCandles(bars: MarketBar[]): Candle[] {
+/**
+ * Maps a bar series into the panel's 300x160 viewBox (top-down y).
+ *
+ * The price-to-y function is returned alongside the shapes so the current-price
+ * marker sits on exactly the same scale as the candles.
+ */
+function buildPlot(bars: MarketBar[]): {
+  candles: Candle[];
+  y: (price: number) => number;
+} {
   const highest = Math.max(...bars.map((bar) => bar.high));
   const lowest = Math.min(...bars.map((bar) => bar.low));
   const span = highest - lowest;
@@ -152,7 +196,7 @@ function buildCandles(bars: MarketBar[]): Candle[] {
       ? PLOT_TOP + ((highest - price) / span) * (PLOT_BOTTOM - PLOT_TOP)
       : (PLOT_TOP + PLOT_BOTTOM) / 2;
 
-  return bars.map((bar, index) => {
+  const candles = bars.map((bar, index) => {
     const bodyTop = y(Math.max(bar.open, bar.close));
     const bodyBottom = y(Math.min(bar.open, bar.close));
 
@@ -167,6 +211,8 @@ function buildCandles(bars: MarketBar[]): Candle[] {
       up: bar.close >= bar.open
     };
   });
+
+  return {candles, y};
 }
 
 /** Evenly spaced date ticks; daily buckets start at Hong Kong midnight. */
