@@ -420,11 +420,35 @@ Skrill）——**HATC 一個都沒有**。
 `/funding` 200，桌機 1440／平板 834／手機 390 截圖逐一看過（手機維持橫向捲動＋捲動提示）。
 另以 `DATABASE_URI=` 空值冷建驗證空資料路徑（見第 1 節）。未動 schema，`generate:types` 無變更。
 
-### 6. 待業主
+### 6. 業主本輪的三個決定 ＋ 同輪補的環境設定
+
+業主拍板：① 空資料**隱藏表格區塊**（已實作，見第 1 節）；② 表格**先不改成受控選項**
+（下拉＋數字的 D 方案），先用一鍵機器翻譯補三語，上線後若發現這張表常改再評估；
+③ 正式站**要啟用一鍵機器翻譯**；④ 正式站資料由業主／同事自己改，我提供對照表。
+
+**🚩 同輪順手修掉一個會讓業主白忙的落差**：`MT_BASE_URL`／`MT_MODEL` 的**程式預設是 OpenAI**
+（`api.openai.com` / `gpt-4o-mini`），而業主第四十輪定案的引擎是 **Google Gemini**（OpenAI 在
+香港不可用）。這兩個是公開值，卻**沒有寫進任何 `config/env/*.env`** → 主機若只設 `MT_API_KEY`，
+按鈕會拿 Gemini 金鑰去打 OpenAI，直接 401／404。已把 `MT_PROVIDER`／`MT_BASE_URL`／`MT_MODEL`
+補進 prd／stg／uat／local 四個環境檔（`env:check` 通過，三者都不符合密鑰 pattern），
+`DEPLOYMENT.md` §2.2 加了「如何啟用」段。**主機現在只要補 `MT_API_KEY` 並重啟，不必重新 build。**
+⚠ 只有**全權角色**看得到那顆按鈕（第三十三輪），測試要用管理員帳號。
+⚠ 若主機存在 git-ignored 的 `.env` 且出現過 `MT_BASE_URL` 等鍵（即使空值），`with-env.mjs`
+會依鍵名讓路，`config/env/*.env` 就不會套用。
+
+### 7. 交付狀態
+
+GitHub `origin/main` = `5be1641`；**Gitee `master` = `f37954a`（已同步）**。
+同步前已 `git fetch gitee master` 審過 diff —— 開發端自上次同步後**沒有任何新 commit**
+（唯一差異是本倉的 `lp.zip`，`sync-gitee.sh` 本來就排除它）。
+🚩 **尚未部署**：部署步驟＝`DEPLOYMENT.md` §2.0b，**部署後必須清前置 nginx 快取**（§2.0c，
+先部署再清），否則使用者看到的仍是帶「示意數據」badge 的舊版。
+
+### 8. 待業主
 
 - (a) **正式站 CMS 的三語內容**（現為三語同一份簡體）——對照表見第 3 節。
-- (b) 首頁 `raw_3.png` 與 `/trading` hero 佔位圖是否改用真實交易端截圖。
-- (c) 若要讓「一鍵機器翻譯」在正式站可用，主機要設 `MT_API_KEY`（Gemini，server-only）。
+- (b) 首頁 `raw_3.png` 與 `/trading` hero 佔位圖是否改用真實交易端截圖（與 FACTS 衝突，見第 4 節）。
+- (c) 取得 Google AI Studio 金鑰並填入 `config/env/prd.secrets.env` 的 `MT_API_KEY`。
 
 ## 🟢 第六十八輪（實作，2026-10-14）：首頁 K 線接即時報價 ＋ 可點選的產品切換
 
