@@ -513,14 +513,19 @@ cd /project/hatc-web
 N="sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH"     # §2.0b 的 PATH 陷阱
 
 # 1. 有哪些帳號？誰被鎖了？（唯讀，不印任何雜湊）
-$N npm run payload -- run scripts/admin-recover.ts
+$N npm run payload:prd -- run scripts/admin-recover.ts
 
 # 2. 解鎖
-$N npm run payload -- run scripts/admin-recover.ts -- --unlock you@example.com
+$N npm run payload:prd -- run scripts/admin-recover.ts -- --unlock you@example.com
 
 # 3. 重設密碼（密碼走環境變數，不會留在 shell 歷史或 ps 裡）
-$N ADMIN_NEW_PASSWORD='…' npm run payload -- run scripts/admin-recover.ts -- --reset you@example.com
+$N ADMIN_NEW_PASSWORD='…' npm run payload:prd -- run scripts/admin-recover.ts -- --reset you@example.com
 ```
+
+🚩 **維運腳本要用 `payload:prd`／`payload:uat`／`payload:local`，不是裸的 `payload`。**
+裸的那個不經過 `scripts/with-env.mjs`，所以讀不到 `config/env/<環境>.secrets.env`，
+會死在 `Error: missing secret key`（`PAYLOAD_SECRET` 與 `DATABASE_URI` 都沒載入）。
+這對**所有**透過 `payload run` 執行的腳本都適用（種子、`i18n:translate`、本節的救援腳本）。
 
 先跑第 1 步再決定做什麼，常見原因有三個，症狀在登入畫面上看起來一模一樣：
 

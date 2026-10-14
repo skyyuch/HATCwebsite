@@ -7,22 +7,24 @@
  * without `mongosh` and keeps the password hashing/validation rules intact
  * (never edit `users.hash` directly in the database).
  *
- * Usage (on the deployment host, needs DATABASE_URI + PAYLOAD_SECRET):
+ * Usage (needs DATABASE_URI + PAYLOAD_SECRET, hence `payload:<env>` rather than
+ * the bare `payload` script — that one skips `scripts/with-env.mjs` and so never
+ * loads `config/env/<env>.secrets.env`, failing with "missing secret key"):
  *
  *   # 1. Who exists, and is anyone locked out?
- *   npm run payload -- run scripts/admin-recover.ts
+ *   npm run payload:prd -- run scripts/admin-recover.ts
  *
  *   # 2. Clear a lockout (Payload locks an account for 10 minutes after 5
  *   #    failed attempts; the login screen just says the credentials are wrong)
- *   npm run payload -- run scripts/admin-recover.ts -- --unlock you@example.com
+ *   npm run payload:prd -- run scripts/admin-recover.ts -- --unlock you@example.com
  *
  *   # 3. Set a new password. Passed via the environment, NOT as an argument, so
  *   #    it does not end up in the shell history or in `ps` output.
  *   ADMIN_NEW_PASSWORD='…' \
- *     npm run payload -- run scripts/admin-recover.ts -- --reset you@example.com
+ *     npm run payload:prd -- run scripts/admin-recover.ts -- --reset you@example.com
  *
  * On the production host prefix with the node path (docs/DEPLOYMENT.md §2.0b):
- *   sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH npm run payload -- run …
+ *   sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH npm run payload:prd -- run …
  *
  * 🚩 This bypasses access control on purpose (`overrideAccess: true`) — it can
  * only be run by someone who already has a shell on the host and the database
