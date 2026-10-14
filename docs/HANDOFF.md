@@ -77,6 +77,15 @@
 > **存檔後第 1 次請求**即確認 embed 列表、公開列表、`/sitemap.xml` 三處全部含新公告；
 > 刪除後第 1 次請求也立刻消失。臨時公告與臨時帳號**驗完已刪**（本機 DB 回到 1 則公告、1 個帳號）。
 >
+> **✅ 第七十輪 再追加：公告網址改成年度流水號 `2026-001`（業主拍板）。**
+> 業主看到我給開發的詳情網址是 `/announcements/2026-09-05` 就指出「用日期，如果一個日期多個
+> 公告呢」。他是對的，而且問題有三層（詳見下方第 8 節）：同日第二則會變成無意義的
+> `2026-09-05-2`、**標題開頭有數字的那則連日期都沒用到**（「2025美国实施冬令时间通告」→
+> `/announcements/2025`）、而且 `title` 是三語但 `slug` 不是 → 網址取決於先存哪個語系。
+> 現在留空即自動發號 **`YYYY-NNN`**（`src/payload/slug.ts` → `autoSerialSlug`），
+> 業主仍可自己填指定網址。既有 6 則由一次性腳本 `scripts/renumber-announcements.ts` 換號。
+> **⚠ 舊網址會 404** —— 要請開發端改掉任何寫死的測試網址（`DEPLOYMENT.md` §10.1 已註明）。
+>
 > **⚠ 要轉告開發端的三件事**（完整版在 `DEPLOYMENT.md` §10）：① 網址必須帶語系前綴
 > （`/zh-Hant`／`zh-Hans`／`en`）；② 本倉沒有設 `X-Frame-Options`／CSP，所以可以 iframe，
 > **但要請維運確認前置 nginx（寶塔）沒有自動加 `SAMEORIGIN`**，否則 h5 會白屏；
@@ -508,6 +517,45 @@ embed 頁 `canonical`／`hreflang` **0 個**、embed 列表 `<header>/<footer>/<
 > `scripts/admin-recover.ts` 那樣 top-level `await getPayload(...)`），**不是**呼叫
 > `export default`。我第一版寫成 default export → 什麼都沒做、也沒有任何錯誤訊息，
 > 看起來像「帳號建了但登入失敗」。
+
+### 8. 再追加：公告網址改年度流水號 `2026-001`（業主拍板 2026-10-14）
+
+> 業主看到詳情網址用日期就說「不太對」。確實不對，而且有**三層**問題（舊規則＝
+> 「業主自填 → 標題 → 發布日期」，每個候選都過 `slugify`）：
+
+| 問題 | 實際後果 |
+| --- | --- |
+| 標題是中文 → `slugify` 回空字串 | 幾乎每則都落到用日期；**同日第二則變 `2026-09-05-2`**，看不出是哪一則，且取決於建立順序（業主提出的那點） |
+| 標題開頭有阿拉伯數字 | 「2025美国实施冬令时间通告」→ `slugify` 留下 `2025` → **連日期都沒用到**，白白佔住 `/announcements/2025` |
+| `title` 是 localized、`slug` 不是 | 網址取決於**先存哪個語系**（英文標題→英文代稱、中文→日期）⇒ 不確定 |
+
+> **決策（業主選擇）＝年度流水號 `YYYY-NNN`**，並把既有 6 則一起換掉。
+> 流水號對三個問題全免疫：不受語系影響、構造上唯一、短到適合 App 深連，也符合金融機構
+> 引用公告的慣例。**號碼不重複使用**（刪掉舊的也不會把號碼讓回去）。
+> 其餘選項：維持日期只修數字 bug（`-2` 的無意義感仍在）、中文標題轉拼音（要加套件、網址很長）。
+>
+> - **`src/payload/slug.ts`**：移除 `dateSlug`（已無使用者），抽出 `ensureUnique()`
+>   給兩個 hook 共用，新增 **`autoSerialSlug(collection, dateFrom)`**。年份用**香港時間**
+>   （跨年夜發的公告不會被編進錯誤年度）；一次 `like: '<year>-'` 查詢取回該年所有編號，
+>   在 JS 裡算 `max + 1`，所以不會因為刪除而重號，也不會退回 `-2` 後綴。
+>   **自填值仍然優先**（照舊正規化＋去重），所以想指定網址還是可以。
+>   🚩 日期不可解析時**不會回空字串**（會退到今年）——空 slug 會被 reader 的 `mapSummary`
+>   丟掉，公告會從列表上無聲消失，比編號稍微不對嚴重得多。
+> - **`src/collections/Announcements.ts`**：換成 `autoSerialSlug`，欄位說明三語改成
+>   「**請留空**，系統會依發布年份自動編號」（原本寫「依標題或發布日期」＝已不實）。
+>   `payload-types.ts` 只有那段 JSDoc 變動（欄位形狀沒變）。
+> - **一次性腳本 `scripts/renumber-announcements.ts`**：依 `publishedAt` 由舊到新發號，
+>   `--dry-run` 可先看對照表，**冪等**（已正確者印 `=`、回報 no change needed）。
+>   🚩 **兩段式更新**：`slug` 有 unique index，目標編號可能還被另一則佔著（互換的情況），
+>   所以先全部停到 `tmp-renumber-<id>` 再寫入正式編號。
+>   🚩 **CLI 不會 revalidate**（無 request context，`revalidateContent.ts` 按設計吞掉）→
+>   腳本結尾會提示「到 `/admin` 隨便存一次」，這樣列表／embed 列表／sitemap 才會更新。
+> - **驗收**：本機建四則測試資料實測 —— 同日兩則 → `2026-002`／`2026-003`（不是 `-2`）、
+>   標題帶數字的去年公告 → `2025-001`、自填 ` /My Custom URL ` → `my-custom-url`；
+>   測試資料驗完即刪。冷建後 `/zh-Hans/announcements/2026-001` 與
+>   `/zh-Hans/embed/announcements/2026-001` 皆 200、舊的 `/announcements/announcements`
+>   404、兩個列表的連結與 `/sitemap.xml` 都已指向新編號。`tsc`／`lint` 0 error／
+>   `generate:types` 僅 JSDoc 變動。
 
 ## 🟢 第六十九輪（實作，2026-10-14）：`/funding` 示意數據退役 ＋ 全站「示意」稽核
 

@@ -1218,6 +1218,22 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
   - ⚠ **臨時維運腳本**：`payload run <script>` **直接執行整個檔案**（照
     `scripts/admin-recover.ts` 的 top-level `await getPayload(...)` 寫），**不是**呼叫
     `export default`。寫成 default export 會**什麼都不做且不報錯**。
+  - **🚩 再追加（業主 2026-10-14）：公告網址＝年度流水號 `YYYY-NNN`（`2026-001`），
+    SUPERSEDES 第六十一輪「標題→發布日期」的候選順序。** 業主看到詳情網址用日期就指出
+    「一個日期多個公告呢」。舊規則有**三層**問題：① 中文標題 `slugify` 回空 → 幾乎都落到
+    日期 → **同日第二則變 `2026-09-05-2`**（無意義、取決於建立順序）；② **標題開頭有阿拉伯
+    數字時連日期都沒用到**（「2025美国实施冬令时间通告」→ `/announcements/2025`）；
+    ③ **`title` 是 localized、`slug` 不是** → 網址取決於先存哪個語系（不確定）。
+    落地＝`src/payload/slug.ts` 的 **`autoSerialSlug()`**（`dateSlug` 已移除；
+    `ensureUnique()` 抽出共用，`autoSlug` 仍給 `announcement-categories` 用）：年份取
+    **香港時間**、一次 `like:'<year>-'` 查詢後在 JS 算 `max+1`（**號碼不重複使用**、
+    不會退回 `-2`）、**自填值仍優先**（正規化＋去重）、**日期不可解析時退到今年而非回空**
+    （空 slug 會被 reader `mapSummary` 丟掉＝公告無聲消失）。既有資料＝一次性腳本
+    `scripts/renumber-announcements.ts`（`--dry-run`、冪等、**兩段式**先停到
+    `tmp-renumber-<id>` 再寫入，因為 `slug` 有 unique index）。
+    **⚠ 舊網址會 404**，要請開發端別寫死編號（`DEPLOYMENT.md` §10.1 已註明）。
+    **日後新增需要 slug 的集合**：標題是中文就用 `autoSerialSlug`，不要再把 localized
+    標題當 slug 候選。
 
 - **2026-10-14 (第六十九輪): `/funding` 的「示意數據」退役 —— 出入金渠道改為對外正式資訊，
   並刪掉虛構後備。SUPERSEDES 第三十六／三十七輪把 `funding-methods` 當示意表的設計。**

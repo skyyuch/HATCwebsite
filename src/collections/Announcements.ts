@@ -3,7 +3,7 @@ import type {CollectionConfig} from 'payload';
 import {revalidateAnnouncements} from '@/lib/revalidateContent';
 import {contentCollectionAccess, fieldUpdateAccess} from '@/payload/access';
 import {ADMIN_GROUPS, adminLabel} from '@/payload/adminLabels';
-import {autoSlug, dateSlug} from '@/payload/slug';
+import {autoSerialSlug} from '@/payload/slug';
 
 /**
  * Official announcements (owner request 2026-10-12, 第六十輪): `/announcements`
@@ -60,9 +60,11 @@ export const Announcements: CollectionConfig = {
       label: adminLabel('Title', '標題', '标题')
     },
     {
-      // Leave it blank and `autoSlug` derives one — see src/payload/slug.ts for
-      // why (第六十一輪). Anything typed here is normalised to ASCII + hyphens, so
-      // a pasted path or a stray space can no longer produce a broken URL.
+      // Leave it blank and a serial is issued: 2026-001, 2026-002, … See
+      // src/payload/slug.ts → autoSerialSlug for why the title and the plain
+      // publication date both turned out to be unusable (owner 2026-10-14).
+      // Anything typed here still wins, normalised to ASCII + hyphens, so a
+      // pasted path or a stray space can no longer produce a broken URL.
       name: 'slug',
       type: 'text',
       unique: true,
@@ -70,18 +72,17 @@ export const Announcements: CollectionConfig = {
       access: {update: fieldUpdateAccess('announcements', 'slug')},
       hooks: {
         beforeValidate: [
-          autoSlug('announcements', (data, originalDoc) => [
-            data?.title,
-            dateSlug(data?.publishedAt ?? originalDoc?.publishedAt)
+          autoSerialSlug('announcements', (data, originalDoc) => [
+            data?.publishedAt ?? originalDoc?.publishedAt
           ])
         ]
       },
       label: adminLabel('URL slug', '網址代稱', '网址代称'),
       admin: {
         description: adminLabel(
-          'Optional — leave blank and it is generated from the title or the published date. It becomes the address of the notice: /announcements/<slug>.',
-          '可留空，系統會依標題或發布日期自動產生。它是這則公告的網址：/announcements/<代稱>。',
-          '可留空，系统会依标题或发布日期自动产生。它是这则公告的网址：/announcements/<代称>。'
+          'Leave blank — a serial is issued automatically from the published year (2026-001, 2026-002, …). It becomes the address of the notice: /announcements/<slug>. Only fill it in if you want a specific URL.',
+          '請留空，系統會依發布年份自動編號（2026-001、2026-002…）。它是這則公告的網址：/announcements/<代稱>。只有想指定特定網址時才需要自己填。',
+          '请留空，系统会依发布年份自动编号（2026-001、2026-002…）。它是这则公告的网址：/announcements/<代称>。只有想指定特定网址时才需要自己填。'
         )
       }
     },

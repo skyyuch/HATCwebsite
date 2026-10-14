@@ -842,7 +842,7 @@ commit 的圖片素材）。業主端上行只有 3–13 KiB/s，整包塞不進
 | 用途 | 網址 |
 | --- | --- |
 | 公告列表 | `https://www.hatcmarket.com/<locale>/embed/announcements` |
-| 公告詳情 | `https://www.hatcmarket.com/<locale>/embed/announcements/<網址代稱>` |
+| 公告詳情 | `https://www.hatcmarket.com/<locale>/embed/announcements/<公告編號>` |
 | 免責聲明 | `https://www.hatcmarket.com/<locale>/embed/disclaimer` |
 | 隱私權政策 | `https://www.hatcmarket.com/<locale>/embed/privacy` |
 
@@ -851,6 +851,9 @@ commit 的圖片素材）。業主端上行只有 3–13 KiB/s，整包塞不進
 - 這些頁**沒有** Header、Footer、麵包屑，只有內容；標題區是一行精簡標題，不會和 App 自己的
   標題欄打架。
 - 公告列表可用 `?category=<分類網址代稱>` 直接開在某個分類（代稱＝後台「公告分類」的欄位）。
+- **`<公告編號>` 格式＝`YYYY-NNN`**（例：`2026-001`、`2026-002`），依發布年份自動編號、不重複使用。
+  **請不要寫死**任何一則的編號，從列表頁的連結取或由 API 取（`/api/announcements`）。
+  ⚠ 2026-10-14 以前曾用日期當代稱（如 `2026-09-05`），**已全部換成編號，舊網址會 404**。
 - 公告詳情**不需要官網重新部署**：後台發佈新公告後該網址立即可用。
 - 內容與官網公開頁完全同一份（同一個 CMS、同一份文案），後台改完即生效（見 §6）。
 

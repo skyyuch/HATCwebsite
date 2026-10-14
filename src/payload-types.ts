@@ -365,7 +365,7 @@ export interface Announcement {
   id: string;
   title: string;
   /**
-   * Optional — leave blank and it is generated from the title or the published date. It becomes the address of the notice: /announcements/<slug>.
+   * Leave blank — a serial is issued automatically from the published year (2026-001, 2026-002, …). It becomes the address of the notice: /announcements/<slug>. Only fill it in if you want a specific URL.
    */
   slug?: string | null;
   /**
