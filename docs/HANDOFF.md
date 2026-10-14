@@ -36,7 +36,34 @@
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
-## ▶ 下一輪任務（第六十七輪做了即時推送；網域切換仍未發生）
+## ▶ 下一輪任務（第六十七輪做了即時推送；**當天稍後正式網域已切換上線**）
+
+> ## 🟩 2026-10-14 14:40 現況（最新，先看這段）
+>
+> **正式網域 `https://www.hatcmarket.com` 已切換成這個站，並跑 `build:prd` / `start:prd`。**
+> 下面「網域切換仍未發生」那幾段是切換前的紀錄，保留作為脈絡。當天切換後依序爆出三個問題，
+> **全部已解、已驗證**：
+>
+> | 項目 | 狀態 |
+> | --- | --- |
+> | 行情推送 | ✅ 25 秒 45 幀、間隔散亂（真實 tick） |
+> | `/admin`、`/api/users/me` | ✅ 200（曾因密鑰檔缺漏雙雙 500） |
+> | SEO | ✅ `Allow: /`、每頁 `index, follow`、canonical 指 www |
+> | nginx 舊快取 | ✅ 已清除；`next.config.ts` 移除 `s-maxage` 防止復發 |
+>
+> 1. **換環境要換密鑰檔**：`config/env/<環境>.secrets.env` 按環境名載入，目錄裡只有
+>    `stg.secrets.env` → 改跑 `prd` 後四個密鑰全讀不到，行情 `{ok:false}`、後台 500。
+>    修法＝複製一份成 `prd.secrets.env` **並重新 build**（只重啟無效）。
+> 2. **前置 nginx 把舊 HTML 存了一年**（寶塔共用 `proxy.conf` 全域開 `proxy_cache cache_one`
+>    ＋ Next 預設只送 `s-maxage=31536000`）。最陰的地方：快取鍵含原始 `Accept-Encoding`
+>    字串 → **Chrome 看到舊版、`curl` 看到新版**。完整說明與清除指令＝`DEPLOYMENT.md` **§2.0c**。
+> 3. **重啟 nginx 會打斷上游 WebSocket**，之後約一分鐘 SSE 間隔是固定 4.0 秒（降級模式），
+>    會自己接回來 —— 不要據此判定壞掉，詳見 `DEPLOYMENT.md` §5。
+>
+> **🚩 未結**：`web.hatcmarket.com` 與 `www` 由**同一個 nginx server 區塊**服務
+> （`server_name web.hatcmarket.com www.hatcmarket.com;`），但憑證今天重簽時只勾了 `www`
+> → `web.hatcmarket.com` 的 TLS 已不匹配（`curl` exit 60）。待業主決定：補 SAN 讓兩個都能用，
+> 或把 `web` 301 到 `www`。
 
 > **✅ 第六十七輪（2026-10-14）完成：報價即時推送（WebSocket → SSE）＋ 價格閃動。**
 > 詳見下方「🟢 第六十七輪」。**本輪同時把預覽主機從 `prd` 設定改成 `stg`**（業主授權

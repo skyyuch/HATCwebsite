@@ -92,6 +92,16 @@ npm run dev                                # 本機（自動套 local）
 
 ### 2.0a `stg`＝上線前預覽，為什麼不能直接用 `build:prd`（第六十五輪新增）
 
+> **2026-10-14：正式網域已切換。** `www.hatcmarket.com` 現在就是這個站，主機跑
+> `build:prd` / `start:prd`。`web.hatcmarket.com` 與它**由同一個 nginx server 區塊服務**
+> （`server_name web.hatcmarket.com www.hatcmarket.com;`），所以兩個網址指向同一份內容。
+> 本節保留，因為下次再需要「在非正式網域上預覽生產建置」時仍適用。
+> ⚠ 切換當天踩到的坑：**密鑰檔是按環境名載入的**，目錄裡只有 `stg.secrets.env`，
+> 一改跑 `prd` 就四個密鑰全部讀不到 → 行情 `{ok:false}`、`/admin` 與
+> `/api/users/me` 雙雙 **500**。切換環境時必須先
+> `cp config/env/stg.secrets.env config/env/prd.secrets.env`（或反之）**再重新 build**
+> ——只重啟沒用，CMS 內容是在建置時就烤進靜態 HTML 的。
+
 正式站還沒切換時，生產建置被部署到 **`web.hatcmarket.com`**，而
 `www.hatcmarket.com` 當時仍服務**另一個既有站**。用 `build:prd` 跑在這個網域上會同時
 造成兩件事，而且**頁面上完全看不出來**：
@@ -136,7 +146,7 @@ curl -s https://web.hatcmarket.com/zh-Hant | grep -o 'name="robots"[^>]*'     # 
 | 登入帳號 | `ubuntu`，但檔案與程序都屬 `root` → 每個指令都要 `sudo` |
 | 密鑰 | 全部四個都在 `config/env/<環境>.secrets.env`，**機器上沒有 `.env`** |
 | 行情閘道 | **同一台機器**的另一個 Node 項目（`mt5_quote_gateway_prd`） |
-| nginx | **不在這台機器上**（對外 IP 13.251.150.207 ≠ 本機對外 18.141.19.148，前面另有一層反向代理） |
+| nginx | **不在這台機器上** —— 對外 IP 13.251.150.207 ≠ 本機對外 18.141.19.148。前面那台也是寶塔，反向代理到 `172.31.27.163:3000`（本機內網位址），詳見 §2.0c |
 
 兩個會絆倒人的點：
 
@@ -157,6 +167,58 @@ sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH npm run build:stg
 
 ⚠ `media/`（後台上傳的檔案）與 `config/env/*.secrets.env` 都被 git 忽略，**換目錄或
 重建時必須手動搬過去**，否則媒體庫整片破圖、行情與資料庫連不上。
+
+### 2.0c 前面那台 nginx 會把 HTML 存起來 —— 部署後必須清快取（2026-10-14 第六十七輪）
+
+**13.251.150.207**（寶塔，`ip-172-31-46-81`）是所有網域的入口，反向代理到應用程式機器的
+`172.31.27.163:3000`。它的 `/www/server/nginx/conf/proxy.conf` 裡有：
+
+```nginx
+proxy_cache_path /www/server/nginx/proxy_cache_dir levels=1:2 keys_zone=cache_one:20m inactive=1d max_size=5g;
+proxy_cache cache_one;          # ← 全域開啟，對所有反向代理的站生效
+```
+
+🚩 **網站自己的設定裡「#Set Nginx Cache」區塊留空並不代表沒有快取** ——
+開關在共用的 `proxy.conf` 裡。要確認只能用 `sudo /www/server/nginx/sbin/nginx -T`
+把所有 include 攤平來看，`grep` 單一設定檔會漏掉。
+
+這個快取配上 Next 的預設回應標頭（靜態頁只送 `s-maxage=31536000`，**沒有** `max-age`）
+等於「這份 HTML 一年內都有效」。實際後果：部署後 nginx 繼續送部署前的 HTML，而那份 HTML
+引用的是舊的 JS／CSS 檔名 → **使用者看到的是舊版網站，但伺服器上一切正常**。
+
+兩個讓它極難察覺的特性：
+
+- **回應依 `Accept-Encoding` 分版本**（`Vary: Accept-Encoding`，快取鍵用的是原始字串）。
+  Chrome 送的是 `gzip, deflate, br, zstd`，`curl` 預設不送 —— 於是
+  **`curl` 看到新版、瀏覽器看到舊版**。驗證一定要帶上瀏覽器那串完整的編碼：
+
+  ```bash
+  curl -s --compressed -H 'Accept-Encoding: gzip, deflate, br, zstd' \
+    https://www.hatcmarket.com/zh-Hant | grep -oE '[a-z0-9]{10,16}\.css' | head -1
+  ```
+
+  把它和不帶 `-H` 的結果比對，**檔名不同就是中了快取**。
+- `add_header X-Cache $upstream_cache_status;` 在變數為空時 nginx 會**整個略過該標頭**，
+  所以「看不到 `X-Cache`」**不能**用來斷定沒有快取。
+- 加 `?x=1` 之類的參數會換一個快取鍵 → 立刻看到新版。這是最快的判別法，
+  **但也只是繞過，不是修好**。
+- 重啟 nginx **沒有用**（快取在磁碟上）。
+
+**本倉已經做的根治**：`next.config.ts` 把所有 HTML 的 `Cache-Control` 改成
+`public, max-age=0, must-revalidate`（移除 `s-maxage`），nginx 以後每次都會帶 ETag 回源
+驗證；`/_next/static/` 底下帶雜湊檔名的資源不受影響，照常快取。
+
+**但舊的汙染條目不會自己消失**（它帶著舊的一年期標頭），所以改完之後要手動清一次：
+
+```bash
+sudo rm -rf /www/server/nginx/proxy_cache_dir/*
+sudo /www/server/nginx/sbin/nginx -s reload
+```
+
+會一併清掉那台機器上其他站（info / node / webapi）的快取，只是讓它們下次請求重抓一次。
+⚠ **順序不能反**：先部署新版、再清快取；反過來會立刻被舊標頭重新汙染。
+清完之後，使用者自己的瀏覽器可能還留著一份（舊回應沒有 `max-age`，Chrome 會自行推算
+新鮮期），要按一次 Cmd/Ctrl + Shift + R，之後就不用再做了。
 
 ### 2.1 必填（只能放主機環境變數或 git-ignored 的 `.env`）
 
@@ -499,8 +561,14 @@ npm run payload -- run scripts/seed-announcements.ts    # 公告分類（重要�
     ```bash
     curl -sN --max-time 20 https://<站台>/api/market/stream | grep -c '^data:'
     ```
-    有行情時 20 秒內應有**數十筆**（實測 UAT 約 40–50 筆）；只有 1–2 筆且都是
+    有行情時 20 秒內應有**數十筆**（實測 UAT 與生產都約 40–50 筆）；只有 1–2 筆且都是
     `{"ok":false}` ＝沒有行情，照 §5.1 查；筆數正常但**全部擠在最後一次送達**＝代理在緩衝。
+  - **看間隔就能分辨推送／降級，不必登入診斷端點**：真實 tick 的間隔是**散亂**的
+    （實測 0.2／0.5／1.06 秒混雜）；**固定 4.0 秒整**＝上游 WebSocket 斷了、hub 退到
+    每 2 秒一次 HTTP 快照（再疊上 2 秒報價快取＝4 秒）。
+    ⚠ **重啟前面那台 nginx 會打斷這條上游 WebSocket**，之後約一分鐘內量到的就是這個 4 秒，
+    屬正常：hub 以指數退避（最多 30 秒一次）自己接回來，期間畫面照常有報價、只是慢。
+    判定「真的壞了」要隔幾分鐘再量一次。
 - 代理**只接受黃金／白銀／人民幣公斤條**三個代號。閘道的訪客白名單另有 26 個外匯／指數代號，
   本站刻意不代理它們（紅線：不得把外匯／指數呈現為 HATC 產品）。
 - `{ok:false}` 是**正常回應**，不是錯誤 —— 前台會自動顯示標示清楚的示意數據。

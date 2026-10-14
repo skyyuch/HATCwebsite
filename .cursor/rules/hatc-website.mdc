@@ -1106,6 +1106,34 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  判別法（不一致就是快取）。SSE 實測 22 秒 30 幀、間隔平均散佈（非 2.0 秒整數）＝確認走推送且
  未被反向代理緩衝。
 
+- **2026-10-14 (第六十七輪 當天追加): 正式網域切換 `www.hatcmarket.com` ＋ 前置 nginx 的
+ `proxy_cache` 把舊 HTML 存了一年。SUPERSEDES 第六十三輪「www 是別的站」與第六十五輪
+ 「web 是暫時預覽位址」。** 業主切換網域後依序爆出三個問題，全部已解。
+ - **🚩 換環境＝換密鑰檔**：`config/env/<環境>.secrets.env` **按環境名載入**，當初換目錄時只
+ 複製了 `stg.secrets.env`，一改跑 `prd` 就四個密鑰全部讀不到 → 行情 `{ok:false}`、**`/admin`
+ 與 `/api/users/me` 雙雙 500**（前台照常 200，又一次「頁面 200 不等於 CMS 正常」）。修法＝
+ `cp stg.secrets.env prd.secrets.env` **並重新 build**（只重啟無效，CMS 內容在建置時烤進 HTML）。
+ - **🚩 前置 nginx（13.251.150.207，寶塔）全域開著 `proxy_cache cache_one`**（在共用的
+ `/www/server/nginx/conf/proxy.conf` 第 214 行，**網站自己的「#Set Nginx Cache」區塊留空並不
+ 代表沒有快取**）。配上 Next 靜態頁預設只送 `s-maxage=31536000`（無 `max-age`）＝舊 HTML 存一年
+ → 部署後使用者仍看到舊版網站、而伺服器一切正常。**三個讓它極難察覺的特性**：① 回應
+ `Vary: Accept-Encoding` 且快取鍵用原始字串 → **Chrome 的 `gzip, deflate, br, zstd` 拿舊版、
+ `curl` 預設不送該標頭所以拿新版**（驗證必須手動帶上那串）；② `add_header X-Cache
+ $upstream_cache_status;` 在變數為空時 nginx 整個略過，**「看不到 X-Cache」不能斷定沒快取**；
+ ③ 重啟 nginx 無效（快取在磁碟）。**找法＝`sudo nginx -T` 攤平所有 include**（grep 單一設定檔
+ 會漏）＋ `grep -rl '<舊的 css 檔名>' /www/server/nginx /www/server/btwaf /www/wwwroot` 直接
+ 定位檔案。**根治**＝本倉 `next.config.ts` 已移除 `s-maxage`（改 `max-age=0, must-revalidate`），
+ **但舊條目要手動清**：`rm -rf /www/server/nginx/proxy_cache_dir/* && nginx -s reload`，
+ **順序必須「先部署新版、再清快取」**。詳見 `DEPLOYMENT.md` **§2.0c**。
+ - **SSE 間隔＝免登入的推送／降級判別法**：真實 tick 間隔**散亂**（0.2／0.5／1.06 秒混雜）；
+ **固定 4.0 秒整**＝上游 WS 斷線、hub 退到 2 秒 HTTP 快照＋2 秒報價快取。**重啟前置 nginx 會
+ 打斷那條上游 WebSocket**，之後約一分鐘量到 4 秒屬正常（指數退避自己接回，實測恢復後
+ 25 秒 45 幀），判定「真的壞了」要隔幾分鐘再量。
+ - **網域現況**：`server_name web.hatcmarket.com www.hatcmarket.com;` ＝**同一個 server 區塊
+ 服務兩個網域**，內容相同。憑證今天重簽時只勾了 `www` → `web.hatcmarket.com` 的 TLS 已不匹配
+ （待業主決定補 SAN 或 301 到 www）。**兩個網域仍刻意不寫進 FACTS 以外的頁面內容**；
+ `www.hatcmarket.com` 本身已是 FACTS 核可事實（第六十三輪）。
+
 - **2026-10-13 (第六十四輪 追加查證；未改程式碼)**：① **判斷對方部署到哪一版，就打那一版新增
  的路由**——`/api/market/diagnostics` 在 UAT 回 **404 ＝ 還是舊建置**（Gitee `master` 早已有
  `c11769e`，所以是沒重新部署，不是沒交付）。比問「部署了嗎」可靠。② 線上仍是 uat 設定
