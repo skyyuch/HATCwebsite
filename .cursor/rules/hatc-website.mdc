@@ -1242,14 +1242,64 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
     並活在正式站上**（回 200、還進了 sitemap）。`slug` 不是 localized、值也已算好，沒有 hook
     需要跑，所以 db 層寫入才是對的——「某則缺不缺翻譯」是內容問題，不該擋住網址遷移。
     **兩段式寫入的腳本必須有失敗回復**，否則臨時值會留在線上。
-  - **🚩 一鍵翻譯是「繁中 → 其他」單向，來源語系不可選**
-    （`src/lib/mt/translateDocument.ts:95` `source = localization.defaultLocale`，且 `:133`
-    只收集**非空**來源葉節點）。所以**同事用簡體輸入後按翻譯＝什麼都沒做**（`filled: 0`，
+  - **🚩 一鍵翻譯原本是「繁中 → 其他」單向，來源語系不可選** → **第七十一輪已改為自動選來源**
+    （見下一條）。原狀況：`translateDocument` 固定 `source = localization.defaultLocale`、
+    且只收集**非空**來源葉節點，所以**同事用簡體輸入後按翻譯＝什麼都沒做**（`filled: 0`，
     不報錯）。配上 reader 的 `mapSummary`（`!title → null`）與 `localization.fallback: true`
     **只讓非預設語系回退到預設語系**（預設語系自己沒有回退對象），結果是**簡體輸入的公告在
     繁中（預設語系）與英文站整則消失**——2026-10-14 實測 `zh-Hant` 3 則／`zh-Hans` 10 則。
-    **交棒第七十一輪處理**（選項與代價見 HANDOFF 第七十輪第 9 節，**要先問業主**）。
-    在那之前：**任何 localized 必填欄位都要三語齊全**，不要只填一個語系就以為翻譯會補上。
+
+- **2026-10-14 (第七十一輪): 一鍵翻譯改為自動選來源語系 ＋ 後台顯示「缺標題」提示 ＋
+  sitemap 改為逐語系列舉。SUPERSEDES 第三十二輪「繁中→其他單向」的來源設計。**
+  業主回報「同事一鍵翻譯後，標題會沒有」。**標題不是被翻譯弄掉的，是從來沒被填進去**
+  （根因鏈見上一條）。業主拍板三件事：① 做 **(a)+(b) 並行**＝讓翻譯自動挑有內容的語系當來源，
+  同時把「繁中＝正本」寫成明確規則；② **不做 reader 跨語系回退**（缺翻譯要看得見），但
+  **後台要有提示**；③ 既有 7 則由**腳本批次產機翻草稿**，業主再校對。
+  - **`src/lib/mt/translateDocument.ts`**：新增 `sourceLocale?`（明確指定）與
+    **`pickSourceLocale()`＝取可翻譯葉節點最多的語系，平手給 `defaultLocale`**。
+    平手給預設語系是刻意的：正常流程（先寫繁中）行為完全不變，**不會**從機翻語系再翻一次；
+    混合文件兩次執行會收斂（第一次把繁中補滿 → 之後平手 → 繁中勝）。
+    **`overwrite: true` 時若未明確指定來源，來源固定回 `defaultLocale`**——用次要語系的機翻
+    覆蓋正本是唯一真正破壞性的組合。新增 `dryRun`（不呼叫引擎、不寫入、不需金鑰）。
+    回傳多了 `autoSource`。
+  - **`/api/translate`** 收 `sourceLocale`、回傳 `source`＋`autoSource`；按鈕 toast 改成
+    「已以**简体中文**為來源填入翻譯草稿：繁體中文 3、English 3」（原本只印語系代碼），
+    三語 hint 一併改寫（原文寫「把繁中內容…」已不實）。
+  - **`src/components/payload/LocaleCoverageNotice.tsx`（新）**：注入每個有多語文字的集合的
+    **`beforeListTable`**（與翻譯按鈕同一套 `configHasLocalizedText` 自動偵測），分兩段提示：
+    🔴 **缺預設語系標題＝三個語系都看不到**（並說明為何：fallback 幫不了預設語系）／
+    🟡 缺其他語系標題＝該語系顯示繁中內容。每筆連到 `?locale=<缺的語系>` 的編輯頁。
+    **刻意只檢查 `useAsTitle` 欄位**（它的缺失才會讓文件從前台消失；檢查所有 localized 葉節點
+    要把 49 篇學院文章的 Lexical 內文整份拉出來，每次開列表都付這個成本）。
+    **每段最多列 8 筆**＋「…另有 N 筆」（本機學院就有 22 筆缺譯，否則會把表格推到螢幕外）。
+    `enabled === false` 的文件不列（本來就不對外）。整個查詢包 try/catch → 失敗回 `null`，
+    提示面板不得讓列表頁掛掉。樣式在 `adminBrand.css`（`.hatc-locale-gap*`）。
+    ⚠ 新增 admin 元件 → 已跑 `generate:importmap`。
+  - **sitemap 逐語系（與方向題無關，業主同意一併修）**：`getAnnouncementSlugs()` 原本是
+    `getAnnouncements(defaultLocale).map()` ⇒ **繁中沒有標題的公告連 slug 都拿不到** ⇒ 那 7 則
+    **在所有語系都進不了 sitemap**，包括它們實際看得到的簡體站（搜尋引擎永遠發現不了）。
+    改為 `getAnnouncementSlugsByLocale()`／`getAcademyArticleSlugsByLocale()`，`sitemap.ts`
+    依「哪些語系真的渲染得出來」產生條目，`hreflang` 也只列那些語系（**不得**改回
+    `routing.locales`，否則等於把 404 網址交給 Google）。`getAnnouncementSlugs()` 改為
+    **所有語系的聯集**供 `generateStaticParams` 用（缺繁中的那筆在繁中會預產生 404 頁，
+    符合現況；簡體仍 200）。實測：示意資料下該筆在 sitemap 只出現一次、`hreflang` 只有
+    `zh-Hans`，三語齊全者仍三條。
+  - **批次補譯＝沿用既有 `scripts/translate-content.ts`**（不另開腳本）：新增 `--dry-run`
+    與逐筆印出來源語系。正式站指令與善後步驟寫進 **`DEPLOYMENT.md` §4.2**。
+    🚩 **CLI 不會 revalidate** → 跑完要到 `/admin` 存一次任一文件，再清前置 nginx 快取。
+  - **紅線**：機翻＝**校對草稿**，不是事實；公告是公司對外聲明，**不得由程式捏造內容**，
+    這一輪只是把同事已經寫好的簡體內容翻成另外兩語。facts 與
+    `products/tradingConditions.ts` 不進翻譯管線（第三十二輪紅線不變）。
+  - **驗收**：本機建三種情境（簡體 only／三語齊全／缺英文）實測 —— dry-run 正確印出
+    `← zh-Hans (auto)`、實跑後繁中／英文標題與內文都補上且**三語齊全那筆一字未動**
+    （fill-only 語意）、`/api/translate` 回 `{"source":"zh-Hans","autoSource":true,
+    "filled":{"zh-Hant":3,"en":3}}`；後台提示兩段皆正確（zh-TW／en 截圖）、
+    `media`／`faqs`／`funding-methods` 無提示（完整或標題非 localized）。
+    `lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc`／`i18n:check` **675 鍵不變**
+    （後台提示是 Payload admin 文案，照 `DashboardHub` 慣例寫在元件內的三語常數，**不開 i18n 鍵**）
+    ／冷建綠且全頁維持 ● SSG。未動 schema，`generate:types` 無變更。
+  - **待業主**：那 7 則的機翻草稿需逐筆校對（公告＝對外聲明）；學院另有 22 篇缺簡中／英文標題
+    （非關鍵，前台顯示繁中），要補就跑 `--only academy-articles`。
 
 - **2026-10-14 (第六十九輪): `/funding` 的「示意數據」退役 —— 出入金渠道改為對外正式資訊，
   並刪掉虛構後備。SUPERSEDES 第三十六／三十七輪把 `funding-methods` 當示意表的設計。**

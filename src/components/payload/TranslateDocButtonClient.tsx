@@ -12,6 +12,12 @@ import {Button, toast, useDocumentInfo, useTranslation} from '@payloadcms/ui';
  * (never overwriting values already entered). After success the editor switches
  * the top-right Locale to review / edit the drafts.
  *
+ * The source locale is decided server-side from the content (most complete
+ * locale, ties → 繁體中文) rather than being fixed to 繁體中文, so a document
+ * typed in Simplified Chinese still gets translated (第七十一輪). The toast
+ * names the locale that was used as the original, because that is the one the
+ * editor is implicitly declaring canonical.
+ *
  * Degrades gracefully: when MT is not configured the button is disabled with a
  * hint; unsaved collection docs disable it until saved.
  */
@@ -20,10 +26,18 @@ type Labels = {
   running: string;
   notConfigured: string;
   saveFirst: string;
+  /** `{source}` = locale label the draft was translated from. */
   successPrefix: string;
   noEmpty: string;
   failed: string;
   hint: string;
+};
+
+/** Content-locale labels, mirroring `payload.config.localization.locales`. */
+const LOCALE_LABELS: Record<string, string> = {
+  'zh-Hant': '繁體中文',
+  'zh-Hans': '简体中文',
+  en: 'English'
 };
 
 const LABELS: Record<string, Labels> = {
@@ -32,30 +46,31 @@ const LABELS: Record<string, Labels> = {
     running: '翻譯中…',
     notConfigured: '尚未設定翻譯服務（缺少 API 金鑰）',
     saveFirst: '請先儲存文件再翻譯',
-    successPrefix: '已填入翻譯草稿：',
-    noEmpty: '沒有需要翻譯的空欄位（其他語系已有內容）。',
+    successPrefix: '已以{source}為來源填入翻譯草稿：',
+    noEmpty: '沒有需要翻譯的空欄位（其他語系已有內容，或本文件尚無任何內容）。',
     failed: '翻譯失敗',
-    hint: '把繁中內容機器翻譯為其他語系草稿（僅填空、不覆蓋已填）。完成後於右上「語言地區」切換校對。'
+    hint: '把內容最完整的語系機器翻譯為其他語系草稿（同樣完整時以繁體中文為正本；僅填空、不覆蓋已填）。完成後於右上「語言地區」切換校對。'
   },
   zh: {
     action: '一键机器翻译',
     running: '翻译中…',
     notConfigured: '尚未设定翻译服务（缺少 API 密钥）',
     saveFirst: '请先保存文档再翻译',
-    successPrefix: '已填入翻译草稿：',
-    noEmpty: '没有需要翻译的空字段（其他语系已有内容）。',
+    successPrefix: '已以{source}为来源填入翻译草稿：',
+    noEmpty: '没有需要翻译的空字段（其他语系已有内容，或本文档尚无任何内容）。',
     failed: '翻译失败',
-    hint: '把繁中内容机器翻译为其他语系草稿（仅填空、不覆盖已填）。完成后于右上「语言地区」切换校对。'
+    hint: '把内容最完整的语系机器翻译为其他语系草稿（同样完整时以繁体中文为正本；仅填空、不覆盖已填）。完成后于右上「语言地区」切换校对。'
   },
   en: {
     action: 'Auto-translate',
     running: 'Translating…',
     notConfigured: 'Translation service is not configured (missing API key)',
     saveFirst: 'Save the document before translating',
-    successPrefix: 'Draft translations filled: ',
-    noEmpty: 'Nothing to translate — other locales already have content.',
+    successPrefix: 'Draft translations filled from {source}: ',
+    noEmpty:
+      'Nothing to translate — the other locales already have content, or this document is still empty.',
     failed: 'Translation failed',
-    hint: 'Machine-translate the Traditional Chinese content into draft copy for the other locales (fills empty fields only). Switch the top-right Locale to proofread.'
+    hint: 'Machine-translate the most complete locale into draft copy for the others (Traditional Chinese wins a tie; fills empty fields only). Switch the top-right Locale to proofread.'
   }
 };
 
@@ -96,6 +111,7 @@ export default function TranslateDocButtonClient({configured}: {configured: bool
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
         message?: string;
+        source?: string;
         filled?: Record<string, number>;
       };
 
@@ -115,9 +131,12 @@ export default function TranslateDocButtonClient({configured}: {configured: bool
       } else {
         const parts = Object.entries(filled)
           .filter(([, n]) => n > 0)
-          .map(([loc, n]) => `${loc} ${n}`)
+          .map(([loc, n]) => `${LOCALE_LABELS[loc] ?? loc} ${n}`)
           .join('、');
-        toast.success(`${t.successPrefix}${parts}`);
+        const sourceLabel = data.source
+          ? (LOCALE_LABELS[data.source] ?? data.source)
+          : '';
+        toast.success(`${t.successPrefix.replace('{source}', sourceLabel)}${parts}`);
         router.refresh();
       }
     } catch (err) {

@@ -760,3 +760,71 @@ html[data-theme='light'] .template-minimal {
     ),
     var(--hatc-admin-cream);
 }
+
+/* Missing-title-per-locale warning above a collection's list table
+   (LocaleCoverageNotice, 第七十一輪). */
+.hatc-locale-gap {
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--hatc-admin-line);
+  border-left: 3px solid var(--hatc-admin-gold);
+  border-radius: var(--hatc-admin-radius);
+  background: color-mix(in srgb, var(--hatc-admin-gold) 7%, var(--theme-input-bg, #fff));
+  color: var(--theme-text, var(--hatc-admin-ink));
+}
+
+.hatc-locale-gap__block + .hatc-locale-gap__block {
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--hatc-admin-line);
+}
+
+.hatc-locale-gap h3 {
+  margin: 0 0 0.3rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.hatc-locale-gap__block--critical h3 {
+  color: color-mix(in srgb, #b4252a 85%, var(--theme-text, #1a2332));
+}
+
+.hatc-locale-gap p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--hatc-admin-muted);
+}
+
+.hatc-locale-gap__list {
+  margin: 0.55rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.hatc-locale-gap__list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.hatc-locale-gap__list a {
+  color: var(--hatc-admin-navy);
+  font-weight: 500;
+}
+
+.hatc-locale-gap__missing {
+  font-size: 0.78rem;
+  color: var(--hatc-admin-muted);
+}
+
+.hatc-locale-gap__fix {
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--hatc-admin-line);
+}

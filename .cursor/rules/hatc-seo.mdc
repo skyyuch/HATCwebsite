@@ -94,6 +94,16 @@ design, so they carry a very specific SEO treatment — do not "complete" it:
 ## Crawlability & structure
 
 - Provide `sitemap.xml` (all locales) and `robots.txt`.
+- 🚩 **CMS detail pages are enumerated per locale (第七十一輪).** `src/app/sitemap.ts`
+  asks `getAnnouncementSlugsByLocale()` / `getAcademyArticleSlugsByLocale()` which
+  locales can actually render each slug, because a document with no title in a locale
+  is dropped by its reader and that locale's URL 404s. The previous version derived
+  one slug list from the default locale, so seven announcements typed only in
+  Simplified Chinese were missing from the sitemap **in every locale** — including the
+  Simplified site where they rendered fine. Keep `alternates.languages` limited to the
+  locales in the entry; do not "simplify" it back to `routing.locales`.
+- `sitemap.ts` is a prerendered route with **no cache tag of its own**, so any reader
+  it enumerates must call `revalidateSitemap()` (see `revalidateContent.ts`).
 - **Only production may be indexable (第六十二輪).** `siteIndexable` in `src/lib/seo.ts`
   reads `SITE_INDEXABLE`; `false` (set in `config/env/local.env` and `uat.env`) turns
   `robots.txt` into `Disallow: /` **and** emits `noindex, nofollow` on every page.

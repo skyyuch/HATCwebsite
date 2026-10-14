@@ -591,15 +591,16 @@ $N ADMIN_PASSWORD='…' npm run payload:prd -- run scripts/admin-recover.ts -- -
 若要把種子實際寫進資料庫以便後台編輯：
 
 ```bash
-npm run payload -- run scripts/seed-academy.ts          # 學院文章（3 篇原始種子）
-npm run payload -- run scripts/seed-academy-batch.ts    # 原創長文第一批
-npm run payload -- run scripts/seed-academy-batch2.ts   # 第二批
-npm run payload -- run scripts/seed-academy-batch3.ts   # 第三批
-npm run payload -- run scripts/seed-academy-from-gitbook.ts  # 業主 GitBook 知識庫（需 GITBOOK_*）
-npm run payload -- run scripts/seed-accounts.ts         # 帳戶賣點 + FAQ
-npm run payload -- run scripts/seed-platforms.ts        # 平台 + FAQ
-npm run payload -- run scripts/seed-funding.ts          # 出入金渠道（示意資料）＋版面佔位圖
-npm run payload -- run scripts/seed-announcements.ts    # 公告分類（重要公告／交易安排）
+# ⚠ 一律用 payload:local／payload:uat／payload:prd，不要用裸的 payload（§3.3 的 PATH／密鑰陷阱）
+npm run payload:local -- run scripts/seed-academy.ts          # 學院文章（3 篇原始種子）
+npm run payload:local -- run scripts/seed-academy-batch.ts    # 原創長文第一批
+npm run payload:local -- run scripts/seed-academy-batch2.ts   # 第二批
+npm run payload:local -- run scripts/seed-academy-batch3.ts   # 第三批
+npm run payload:local -- run scripts/seed-academy-from-gitbook.ts  # 業主 GitBook 知識庫（需 GITBOOK_*）
+npm run payload:local -- run scripts/seed-accounts.ts         # 帳戶賣點 + FAQ
+npm run payload:local -- run scripts/seed-platforms.ts        # 平台 + FAQ
+npm run payload:local -- run scripts/seed-funding.ts          # 出入金渠道（示意資料）＋版面佔位圖
+npm run payload:local -- run scripts/seed-announcements.ts    # 公告分類（重要公告／交易安排）
 ```
 
 這些腳本都是冪等的，需要 `DATABASE_URI`。全部跑完的結果＝學院 49 篇、媒體 53 筆、
@@ -613,6 +614,39 @@ npm run payload -- run scripts/seed-announcements.ts    # 公告分類（重要�
 > 🚩 **種子腳本不會、也不得寫入「頁面文案」類 global 的文字欄位。**（`seed-funding.ts`
 > 以前會，等於把內建文案複製進覆寫層，日後的文案修正就被吃掉了 —— 第五十九輪已移除。）
 > 它只會把版面佔位圖掛進 `funding-page` 的圖片欄位，方便業主在後台換圖。
+
+### 4.2 補齊缺翻譯的內容（機器翻譯批次補空，第七十一輪新增）
+
+**什麼時候要用**：某個集合的內容只填了一個語系（例如公告只有簡體），其他語系的
+**標題為空**。繁體中文（正本語系）的標題為空時，那筆內容**在三個語系的前台都會消失，
+也不會進 `sitemap.xml`** —— 這正是 2026-10-14 正式站 10 則公告只有 3 則看得到的原因。
+
+**哪裡看得出來**：`/admin` 進入該集合的列表頁，表格上方會出現一塊提示，列出缺哪個語系
+（第七十一輪新增，所有有多語文字的集合都有）。
+
+```bash
+N="sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH"     # §2.0b 的 PATH 陷阱
+
+# 1. 先看計畫（不呼叫翻譯引擎、不寫任何資料；不需要 MT_API_KEY）
+$N npm run payload:prd -- run scripts/translate-content.ts -- --only announcements --dry-run
+
+# 2. 真的翻（需要 MT_API_KEY，見 §2.2）
+$N npm run payload:prd -- run scripts/translate-content.ts -- --only announcements
+```
+
+每一筆會印出它用了哪個語系當來源，例如
+`announcements#… ← zh-Hans (auto): zh-Hant 3, en 3`。
+**來源是自動選的＝內容最完整的語系**（一樣完整時以繁體中文為正本），所以用簡體寫的
+內容也翻得出來；`--only` 省略就會跑所有集合與 global。**只填空、不覆蓋**已經填過的值。
+
+跑完要做兩件事：
+
+1. **到 `/admin` 開任何一筆按一次「儲存」** —— CLI 沒有 request context，無法讓快取失效
+   （`revalidateContent.ts` 按設計吞掉），所以列表／`/embed`／`sitemap.xml` 要靠這一下才更新。
+2. 清前置 nginx 快取（§2.0c）。
+
+> 🚩 **機器翻譯的結果是校對草稿，不是定稿。** 請業主逐筆看過（尤其公告＝公司對外聲明）。
+> 內容仍受事實紅線管轄：不得與 `HATC_FACTS.md`／`tradingConditions.ts` 的已核可交易條件衝突。
 
 ---
 

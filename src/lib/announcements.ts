@@ -216,8 +216,31 @@ export async function getAnnouncementCategories(
   return getAnnouncementCategoriesCached(locale);
 }
 
-/** Unique slugs for SSG / sitemap. Slug is not localized — use the default locale. */
+/**
+ * Slugs each locale can actually render, for `sitemap.ts`.
+ *
+ * 🚩 The slug itself is not localized, but a notice with no title in the
+ * requested locale is dropped by `mapSummary` — so its detail page 404s in that
+ * locale. This used to be a single `getAnnouncements(defaultLocale)` call, which
+ * made the sitemap depend entirely on the 繁體中文 title: the seven notices a
+ * colleague had typed in Simplified Chinese only were absent from the sitemap in
+ * **every** locale, including the Simplified site where they were perfectly
+ * visible (第七十一輪). Listing per locale also keeps `hreflang` honest — a
+ * notice is only advertised in the locales that can serve it.
+ */
+export async function getAnnouncementSlugsByLocale(): Promise<Record<Locale, string[]>> {
+  const lists = await Promise.all(
+    routing.locales.map(async (locale) => [
+      locale,
+      (await getAnnouncements(locale)).map((item) => item.slug).filter(Boolean)
+    ] as const)
+  );
+
+  return Object.fromEntries(lists) as Record<Locale, string[]>;
+}
+
+/** Union of all locales' slugs, for `generateStaticParams`. */
 export async function getAnnouncementSlugs(): Promise<string[]> {
-  const items = await getAnnouncements(routing.defaultLocale);
-  return items.map((item) => item.slug).filter(Boolean);
+  const byLocale = await getAnnouncementSlugsByLocale();
+  return [...new Set(Object.values(byLocale).flat())];
 }

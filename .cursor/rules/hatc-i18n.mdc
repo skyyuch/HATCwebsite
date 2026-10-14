@@ -24,3 +24,28 @@ alwaysApply: false
 // ✅ GOOD: one shared key, reused in both places
 { "common.contactUs": "聯絡我們" }
 ```
+
+## CMS content locales (第七十一輪, 2026-10-14)
+
+`zh-Hant` is the canonical locale for CMS content too, not just for messages, and
+`localization.fallback: true` only lets the **other** locales fall back to it — the
+canonical locale has nothing to fall back to.
+
+- **A required localized field left empty in `zh-Hant` removes the document from
+  every locale**, because the readers drop a document whose title is empty in the
+  requested locale (`mapSummary` in `src/lib/announcements.ts` /
+  `src/lib/academyArticles.ts`) and the other locales resolve to the empty
+  `zh-Hant` value. It also used to remove it from `sitemap.xml` in every locale;
+  the sitemap now enumerates per locale, but the page still 404s where the title
+  is missing. Seven production announcements were invisible this way.
+- **Author in `zh-Hant` first, then press 一鍵機器翻譯.** The button no longer
+  requires it (it translates from whichever locale is most complete, ties going to
+  `zh-Hant`), but the canonical locale is the one the owner proofreads and the one
+  every fallback resolves to.
+- **Never paste the same text into all three locales.** Payload only falls back
+  when a locale is *empty*, so three identical values mean the English site really
+  does display Chinese — strictly worse than leaving the other two empty
+  (第六十九輪, `funding-methods`).
+- A missing-title gap is surfaced in `/admin` above each collection's list table
+  (`src/components/payload/LocaleCoverageNotice.tsx`); batch backfill via
+  `scripts/translate-content.ts` (DEPLOYMENT §4.2). Machine output is a draft.

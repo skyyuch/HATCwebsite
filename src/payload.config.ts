@@ -45,6 +45,15 @@ const dirname = path.dirname(filename);
 const TRANSLATE_CONTROL = '/components/payload/TranslateDocButton';
 
 /**
+ * Missing-title-per-locale warning, injected above every localized collection's
+ * list table (owner decision 2026-10-14, 第七十一輪). The public site keeps its
+ * strict behaviour — a document with no title in the requested locale is not
+ * shown — so the admin has to be the place where that gap is visible.
+ * Collections only (a global always exists in every locale).
+ */
+const LOCALE_COVERAGE_NOTICE = '/components/payload/LocaleCoverageNotice';
+
+/**
  * Collections expose `beforeDocumentControls` under `admin.components.edit`,
  * globals under `admin.components.elements` — hence two small helpers.
  */
@@ -54,13 +63,15 @@ function withTranslateControlCollection(config: CollectionConfig): CollectionCon
   const components = admin.components ?? {};
   const edit = components.edit ?? {};
   const existing = edit.beforeDocumentControls ?? [];
+  const beforeListTable = components.beforeListTable ?? [];
   return {
     ...config,
     admin: {
       ...admin,
       components: {
         ...components,
-        edit: {...edit, beforeDocumentControls: [...existing, TRANSLATE_CONTROL]}
+        edit: {...edit, beforeDocumentControls: [...existing, TRANSLATE_CONTROL]},
+        beforeListTable: [...beforeListTable, LOCALE_COVERAGE_NOTICE]
       }
     }
   };

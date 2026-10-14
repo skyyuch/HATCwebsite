@@ -2,7 +2,12 @@
  * POST /api/translate — one-click machine-translation pre-fill endpoint.
  *
  * Body: {kind: 'collection' | 'global', slug: string, id?: string|number,
- *        targetLocale?: string, overwrite?: boolean}
+ *        sourceLocale?: string, targetLocale?: string, overwrite?: boolean}
+ *
+ * `sourceLocale` is optional: omitted, the orchestrator translates from the most
+ * complete locale (ties → `zh-Hant`), so a document typed in Simplified Chinese
+ * still fills the other two locales instead of reporting「沒有需要翻譯的空欄位」
+ * (第七十一輪). The response echoes the locale it used.
  *
  * - Gated to full-access administrators only: machine translation writes drafts
  *   across every content locale of a document, so it is restricted to full-access
@@ -45,6 +50,7 @@ export const translateEndpoint: Endpoint = {
       kind?: string;
       slug?: string;
       id?: string | number;
+      sourceLocale?: string;
       targetLocale?: string;
       overwrite?: boolean;
     };
@@ -72,6 +78,7 @@ export const translateEndpoint: Endpoint = {
         target,
         req,
         overwrite: data.overwrite === true,
+        sourceLocale: data.sourceLocale ? (data.sourceLocale as Locale) : undefined,
         targetLocales: data.targetLocale ? [data.targetLocale as Locale] : undefined
       });
 
@@ -81,7 +88,12 @@ export const translateEndpoint: Endpoint = {
         }
         return json({error: result.skipped ?? 'failed'}, 400);
       }
-      return json({ok: true, source: result.source, filled: result.filled});
+      return json({
+        ok: true,
+        source: result.source,
+        autoSource: result.autoSource,
+        filled: result.filled
+      });
     } catch (err) {
       req.payload.logger?.error?.(
         `translate endpoint failed: ${(err as Error)?.message ?? err}`

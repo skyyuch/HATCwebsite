@@ -1,11 +1,11 @@
 /**
  * translateDocument — machine-translation pre-fill orchestrator (route B).
  *
- * Given a collection document or a global, reads the approved source-locale copy
- * (default `zh-Hant`) and fills EMPTY localized leaves in the other content
- * locales with a machine-translated **draft** for the owner to proofread. It
- * never overwrites values already present in a target locale (unless
- * `overwrite` is explicitly set). It covers:
+ * Given a collection document or a global, reads the source-locale copy and
+ * fills EMPTY localized leaves in the other content locales with a
+ * machine-translated **draft** for the owner to proofread. It never overwrites
+ * values already present in a target locale (unless `overwrite` is explicitly
+ * set). It covers:
  * - localized `text` / `textarea` leaves (string granularity), and
  * - localized `richText` (Lexical) fields. Two granularities:
  *   • Empty target body (or `overwrite`) → whole-field: the source body is
@@ -23,6 +23,19 @@
  * The full target-locale document is cloned and written back with only the
  * empty leaves filled, preserving array row ids and any already-filled target
  * values.
+ *
+ * 🚩 The source locale is **chosen from the content**, not hard-wired to
+ * `defaultLocale` (owner decision 2026-10-14, 第七十一輪). It used to be fixed:
+ * `const source = localization.defaultLocale`. A colleague typed ten
+ * announcements in Simplified Chinese, pressed the button and nothing happened
+ * — the source (`zh-Hant`) was empty, so there was nothing to translate and the
+ * run reported success with `filled: 0`. Seven notices then had a title only in
+ * `zh-Hans`, which made them vanish from the Traditional Chinese and English
+ * sites entirely (the reader drops a notice with no title, and
+ * `localization.fallback` cannot help the default locale — it has nothing to
+ * fall back to) and kept them out of `sitemap.xml` in every locale.
+ * `pickSourceLocale` therefore takes the most complete locale, with ties going
+ * to `defaultLocale` so a normally-authored document behaves exactly as before.
  *
  * Governance: facts (`docs/HATC_FACTS.md`) and approved trading conditions
  * (`tradingConditions.ts`) are not part of this pipeline; sample tables keep
@@ -57,10 +70,21 @@ export type TranslateTarget =
 export type TranslateDocumentArgs = {
   payload: Payload;
   target: TranslateTarget;
+  /**
+   * Translate FROM this locale. Omit to pick the most complete locale
+   * automatically (see `pickSourceLocale`).
+   */
+  sourceLocale?: Locale;
   /** Restrict to these target locales; defaults to all non-source locales. */
   targetLocales?: Locale[];
   /** Overwrite already-filled target values too (default false = fill only). */
   overwrite?: boolean;
+  /**
+   * Report what would be filled without calling the engine or writing. Used by
+   * `scripts/translate-content.ts -- --dry-run` to audit a production backfill
+   * before it spends API calls on content the owner then has to proofread.
+   */
+  dryRun?: boolean;
   /** Thread the current request (transaction / revalidation context). */
   req?: PayloadRequest;
 };
@@ -69,6 +93,8 @@ export type TranslateDocumentResult = {
   ok: boolean;
   skipped?: 'no-provider' | 'no-localization' | 'unknown-resource' | 'not-found';
   source?: Locale;
+  /** True when `source` was auto-picked and is not the default locale. */
+  autoSource?: boolean;
   /** Number of leaves filled, per target locale. */
   filled?: Partial<Record<Locale, number>>;
   message?: string;
@@ -81,20 +107,67 @@ function getFields(payload: Payload, target: TranslateTarget): Field[] | null {
   return payload.config.globals.find((g) => g.slug === target.slug)?.fields ?? null;
 }
 
+type LocaleDocs = Map<Locale, Record<string, unknown> | null>;
+
+/** Translatable leaves that actually carry copy in this locale. */
+function countFilledLeaves(fields: Field[], doc: Record<string, unknown> | null): number {
+  if (!doc) return 0;
+
+  const text = collectLeaves(fields, doc).filter(
+    (leaf) => leaf.value.trim().length > 0
+  ).length;
+  const rich = collectRichTextLeaves(fields, doc).filter(
+    (leaf) => !isRichTextEmpty(leaf.value)
+  ).length;
+
+  return text + rich;
+}
+
+/**
+ * The locale with the most translatable copy wins, ties going to
+ * `defaultLocale`. Document-level (not per field) so one run has one source and
+ * the editor is told which locale was treated as the original.
+ *
+ * Ties favouring the default locale matter: a document authored the normal way
+ * (Traditional Chinese first) is never translated *from* a machine-translated
+ * locale, so behaviour is unchanged for everything already in the CMS. A mixed
+ * document converges in two runs — the first fills the default locale from the
+ * fuller locale, which then wins the tie and seeds the rest.
+ */
+function pickSourceLocale(
+  fields: Field[],
+  docs: LocaleDocs,
+  defaultLocale: Locale,
+  allLocales: Locale[]
+): Locale {
+  let best = defaultLocale;
+  let bestScore = countFilledLeaves(fields, docs.get(defaultLocale) ?? null);
+
+  for (const locale of allLocales) {
+    if (locale === defaultLocale) continue;
+    const score = countFilledLeaves(fields, docs.get(locale) ?? null);
+    if (score > bestScore) {
+      best = locale;
+      bestScore = score;
+    }
+  }
+
+  return best;
+}
+
 export async function translateDocument(
   args: TranslateDocumentArgs
 ): Promise<TranslateDocumentResult> {
-  const {payload, target, overwrite = false, req} = args;
+  const {payload, target, overwrite = false, dryRun = false, req} = args;
 
   const provider = getTranslationProvider();
-  if (!provider) return {ok: false, skipped: 'no-provider'};
+  if (!provider && !dryRun) return {ok: false, skipped: 'no-provider'};
 
   const localization = payload.config.localization;
   if (!localization) return {ok: false, skipped: 'no-localization'};
 
-  const source = localization.defaultLocale as Locale;
+  const defaultLocale = localization.defaultLocale as Locale;
   const allLocales = localization.locales.map((l) => l.code as Locale);
-  const targets = (args.targetLocales ?? allLocales).filter((l) => l !== source);
 
   const fields = getFields(payload, target);
   if (!fields) return {ok: false, skipped: 'unknown-resource'};
@@ -127,7 +200,22 @@ export async function translateDocument(
     })) as Record<string, unknown> | null;
   }
 
-  const sourceDoc = await readDoc(source);
+  // Every locale is read up front (same number of reads as before: the source
+  // plus one per target) so the source can be chosen from the content.
+  const docs: LocaleDocs = new Map();
+  for (const locale of allLocales) {
+    docs.set(locale, await readDoc(locale));
+  }
+
+  // `overwrite` deliberately stays on the default locale unless a source is
+  // named explicitly: overwriting the canonical locale with a machine
+  // translation of a secondary locale is the one destructive combination here.
+  const source =
+    args.sourceLocale ??
+    (overwrite ? defaultLocale : pickSourceLocale(fields, docs, defaultLocale, allLocales));
+  const targets = (args.targetLocales ?? allLocales).filter((l) => l !== source);
+
+  const sourceDoc = docs.get(source) ?? null;
   if (!sourceDoc) return {ok: false, skipped: 'not-found'};
 
   const sourceLeaves = collectLeaves(fields, sourceDoc).filter(
@@ -140,7 +228,7 @@ export async function translateDocument(
   const filled: Partial<Record<Locale, number>> = {};
 
   for (const locale of targets) {
-    const targetDoc = await readDoc(locale);
+    const targetDoc = docs.get(locale) ?? null;
     if (!targetDoc) continue;
 
     const clone = structuredClone(targetDoc);
@@ -153,7 +241,9 @@ export async function translateDocument(
       return overwrite || !hasValue;
     });
 
-    if (pending.length > 0) {
+    if (pending.length > 0 && dryRun) {
+      count += pending.length;
+    } else if (pending.length > 0 && provider) {
       const translations = await provider.translateBatch(
         pending.map((leaf) => leaf.value),
         {sourceLocale: source, targetLocale: locale}
@@ -176,6 +266,11 @@ export async function translateDocument(
         // write the reconstructed body, preserving structure / formatting.
         const texts = extractRichTextTexts(rich.value);
         if (texts.length === 0) continue;
+
+        if (dryRun || !provider) {
+          count += texts.length;
+          continue;
+        }
 
         const translations = await provider.translateBatch(texts, {
           sourceLocale: source,
@@ -211,6 +306,11 @@ export async function translateDocument(
       }
       if (pendingByIndex.size === 0) continue;
 
+      if (dryRun || !provider) {
+        count += pendingByIndex.size;
+        continue;
+      }
+
       const indices = [...pendingByIndex.keys()];
       const translations = await provider.translateBatch(
         indices.map((i) => pendingByIndex.get(i) as string),
@@ -231,8 +331,8 @@ export async function translateDocument(
       }
     }
 
-    if (count === 0) {
-      filled[locale] = 0;
+    if (count === 0 || dryRun) {
+      filled[locale] = count;
       continue;
     }
 
@@ -260,5 +360,5 @@ export async function translateDocument(
     filled[locale] = count;
   }
 
-  return {ok: true, source, filled};
+  return {ok: true, source, autoSource: !args.sourceLocale && source !== defaultLocale, filled};
 }

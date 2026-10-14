@@ -313,9 +313,26 @@ export async function getAcademyArticleBySlug(
 }
 
 /**
- * Unique slugs for SSG / sitemap. Slug is not localized — use default locale list.
+ * Slugs each locale can actually render, for `sitemap.ts`. An article with no
+ * title in the requested locale is dropped by the mapper, so its detail page
+ * 404s there — listing per locale keeps 404s out of the sitemap and `hreflang`
+ * honest. (Same locale dependency that hid seven announcements from search
+ * engines entirely, 第七十一輪; every seeded article currently has all three
+ * locales, so this is prevention rather than a live fix here.)
  */
+export async function getAcademyArticleSlugsByLocale(): Promise<Record<Locale, string[]>> {
+  const lists = await Promise.all(
+    routing.locales.map(async (locale) => [
+      locale,
+      (await getAcademyArticles(locale)).map((a) => a.slug).filter(Boolean)
+    ] as const)
+  );
+
+  return Object.fromEntries(lists) as Record<Locale, string[]>;
+}
+
+/** Union of all locales' slugs, for `generateStaticParams`. */
 export async function getAcademyArticleSlugs(): Promise<string[]> {
-  const articles = await getAcademyArticles(routing.defaultLocale);
-  return articles.map((a) => a.slug).filter(Boolean);
+  const byLocale = await getAcademyArticleSlugsByLocale();
+  return [...new Set(Object.values(byLocale).flat())];
 }
