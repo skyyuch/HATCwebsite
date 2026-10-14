@@ -210,6 +210,8 @@ if (leaked.length) {
 const locallyDefined = localKeyNames();
 const childEnv = {...process.env};
 const applied = [];
+/** Keys seen in the secrets file, regardless of whether their value is empty. */
+const secretsKeys = new Set();
 const deferred = [];
 const secretsApplied = [];
 
@@ -230,7 +232,12 @@ if (existsSync(secretsFile)) {
       continue;
     }
     childEnv[key] = value;
-    secretsApplied.push(key);
+    secretsKeys.add(key);
+    // A key with an empty value is almost always a template placeholder that was
+    // never filled in, and every consumer treats it as "feature disabled" — so it
+    // has to be called out. Reading the key name alone has already cost us real
+    // debugging time twice (QUOTE_HTTP_CRYPT_SECRET, then MT_API_KEY).
+    secretsApplied.push(value.trim() === `` ? `${key} ⚠ EMPTY` : key);
   }
 }
 
@@ -240,7 +247,7 @@ for (const [key, value] of parseEnvFile(envFile)) {
     deferred.push(`${key} (host)`);
     continue;
   }
-  if (secretsApplied.includes(key)) {
+  if (secretsKeys.has(key)) {
     deferred.push(`${key} (${envName}.secrets.env)`);
     continue;
   }
