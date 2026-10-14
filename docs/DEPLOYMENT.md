@@ -527,6 +527,21 @@ $N ADMIN_NEW_PASSWORD='…' npm run payload:prd -- run scripts/admin-recover.ts 
 會死在 `Error: missing secret key`（`PAYLOAD_SECRET` 與 `DATABASE_URI` 都沒載入）。
 這對**所有**透過 `payload run` 執行的腳本都適用（種子、`i18n:translate`、本節的救援腳本）。
 
+**還有兩個診斷旗標**：
+
+```bash
+# 直接對資料庫驗證某個密碼（繞過瀏覽器、反向代理與運行中的網站程序）
+$N ADMIN_PASSWORD='…' npm run payload:prd -- run scripts/admin-recover.ts -- --check you@example.com
+```
+
+這一支說「密碼正確」但 `/admin` 仍拒絕，就表示**網站程序連的是另一個資料庫** —— 第 1 步
+會印出資料庫位址（帳密已遮蔽）與 `announcements`／`media` 筆數，拿去和線上
+`/api/announcements?limit=0`、`/api/media?limit=0` 比對，數字不同就是兩個庫。
+
+⚠ **讀 `loginAttempts`／`lockUntil` 必須帶 `showHiddenFields: true`**。它們是 Payload 的隱藏
+認證欄位，`find` 預設會剝掉 → 每個帳號都印成「失敗次數 0」，看起來像「登入請求沒進到這個
+資料庫」，整個排查方向就被帶錯。本腳本已處理，自己另寫查詢時要記得。
+
 先跑第 1 步再決定做什麼，常見原因有三個，症狀在登入畫面上看起來一模一樣：
 
 - **帳號被鎖**：Payload 預設連續錯 5 次就鎖 **10 分鐘**，期間即使密碼正確也一律回

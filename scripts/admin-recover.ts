@@ -44,6 +44,7 @@ function flagValue(name: string): string | undefined {
 
 const unlockEmail = flagValue('--unlock');
 const resetEmail = flagValue('--reset');
+const checkEmail = flagValue('--check');
 
 /**
  * `payload.unlock` reuses the login operation's data type, so TypeScript demands a
@@ -66,12 +67,38 @@ async function findUser(email: string) {
   return docs[0];
 }
 
+/**
+ * Which database are we actually looking at? A login that fails while every
+ * account here shows zero failed attempts means the request never reached *this*
+ * database — usually because the running site process was started with a
+ * different `DATABASE_URI`. Compare these counts with what the live site serves
+ * on `/api/announcements?limit=0` and `/api/media?limit=0`: if they disagree, the
+ * app and this script are on two different databases.
+ */
+async function fingerprint(): Promise<void> {
+  const counts: string[] = [];
+  for (const collection of ['announcements', 'media'] as const) {
+    const {totalDocs} = await payload.count({collection, overrideAccess: true});
+    counts.push(`${collection}=${totalDocs}`);
+  }
+  // Host and database name only — never the credentials in the URI.
+  const uri = process.env.DATABASE_URI ?? '';
+  const safe = uri.replace(/\/\/[^@]*@/, '//<credentials>@');
+  payload.logger.info(`database: ${safe || '(DATABASE_URI not set)'}`);
+  payload.logger.info(`contents: ${counts.join(', ')}`);
+}
+
 async function list(): Promise<void> {
+  await fingerprint();
+
   const {docs, totalDocs} = await payload.find({
     collection: 'users',
     limit: 100,
     depth: 1,
-    overrideAccess: true
+    overrideAccess: true,
+    // `loginAttempts` / `lockUntil` are hidden auth fields: without this they are
+    // stripped from the result and every account looks like it has zero failures.
+    showHiddenFields: true
   });
 
   payload.logger.info(`users: ${totalDocs}`);
@@ -94,7 +121,30 @@ async function list(): Promise<void> {
   }
 }
 
-if (unlockEmail) {
+if (checkEmail) {
+  // Verify a password against THIS database, bypassing the browser, the reverse
+  // proxy and the running site process. If this says OK while /admin still
+  // rejects the same password, the site is talking to a different database.
+  const password = process.env.ADMIN_PASSWORD;
+  if (!password) {
+    payload.logger.error(
+      'Set ADMIN_PASSWORD in the environment, e.g.\n' +
+        "  ADMIN_PASSWORD='…' npm run payload:prd -- run scripts/admin-recover.ts -- --check you@example.com"
+    );
+    process.exit(1);
+  }
+  await fingerprint();
+  try {
+    const result = await payload.login({
+      collection: 'users',
+      data: {email: checkEmail.trim().toLowerCase(), password},
+      overrideAccess: true
+    });
+    payload.logger.info(`✓ password is correct for ${result.user?.email}`);
+  } catch (error) {
+    payload.logger.error(`✗ rejected: ${(error as Error).message}`);
+  }
+} else if (unlockEmail) {
   const user = await findUser(unlockEmail);
   if (!user) {
     payload.logger.error(`No user with email ${unlockEmail} — run without flags to list.`);
