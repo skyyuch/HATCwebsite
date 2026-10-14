@@ -1208,6 +1208,39 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
     但三個元件都用 `alt=""`（裝飾圖），不會進畫面。**稽核要用 `src/messages/*` 的鍵路徑掃描，
     不要只 grep `*.tsx`** ——絕大多數命中都在 i18n 字串裡。
 
+- **2026-10-14 (第六十九輪 當天追加): 上線支援 —— 後台帳號救援腳本 ＋ 機器翻譯在正式站啟用，
+ 以及六個「工具訊息誤導」的根因修復。** 業主當天完成部署，卡在「登入不了 `/admin`」與
+ 「後台說缺少 API 金鑰」。兩件都解了，但過程繞很久，**原因幾乎都是我們自己的指令／log 給了
+ 誤導訊息** —— 六個都已修到根因（詳見 `HANDOFF.md` 第六十九輪 當天追加的表格）。
+ - **新慣例：維運腳本一律用 `payload:local`／`payload:uat`／`payload:prd`，不要裸的 `payload`**
+ （裸的不經過 `with-env.mjs` → 讀不到 `<環境>.secrets.env` → `Error: missing secret key`）。
+ - **新增 `scripts/admin-recover.ts`**（列出帳號／`--unlock`／`--check` 驗密碼／`--reset`）。
+ **本站沒有寄信服務，「忘記密碼」永遠寄不出重設信**，救援只能在主機上做；**不得直接改
+ `users.hash`**。🚩 讀 `loginAttempts`／`lockUntil` **必須 `showHiddenFields: true`**，
+ 否則每個帳號都印「失敗次數 0」，會把排查方向誤導成「連到別的資料庫」。腳本自己的輸出用
+ `writeSync` 同步寫（pino 的緩衝 log 會被 `process.exit` 截斷 → 成功與靜默失敗長得一樣）。
+ - **`config/env/*.env` 新增公開的機器翻譯引擎設定**（`MT_PROVIDER`／`MT_BASE_URL`＝Gemini 的
+ OpenAI 相容端點／`MT_MODEL`）。🚩 **只在主機填 `MT_API_KEY` 是不夠的** —— 程式預設是
+ OpenAI（香港不可用），Gemini 金鑰打過去 401/404。金鑰仍只放 `<環境>.secrets.env` 或主機環境，
+ **重啟即生效、不必重新 build**（業主「填了還是說缺金鑰」＝沒重啟）。
+ - 🚩 **不要用長度／前綴驗證 Gemini 金鑰**：Google 同時發 `AIza…`(39) 與 **`AQ.…`(53，含 `.`)**，
+ 業主拿到的是後者（我一度以 39 碼為準誤判它壞掉）。驗法＝直接打一次 API。
+ 診斷 curl **要用 `-sS`**（`-s` 會把錯誤靜音，`HTTP 000` 看起來像網路不通）；**貼錯值的症狀是
+ `curl: (92) HTTP/2 PROTOCOL_ERROR`**，不是網路問題。叫人填金鑰請用編輯器，不要用 `read -rsp`
+ 盲貼（貼錯看不見）。
+ - 🚩 **查運行程序的環境變數只能看 `next-server` 那個 PID**：`start:prd` 外層的
+ `node scripts/with-env.mjs prd next start` 只負責注入給子程序、自己不持有，而它的命令列也含
+ `next start` → `pgrep … | head -1` 會抓到它，**不管變數填沒填都回 0**。
+ - 🚩 **`config/env/*.env` 含空白／特殊字元的值要加引號**（載入器本來就剝引號）。
+ `CONTACT_PHONE=(852) 2322 2888` 未加引號會讓主機上的 `set -a; . config/env/prd.env` 中斷在
+ `2322: command not found`，之後每個變數都是空的。
+ - 🚩 **`.next/cache` 連 `src/messages/*` 的修正也會吃掉**（第五十一輪只記了 CMS 值）：同一個
+ build 的 `/admin` 是新的、`/funding` 靜態 HTML 卻是舊文案。**判別法＝比對 `/admin` 與該頁引用的
+ `/_next/static/chunks/*.js` 檔名**，相同＝同一個 build ⇒ 只可能是重用舊預產生頁面（排除 nginx
+ 快取與 CMS 覆寫；後者用 `/api/globals/<slug>?locale=…` 確認文字欄是否真的留空）。修法＝冷建。
+ - **生產 CMS 仍留著那 14 筆虛構渠道（已停用）**＝2026-10-13 匯入正式庫時一起帶過去的資料，
+ 程式種子已刪但 DB 列還在。前台不顯示（已驗），但「打勾就會變成官方渠道」→ 已請業主刪除。
+
 - **2026-10-13 (第六十四輪 追加查證；未改程式碼)**：① **判斷對方部署到哪一版，就打那一版新增
  的路由**——`/api/market/diagnostics` 在 UAT 回 **404 ＝ 還是舊建置**（Gitee `master` 早已有
  `c11769e`，所以是沒重新部署，不是沒交付）。比問「部署了嗎」可靠。② 線上仍是 uat 設定

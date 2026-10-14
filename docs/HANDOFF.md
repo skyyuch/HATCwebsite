@@ -45,6 +45,18 @@
 > 業主：「/funding 頁的示意數據拿掉，你順便檢查一下全站還有沒有此字，因為要準備上線了。」
 > 詳見下方「🟢 第六十九輪」。無 schema 變更。
 >
+> ✅ **已部署並從外部驗證完成（2026-10-14 16:40）**：`/zh-Hant/funding` 已是新文案
+> （「表列處理時間…」6 處、舊的「…為示意數據」0 處）、三語與 `/admin`、`/api/users/me`
+> 全部 200、`/api/market/quotes` 回真實報價。**後台「一鍵機器翻譯」也已在正式站啟用**
+> （`MT_API_KEY` 實測打 Gemini 回 200）。上線支援過程踩到的 6 個坑與修法見下方
+> 「🟢 第六十九輪 當天追加」。
+>
+> 🚩 **生產 CMS 仍有那 14 筆虛構渠道（Visa／Neteller／Skrill／JCB／電匯…），目前被
+> 「停用」**，所以前台只顯示同事填的 6 筆真實渠道（已從線上 HTML 確認虛構渠道 0 處）。
+> 程式端的種子已刪，但**這些列是 2026-10-13 匯入正式庫時一起帶過去的資料**，留著等於
+> 放了 14 個「打勾就會變成官方渠道」的陷阱 → **建議業主在 `/admin` 直接刪除**
+> （`/api/funding-methods?limit=30` 可列出，`enabled:false` 的那 14 筆就是）。
+>
 > 🚩 **上線前還剩兩處「示意」是真的佔位，需要業主素材**：首頁 MT5 區塊用的
 > `public/figma/raw/raw_3.png` 是 **AI 算圖的假 MT5 畫面**（與 `HATC_FACTS.md`
 > 「Trading platforms」寫的「站上已無標示為示意的平台裝置圖」直接衝突），以及 `/trading`
@@ -447,8 +459,74 @@ GitHub `origin/main` = `5be1641`；**Gitee `master` = `f37954a`（已同步）**
 ### 8. 待業主
 
 - (a) **正式站 CMS 的三語內容**（現為三語同一份簡體）——對照表見第 3 節。
-- (b) 首頁 `raw_3.png` 與 `/trading` hero 佔位圖是否改用真實交易端截圖（與 FACTS 衝突，見第 4 節）。
-- (c) 取得 Google AI Studio 金鑰並填入 `config/env/prd.secrets.env` 的 `MT_API_KEY`。
+- (b) **刪掉生產 CMS 裡那 14 筆停用的虛構渠道**（見本輪現況區塊的 🚩）。
+- (c) 首頁 `raw_3.png` 與 `/trading` hero 佔位圖是否改用真實交易端截圖（與 FACTS 衝突，見第 4 節）。
+- ~~(d) Gemini 金鑰~~ → 已於當天完成，見下一節。
+
+## 🟢 第六十九輪 當天追加（2026-10-14）：上線支援 —— 後台帳號救援 ＋ 機器翻譯啟用，
+## 以及一連六個「訊息誤導」的根因修復
+
+> 業主當天在生產主機上完成部署，過程中卡了兩件事：**登入不了 `/admin`**、
+> **後台說「尚未設定翻譯服務（缺少 API 金鑰）」**。兩件都解決了，但過程繞了很久，
+> **原因幾乎全是我們自己的工具／指令給了誤導訊息**。六個都已修到根因並同步。
+
+### 1. 新增 `scripts/admin-recover.ts`（後台帳號救援）
+
+🚩 **本站沒有設定寄信服務 → 登入畫面的「忘記密碼」永遠寄不出重設信**，救援只能在主機上做。
+走 Payload Local API（**不要直接改 `users.hash`**，雜湊與 salt 必須配對產生）：
+
+```bash
+npm run payload:prd -- run scripts/admin-recover.ts                        # 列出帳號／角色／鎖定狀態
+npm run payload:prd -- run scripts/admin-recover.ts -- --unlock a@b.com    # 解鎖
+ADMIN_PASSWORD='…'     npm run payload:prd -- run … -- --check a@b.com     # 直接對 DB 驗密碼
+ADMIN_NEW_PASSWORD='…' npm run payload:prd -- run … -- --reset a@b.com     # 重設（並清鎖定）
+```
+
+密碼一律走環境變數（不留在 shell 歷史／`ps`）。列表會印**資料庫指紋**（位址遮蔽帳密 ＋
+`announcements`／`media` 筆數），拿去和線上 `/api/announcements?limit=0` 比對就能判斷
+「網站程序是否連到另一個資料庫」。本輪結論：生產站 `announcements=10, media=64`，
+與腳本一致 ⇒ 同一個庫，**密碼真的不符**（業主重設後登入成功）。
+
+### 2. 六個誤導訊息的根因（每一個都花了來回）
+
+| 症狀 | 真正原因 | 修法 |
+| --- | --- | --- |
+| 每個帳號都印「失敗次數 0」，看起來像登入沒進到這個資料庫 | **`loginAttempts`／`lockUntil` 是 Payload 隱藏欄位**，`find` 預設剝掉 | 腳本加 `showHiddenFields: true`（本機連錯 5 次實測會顯示 `🔒 LOCKED until …`） |
+| `--unlock` 跑完**完全沒有輸出** | pino 緩衝的 log 被 `process.exit` 截斷 → 成功與靜默失敗長得一樣 | 腳本自己的訊息改 `writeSync(1/2, …)` 同步輸出 |
+| 維運腳本在主機上死在 `Error: missing secret key` | 裸的 `npm run payload` **不經過 `with-env.mjs`** → 讀不到 `<環境>.secrets.env` | 新增 **`payload:local`／`payload:uat`／`payload:prd`**，文件改為一律用這三個 |
+| 載入器印「4 value(s) from prd.secrets.env (… MT_API_KEY)」但功能仍是停用 | **只要鍵名存在就列出來，值是空的也一樣**（＝第六十五輪 `QUOTE_HTTP_CRYPT_SECRET` 同一個坑的第二次） | 載入器改印 `MT_API_KEY ⚠ EMPTY` |
+| 查運行程序的環境變數**永遠回 0** | `start:prd` 起兩層，外層 `node scripts/with-env.mjs prd next start` 只負責**注入給子程序**、自己不持有，而它的命令列也含 `next start` → `pgrep … \| head -1` 抓到它 | `DEPLOYMENT.md` §5.2 寫明**只能看 `next-server`**，並給逐個 PID 列出的指令 |
+| `set -a; . config/env/prd.env` 中斷在 `2322: command not found`，之後每個變數都空 | `CONTACT_PHONE=(852) 2322 2888` 未加引號，bash 把括號當語法 | 含空白／特殊字元的值全部加引號（載入器本來就剝引號，行為不變）＋ `parseEnvFile` 檔頭註明原因 |
+
+### 3. 機器翻譯在正式站啟用
+
+- **引擎設定不是秘密，已 commit**：`MT_PROVIDER=llm`／
+  `MT_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai`／
+  `MT_MODEL=gemini-3.6-flash` 寫進 `config/env/{local,uat,stg,prd}.env`。
+  **🚩 原本只有 `MT_API_KEY` 的說明 → 主機若只填金鑰，程式預設會打 OpenAI
+  （`api.openai.com`／`gpt-4o-mini`，香港連不上），Gemini 金鑰過去直接 401/404。**
+- 主機只需 `config/env/prd.secrets.env` 的 `MT_API_KEY`，**重啟即可、不必重新 build**
+  （環境變數只在程序啟動時讀入 —— 這就是業主「填了還是說缺金鑰」的原因）。
+- ⚠ **不要用長度或前綴驗證金鑰**：Google 同時在發 `AIza…`（39 碼）與 **`AQ.…`（53 碼、
+  含一個 `.`）**，業主拿到的是後者。**我一度以 39 碼為準判斷它是壞的，那是錯的。**
+  正確驗法＝直接打一次 `POST {MT_BASE_URL}/chat/completions`（本輪生產實測 200）。
+- ⚠ **診斷 curl 要用 `-sS`**：只用 `-s` 會把 curl 的錯誤訊息靜音，`HTTP 000` 看起來像網路
+  不通。**值貼錯時的典型症狀是 `curl: (92) HTTP/2 … PROTOCOL_ERROR`**（Authorization 標頭
+  含非法字元），不是網路問題——本輪就是靠這個發現檔案裡存的是 111 碼的錯誤字串。
+- 業主最初是用 `read -rsp`（不回顯）盲貼，貼錯了也看不見 → **後來改用 `nano` 看著改才成功**。
+  日後請人填金鑰，直接叫他用編輯器。
+
+### 4. 另外兩個部署期發現
+
+- **`.next/cache` 連 `src/messages/*` 的修正也會吃掉**：同一個 build 的 `/admin` 顯示新的
+  欄位說明、但 `/funding` 的靜態 HTML 還是舊文案。**判別法＝比對 `/admin` 與該頁引用的
+  `/_next/static/chunks/*.js` 檔名**，相同就是同一個 build ⇒ 只可能是重用了舊的預產生頁面
+  （不是 nginx 快取，也不是 CMS 覆寫；後者用 `/api/globals/<slug>?locale=…` 確認文字欄是否
+  真的留空 —— 本輪確認 `funding-page` 只有 4 張圖、文字欄全空）。**修法＝`rm -rf .next` 冷建。**
+- 主機是從 **GitHub `origin/main` 直接 `git pull`**（不是 Gitee），且目錄屬 root →
+  `git pull` 要加 `sudo`，不然會 `detected dubious ownership`。node 不在 PATH →
+  `sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH …`（§2.0b）。
+  **`sudo apt install npm` 千萬不要跑**（會裝到另一套舊 Node）。
 
 ## 🟢 第六十八輪（實作，2026-10-14）：首頁 K 線接即時報價 ＋ 可點選的產品切換
 
