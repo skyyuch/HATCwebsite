@@ -346,11 +346,22 @@ build-prd:
 | `DATABASE_URI` / `PAYLOAD_SECRET` | CMS 與 `/admin` | 前台走內建三語文案，無 `/admin` |
 | `QUOTE_GATEWAY_URL` | MT5 行情閘道位址（`uat.env`／`prd.env` 已填） | 首頁／`/trading` 顯示標示清楚的「示意數據」 |
 | `QUOTE_HTTP_CRYPT_SECRET` | 閘道回應解密共享密鑰（**只放主機**） | 同上 |
-| `MT_*` | 後台「一鍵機器翻譯」按鈕 | 按鈕 disabled、API 回 501 |
+| `MT_API_KEY` | 後台「一鍵機器翻譯」按鈕（Gemini 金鑰） | 按鈕不顯示、`/api/translate` 回 501 |
 | `GITBOOK_*` | 學院文章匯入腳本 | 腳本不可用 |
 
 > 這些之所以是真 runtime：行情走 `force-dynamic` 的 `/api/market/*`、翻譯走後台 API、
 > CMS 走資料庫連線 —— 都不經過預先產生的靜態 HTML。
+>
+> **啟用「一鍵機器翻譯」（第六十九輪）**：引擎設定 `MT_PROVIDER`／`MT_BASE_URL`／`MT_MODEL`
+> **已填在 `config/env/*.env`**（Google Gemini 的 OpenAI 相容端點），所以主機只需要補金鑰：
+> 在 `config/env/<環境>.secrets.env` 加 `MT_API_KEY=<Google AI Studio 金鑰>`（或 `export`
+> 到主機環境），**重啟即生效、不必重新 build**。金鑰在 `https://aistudio.google.com/apikey`
+> 申請；長文會撞免費額度，需要在 Google Cloud 專案開帳單才拿得到較高上限（第四十輪實測）。
+> 🚩 **不要只設 `MT_API_KEY` 而讓另外三個走程式預設** —— 預設是 OpenAI
+> （`api.openai.com` / `gpt-4o-mini`），香港連不上，Gemini 金鑰打過去會直接 401／404。
+> 🚩 只有全權角色看得到那顆按鈕（第三十三輪），所以測試要用管理員帳號登入。
+> ⚠ 若部署主機存在 git-ignored 的 `.env` 且裡面出現過 `MT_BASE_URL` 等鍵（即使是空值），
+> `with-env.mjs` 會依鍵名讓路、`config/env/*.env` 的值就不會套用（§2.3a 的優先序）。
 >
 > ⚠ **`DATABASE_URI` 只有「連線」這件事是 runtime。** `/admin`、REST API 與
 > `/api/market/*` 會立即吃到新值，但**前台頁面的 CMS 內容是 SSG，在 build 時就被讀進
