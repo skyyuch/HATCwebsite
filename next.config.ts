@@ -19,15 +19,22 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            // Next sends `s-maxage=31536000` alone for a static page, which is
-            // a CDN directive: a browser sees no expiry it can apply and falls
-            // back to guessing a lifetime. It guesses generously, so after a
-            // deploy a returning visitor keeps running the previous build's
-            // JavaScript — with no visible symptom beyond stale behaviour.
-            // `max-age=0, must-revalidate` makes the browser ask every time;
-            // the ETag keeps that a 304, so nothing is re-downloaded. The
-            // `s-maxage` half is preserved so CDN behaviour is unchanged.
-            value: 'public, max-age=0, must-revalidate, s-maxage=31536000'
+            // Next's default for a static page is `s-maxage=31536000` alone,
+            // which tells every shared cache to keep the HTML for a year. That
+            // assumes a deploy purges the CDN; nothing here does, and the
+            // reverse proxy in front of production duly served a pre-deploy
+            // copy — of the *compressed* variant only, so `curl` looked fine
+            // while every real browser got the old build (2026-10-14).
+            //
+            // It also breaks the CMS: a page revalidated by `revalidateTag`
+            // never reaches visitors while a shared cache holds last year's
+            // copy. Both caches must therefore re-ask on every request; the
+            // ETag turns that into a 304 with no body, and Next still serves
+            // the prerendered HTML from its own cache.
+            //
+            // 🚩 Do not re-add `s-maxage` without a cache purge on deploy AND
+            // on every `revalidateTag` call.
+            value: 'public, max-age=0, must-revalidate'
           }
         ]
       }
