@@ -41,6 +41,38 @@ export type MarketBar = {
   close: number;
 };
 
+/** Daily buckets are 24h wide (the gateway aligns them to Hong Kong midnight). */
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Re-prices the current day's candle from the live tick, so the chart moves
+ * with the market instead of with the one-minute bar poll.
+ *
+ * Everything written here is real feed data: the close is the live bid (the
+ * bar feed is requested with `priceType=bid`), and the extremes are widened
+ * with the session high/low the gateway reports alongside the tick. Only the
+ * bucket the tick actually belongs to may move — after the daily roll the
+ * gateway has not published the new bucket yet, and stretching yesterday's
+ * candle with today's price would invent a candle that never traded.
+ */
+export function withLiveCandle(
+  bars: MarketBar[],
+  quote: LiveQuote | null
+): MarketBar[] {
+  if (!quote || bars.length === 0) return bars;
+
+  const last = bars[bars.length - 1];
+  if (quote.ts < last.time || quote.ts >= last.time + DAY_MS) return bars;
+
+  const high = Math.max(last.high, quote.high ?? quote.bid, quote.bid);
+  const low = Math.min(last.low, quote.low ?? quote.bid, quote.bid);
+  if (quote.bid === last.close && high === last.high && low === last.low) {
+    return bars;
+  }
+
+  return [...bars.slice(0, -1), {...last, close: quote.bid, high, low}];
+}
+
 /** Fixed-decimal price string; en-US grouping keeps the ticker font aligned. */
 export function formatPrice(value: number, digits: number): string {
   return value.toLocaleString('en-US', {

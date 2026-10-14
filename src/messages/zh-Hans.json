@@ -177,13 +177,15 @@
         }
       },
       "cta": "了解黄金交易服务",
-      "chartSymbol": "XAU/USD (伦敦金)",
+      "chartTitle": "{symbol} ({name})",
       "chartDaily": "日 K 线（MT5 行情）",
       "chartUnavailable": "图表数据暂时无法取得",
       "chartSample": "示意数据 (设计占位)",
+      "chartPicker": "选择图表产品",
       "loco": {
         "gold": "伦敦金",
-        "silver": "伦敦银"
+        "silver": "伦敦银",
+        "kilobar": "人民币公斤条"
       }
     },
     "mt5": {

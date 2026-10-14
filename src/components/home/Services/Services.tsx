@@ -4,6 +4,7 @@ import {Link} from '@/i18n/navigation';
 import {cn} from '@/lib/utils';
 import {buttonVariants} from '@/components/ui/button';
 import {getHomeMarketing} from '@/lib/homeMarketing';
+import {MARKET_SYMBOLS, type MarketSymbol} from '@/lib/marketQuoteTypes';
 import type {Locale} from '@/i18n/routing';
 import SectionTitle from '../SectionTitle';
 import ServiceMarketPanel from './ServiceMarketPanel';
@@ -18,6 +19,20 @@ export default async function Services() {
   const t = await getTranslations('home.goldServices');
   const market = await getTranslations('home.market');
   const copy = (await getHomeMarketing(locale)).services;
+
+  // Formatted on the server so the client panel, which swaps titles as the
+  // visitor picks a product, needs no translator of its own.
+  const names: Record<MarketSymbol, string> = {
+    XAUUSD: t('loco.gold'),
+    XAGUSD: t('loco.silver'),
+    RKGCNH: t('loco.kilobar')
+  };
+  const chartTitles = Object.fromEntries(
+    MARKET_SYMBOLS.map((entry) => [
+      entry.symbol,
+      t('chartTitle', {symbol: entry.display, name: names[entry.symbol]})
+    ])
+  ) as Record<MarketSymbol, string>;
 
   return (
     <section
@@ -61,17 +76,18 @@ export default async function Services() {
             </Link>
           </div>
 
-          {/* Right — gold chart + price cards (real feed, sample fallback) */}
+          {/* Right — product chart + price cards (real feed, sample fallback) */}
           <ServiceMarketPanel
             locale={locale}
             labels={{
-              chartSymbol: t('chartSymbol'),
+              chartTitles,
               chartDaily: t('chartDaily'),
               chartUnavailable: t('chartUnavailable'),
               sampleLabel: t('chartSample'),
               liveLabel: market('liveLabel'),
               sourceNote: market('sourceNote'),
-              names: {gold: t('loco.gold'), silver: t('loco.silver')}
+              pickerLabel: t('chartPicker'),
+              names
             }}
           />
         </div>

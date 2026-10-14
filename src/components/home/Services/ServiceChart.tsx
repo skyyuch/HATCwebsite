@@ -2,7 +2,7 @@ import type {MarketBar} from '@/lib/marketQuoteTypes';
 import {SAMPLE_CANDLES} from '../sampleMarketData';
 
 /**
- * Gold candlestick panel (Figma 4:71).
+ * Candlestick panel for the product selected in the price cards (Figma 4:71).
  *
  * Draws real daily bars from the MT5 gateway when they are available. The
  * Figma sample series is only ever drawn while the whole market section is in
@@ -54,7 +54,7 @@ export default function ServiceChart({
   /** True when real quotes are on screen elsewhere in the section. */
   live: boolean;
   locale: string;
-  labels: {symbol: string; daily: string; sample: string; unavailable: string};
+  labels: {title: string; daily: string; sample: string; unavailable: string};
 }) {
   const real = bars !== null;
   const candles = real ? buildCandles(bars) : live ? [] : SAMPLE_SHAPES;
@@ -73,7 +73,7 @@ export default function ServiceChart({
     <div className="rounded-lg border border-[var(--fig-border)] bg-[var(--fig-ink)] p-5">
       <div className="flex items-center justify-between gap-3">
         <span className="text-sm font-semibold text-white">
-          {labels.symbol}
+          {labels.title}
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-[var(--fig-text-dim)]">
           {real ? (

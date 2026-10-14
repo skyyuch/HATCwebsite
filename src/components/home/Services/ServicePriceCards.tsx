@@ -1,33 +1,52 @@
+'use client';
+
 import {
+  MARKET_SYMBOLS,
   formatChangePercent,
   formatPrice,
-  type LiveQuote
+  type LiveQuote,
+  type MarketSymbol
 } from '@/lib/marketQuoteTypes';
+import {cn} from '@/lib/utils';
 import FlashOnChange from '@/components/market/FlashOnChange';
 import {SAMPLE_PRICE_CARDS} from '../sampleMarketData';
 
 /**
- * Loco gold/silver price cards. Real gateway quotes when the feed is up, the
- * labelled sample figures otherwise. The section-level label
+ * One card per approved CFD product. Real gateway quotes when the feed is up,
+ * the labelled sample figures otherwise — the section-level label
  * (ServiceMarketPanel) states which of the two is on screen.
+ *
+ * The cards double as the chart's product picker, so the chart can only ever
+ * show a symbol that is also priced here.
  */
 export default function ServicePriceCards({
   names,
-  quotes
+  quotes,
+  selected,
+  onSelect,
+  groupLabel
 }: {
-  names: {gold: string; silver: string};
-  quotes: {gold: LiveQuote | null; silver: LiveQuote | null};
+  names: Record<MarketSymbol, string>;
+  quotes: Map<string, LiveQuote>;
+  selected: MarketSymbol;
+  onSelect: (symbol: MarketSymbol) => void;
+  groupLabel: string;
 }) {
   return (
-    <div className="grid gap-5 sm:grid-cols-2">
-      {SAMPLE_PRICE_CARDS.map((card) => (
+    <div
+      role="group"
+      aria-label={groupLabel}
+      className="grid gap-4 sm:grid-cols-3"
+    >
+      {MARKET_SYMBOLS.map((entry) => (
         <PriceCard
-          key={card.symbol}
-          symbol={card.symbol}
-          name={names[card.nameKey]}
-          quote={quotes[card.nameKey]}
-          sampleValue={card.value}
-          sampleChange={card.change}
+          key={entry.symbol}
+          display={entry.display}
+          name={names[entry.symbol]}
+          quote={quotes.get(entry.symbol) ?? null}
+          sample={SAMPLE_PRICE_CARDS[entry.symbol]}
+          selected={entry.symbol === selected}
+          onSelect={() => onSelect(entry.symbol)}
         />
       ))}
     </div>
@@ -35,28 +54,44 @@ export default function ServicePriceCards({
 }
 
 function PriceCard({
-  symbol,
+  display,
   name,
   quote,
-  sampleValue,
-  sampleChange
+  sample,
+  selected,
+  onSelect
 }: {
-  symbol: string;
+  display: string;
   name: string;
   quote: LiveQuote | null;
-  sampleValue: string;
-  sampleChange: string;
+  sample: {value: string; change: string};
+  selected: boolean;
+  onSelect: () => void;
 }) {
-  const value = quote ? formatPrice(quote.bid, quote.digits) : sampleValue;
-  const change = quote ? formatChangePercent(quote) : sampleChange;
+  const value = quote ? formatPrice(quote.bid, quote.digits) : sample.value;
+  const change = quote ? formatChangePercent(quote) : sample.change;
   const rising = quote ? (quote.change ?? 0) >= 0 : true;
 
   return (
-    <div className="rounded-lg border border-[var(--fig-border)] bg-[var(--fig-surface)] p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold text-white">{symbol}</span>
-          <span className="text-xs text-[var(--fig-text-dim)]">{name}</span>
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
+      className={cn(
+        'cursor-pointer rounded-lg border bg-[var(--fig-surface)] p-4 text-left',
+        'transition-colors focus-visible:outline-none focus-visible:ring-2',
+        'focus-visible:ring-gold/60',
+        selected
+          ? 'border-gold ring-1 ring-gold/40'
+          : 'border-[var(--fig-border)] hover:border-gold/40'
+      )}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 flex-col">
+          <span className="text-sm font-semibold text-white">{display}</span>
+          <span className="truncate text-xs text-[var(--fig-text-dim)]">
+            {name}
+          </span>
         </div>
         {change ? (
           <span
@@ -78,6 +113,6 @@ function PriceCard({
           {value}
         </FlashOnChange>
       </div>
-    </div>
+    </button>
   );
 }

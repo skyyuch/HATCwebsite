@@ -36,9 +36,20 @@
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
-## ▶ 下一輪任務（第六十七輪做了即時推送；**當天稍後正式網域已切換上線**）
+## ▶ 下一輪任務（第六十八輪：首頁 K 線接即時報價 ＋ 可點選的產品切換）
 
-> ## 🟩 2026-10-14 14:40 現況（最新，先看這段）
+> ## 🟩 2026-10-14 15:30 現況（最新，先看這段）
+>
+> **✅ 第六十八輪完成：首頁服務區的 K 線可切換三個產品，當日那根蠟燭接即時報價。**
+> 業主回報「首頁的 K 線並沒有更新」＋「我想點擊不同產品會更換指定產品的日 K」。
+> 詳見下方「🟢 第六十八輪」。**未部署**（本輪只改前台程式與文案，無 schema 變更）。
+>
+> 🚩 **先說誠實的限制**：K 線的資料鏈路本來就是好的（本輪從外部逐層驗過），
+> 「沒有更新」是**尺度問題**——30 根日 K 的縱軸要容下近一個月的價格範圍，
+> 一次 tick 的位移是**次像素級**。接上即時報價後實測 15 秒內蠟燭實體高度
+> 由 4.295 → 4.477（viewBox 單位，1 單位≈1px），**確實在動但肉眼看不出來**。
+> 要「看得出來在動」只有兩條路，兩條都已向業主說明過：縮短日 K 視窗（放大縱軸），
+> 或加時間週期切換（1 小時／4 小時）。**業主本輪明確選擇不做週期切換。**
 >
 > **正式網域 `https://www.hatcmarket.com` 已切換成這個站，並跑 `build:prd` / `start:prd`。**
 > 下面「網域切換仍未發生」那幾段是切換前的紀錄，保留作為脈絡。當天切換後依序爆出三個問題，
@@ -288,6 +299,88 @@
 >   （舊說明要求的 `npm run migrate` 指令已不存在）；② **頁面文案類 global 要保持留空**
 >   （填入就會永久覆蓋內建三語文案，日後修正看不見）；③ **按鈕沒有目的地就不顯示**
 >   （模擬帳戶、會員登入）是設計行為不是 bug；④ **交易條件刻意不開放後台編輯**（治理設計）。
+## 🟢 第六十八輪（實作，2026-10-14）：首頁 K 線接即時報價 ＋ 可點選的產品切換
+
+> 業主兩句話：「1. 首頁的 K 線並沒有更新 2. 我想點擊不同產品會更換指定產品的日 K」。
+
+### 1. 「K 線沒有更新」的真正原因＝尺度，不是壞掉
+
+從外部逐層排除（方法可重用）：
+
+- `/api/market/bars?symbol=…` 線上三個品種**全部**回到當天那根（10-14），
+  回應帶 `cache-control: no-store`，**沒有**被前置 nginx 的 `proxy_cache` 吃掉
+  （帶 Chrome 完整 `Accept-Encoding` 驗過）。70 秒前後收盤價 4151.81 → 4152.29。
+- 前台 DOM 讀到的狀態標籤是「日 K 線（MT5 行情）」而非「示意數據」，
+  日期軸到 10/14 ⇒ 畫的確實是真資料。
+- **算術**：30 根日 K 的縱軸要容下 4144–4435（291 美元），映射到 136px 繪圖區
+  ⇒ **1 美元＝0.47px**。一次 tick 的 0.5 美元＝0.22px。再怎麼「更新」都看不見。
+
+**業主拍板：不加時間週期切換，只做「當日那根蠟燭接即時報價」。**
+（我已把「要看得出來在動只能縮短視窗或加週期切換」講清楚，業主選擇現況。）
+
+### 2. `withLiveCandle()` —— 當日蠟燭由 tick 重新定價
+
+新函式在 [`src/lib/marketQuoteTypes.ts`](../src/lib/marketQuoteTypes.ts)（純邏輯、無
+`server-only`，client 可用）：
+
+```
+close = quote.bid（bar feed 本來就是 priceType=bid，兩者同口徑）
+high  = max(bar.high, quote.high ?? bid, bid)
+low   = min(bar.low,  quote.low  ?? bid, bid)
+```
+
+🚩 **只有 tick 真正所屬的那個 bucket 可以動**：`quote.ts` 必須落在
+`[last.time, last.time + 24h)`。跨日之後閘道還沒發佈新 bucket，若把昨天那根
+用今天的價格拉長，等於畫出一根從未成交的蠟燭（＝「真價格旁不放假走勢」紅線）。
+`quote.high/low` 是 `tickStat` 的**當日** BidHigh/BidLow，所以也只有在這個
+條件成立時合併才正確。值沒變就回原陣列，避免每次 render 產生新物件。
+
+實測（`npm start` 對 UAT 閘道，15 秒取樣 6 次）：蠟燭實體高度
+4.2947 → 4.3170 → 4.3133 → 4.3394 → 4.4663 → 4.4775（viewBox 單位）＝**確實逐 tick 在動**。
+
+### 3. 三張報價卡＝產品切換器
+
+- `ServicePriceCards` 改由 **`MARKET_SYMBOLS` 驅動**（不再是寫死兩張卡），
+  所以卡片、跑馬燈、FACTS 的產品清單**不可能再漂移**——順手補上原本缺席的
+  **人民幣公斤條**（站上跑馬燈早就有三個，只有這裡少一個）。
+- 卡片變成 `<button aria-pressed>`，選中＝金色外框；`role="group"` 掛
+  `chartPicker` 作為 aria-label。
+- `ServiceMarketPanel` 持有 `selected` state、改用 `useLiveQuotes()`（一個 hook
+  取全部，不必為每個品種各叫一次 `useLiveQuote`）、把 `useDailyBars(selected)`
+  的結果餵進 `withLiveCandle`。
+- **圖表標題在 server 端先把三個品種都格式化好**（`chartTitles` record）再傳給
+  client，這樣 client 面板不需要自己帶一份 translator。
+- `SAMPLE_PRICE_CARDS` 由陣列改成 **`Record<MarketSymbol, …>`**，缺品種會是型別錯誤。
+
+### 4. i18n（三語 730 → **732 鍵**）
+
+- 刪 `home.goldServices.chartSymbol`（寫死的 "XAU/USD (倫敦金)"）。
+- 加 `chartTitle` = `"{symbol} ({name})"`（標題隨選取的產品變）、
+  `chartPicker`（選擇器的 aria-label）、`loco.kilobar`（人民幣公斤條／
+  人民币公斤条／RMB Kilobar，英文沿用站上既有譯法）。
+
+### 5. 驗收
+
+`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit`／
+`i18n:check` 三語 732 鍵／`env:check`／冷建綠且全頁維持 ● SSG。
+`npm start` 對 UAT 閘道實測：三個品種 bars 皆 `ok:true`（⚠ UAT 的 `RKGCNH`
+只有 9 根，生產是 30 根，`MIN_BARS=5` 以上就會畫）；以 CDP 點過三張卡，
+標題／日期軸／蠟燭數都跟著換；`QUOTE_GATEWAY_URL=` 空值重跑 ⇒ 完整退回
+示意蠟燭＋「示意數據 (設計佔位)」雙標籤。版面看過 1440／834（英文）／390。
+
+⚠ **本輪沒有部署。** 要上線照 `DEPLOYMENT.md`：部署後**必須**清前置 nginx 快取
+（`rm -rf /www/server/nginx/proxy_cache_dir/* && nginx -s reload`，先部署再清）。
+
+### 6. 環境雷（又中一次，記錄備查）
+
+`pkill -f "next start"` 之後**立刻** `rm -rf .next && npm run build` 仍然失敗，
+錯誤訊息是看起來毫不相干的 `next/font/google queries have exactly one entry`。
+第五十八輪已記錄過：殘留程序在搶 `.next`。**處置＝先 `ps aux | grep next` 確認
+真的沒有程序，再 `rm -rf .next` 重建一次**（不要去查 Google Fonts 連不連得到）。
+
+另外：用 `&` 背景啟動的 headless Chrome **會隨指令結束被收掉**，截圖腳本會
+`ECONNREFUSED`。要當成常駐背景任務跑（同第四十九輪對 `npm start` 的記錄）。
+
 ## 🟢 第六十七輪（實作，2026-10-14）：報價改為推送 ＋ 價格閃動
 
 > 業主原話：「我想做報價輪詢，不應做成這樣，可以做 1 秒 4 口，現在這樣太差了。」

@@ -1,3 +1,5 @@
+import type {MarketSymbol} from '@/lib/marketQuoteTypes';
+
 /**
  * SAMPLE / illustrative market data for the Figma-led homepage.
  *
@@ -37,16 +39,18 @@ export const SAMPLE_TICKER: ReadonlyArray<{
   {symbol: 'RKG/CNH', value: '546.10', change: '+4.30 +0.79%', dir: 'up'}
 ];
 
-export const SAMPLE_PRICE_CARDS: ReadonlyArray<{
-  symbol: string;
-  /** message key under home.goldServices.loco */
-  nameKey: 'gold' | 'silver';
-  value: string;
-  change: string;
-}> = [
-  {symbol: 'XAU/USD', nameKey: 'gold', value: '2,342.80', change: '+1.42%'},
-  {symbol: 'XAG/USD', nameKey: 'silver', value: '28.45', change: '+0.85%'}
-];
+/**
+ * Price-card fallback, keyed by gateway symbol so the cards always cover
+ * exactly MARKET_SYMBOLS — the same three products as the ticker.
+ */
+export const SAMPLE_PRICE_CARDS: Record<
+  MarketSymbol,
+  {value: string; change: string}
+> = {
+  XAUUSD: {value: '2,342.80', change: '+1.42%'},
+  XAGUSD: {value: '28.45', change: '+0.85%'},
+  RKGCNH: {value: '546.10', change: '+0.79%'}
+};
 
 /**
  * Illustrative candlestick series for the gold-services chart mockup.

@@ -25,9 +25,10 @@
 - **本專案（新官網）的正式部署網域：`https://www.hatcmarket.com`**
   （業主確認 2026-10-13 第六十三輪。與交易端 `h5.hatcmarket.com`、行情閘道
   `node.hatcmarket.com` 同一家族。）
-  - ⚠ **這是目標網域，不是目前狀態。** 2026-10-13 實測 `www.hatcmarket.com` 服務的
-    仍是**既有站台**（`/zh-HK`，與 `www.hatchk.com` 相同，`/api/*` 由另一個後端回答）；
-    本倉的新站目前只部署在測試網域上。正式切換尚未發生——不得據此對外宣稱新站已上線。
+  - ✅ **已切換、已上線（2026-10-14 驗證）**：該網域服務的就是本倉的新站，主機跑
+    `build:prd` / `start:prd`。實測 `/zh-Hant` 200、`/api/market/quotes` 回真實報價、
+    `/admin` 200、`robots.txt` 為 `Allow: /` 且 host／sitemap 皆指本網域。
+    （2026-10-13 之前它服務的是既有站台，該段紀錄已不適用。）
   - 用途：`NEXT_PUBLIC_SITE_URL` 的生產值，決定 canonical、`hreflang`、
     `sitemap.xml` 與 `robots.txt` 的 host。程式端唯一來源＝
     [`config/env/prd.env`](../config/env/prd.env)（`npm run build:prd` 載入）。

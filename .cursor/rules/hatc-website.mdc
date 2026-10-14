@@ -1134,6 +1134,34 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  （待業主決定補 SAN 或 301 到 www）。**兩個網域仍刻意不寫進 FACTS 以外的頁面內容**；
  `www.hatcmarket.com` 本身已是 FACTS 核可事實（第六十三輪）。
 
+- **2026-10-14 (第六十八輪): 首頁 K 線接即時報價 ＋ 三張報價卡變成產品切換器。**
+  業主：「1. 首頁的 K 線並沒有更新 2. 我想點擊不同產品會更換指定產品的日 K」。
+  - **🚩 「K 線沒更新」是尺度問題，不是 bug（別再重查一次鏈路）**：線上 `/api/market/bars`
+    三個品種都回當天那根、`cache-control: no-store`、未被 nginx `proxy_cache` 吃掉，
+    70 秒內收盤價會變。但 **30 根日 K 的縱軸要容下近一個月（金約 291 美元）映射到 136px
+    ⇒ 1 美元＝0.47px**，一次 tick 的位移是**次像素級**。要「看得出來在動」只有兩條路：
+    縮短日 K 視窗、或加時間週期切換（1 小時／4 小時，閘道支援 `1/5/15/30/60/240/1D/1W`）。
+    **業主 2026-10-14 明確選擇不做週期切換**，只接即時報價——不要自行加回去。
+  - **`withLiveCandle(bars, quote)`**（`src/lib/marketQuoteTypes.ts`，純邏輯無 `server-only`）：
+    `close=quote.bid`（bar feed 本來就 `priceType=bid`，同口徑）、`high/low` 與 `quote.high/low`
+    （`tickStat` 的**當日** BidHigh/BidLow）合併。**🚩 只有 tick 真正所屬的 bucket 可以動**
+    （`quote.ts ∈ [last.time, last.time+24h)`）——跨日後閘道尚未發佈新 bucket，把昨天那根
+    用今天的價格拉長＝畫出從未成交的蠟燭，違反「真價格旁不放假走勢」。
+  - **報價卡改由 `MARKET_SYMBOLS` 驅動**（不再寫死兩張），所以卡片／跑馬燈／FACTS 的產品清單
+    不可能漂移；順手補上原本缺席的**人民幣公斤條**。卡片＝`<button aria-pressed>`，選中金色外框，
+    點擊切換上方日 K；`SAMPLE_PRICE_CARDS` 由陣列改 **`Record<MarketSymbol, …>`**（缺品種＝型別錯誤）。
+    `ServiceMarketPanel` 改用 **`useLiveQuotes()`** 一次取全部（不要為每個品種各叫一次
+    `useLiveQuote`）；**圖表標題在 server 端先把三個品種都格式化好**再傳進 client。
+  - **i18n 730 → 732 鍵**：刪 `home.goldServices.chartSymbol`（寫死的 "XAU/USD (倫敦金)"）；
+    加 `chartTitle`＝`"{symbol} ({name})"`、`chartPicker`（選擇器 aria-label）、`loco.kilobar`。
+  - **降級不變**：拿不到行情→示意蠟燭＋「示意數據 (設計佔位)」；有報價但無 K 線→不畫蠟燭。
+    已用 `QUOTE_GATEWAY_URL=` 空值實測。未動 schema，`generate:types` 無變更。
+  - ⚠ **環境雷（第五十八輪的重演）**：`pkill -f "next start"` 後立刻 `rm -rf .next && build`
+    仍可能失敗，訊息是毫不相干的 `next/font/google queries have exactly one entry`＝殘留程序在搶
+    `.next`。**先 `ps aux | grep next` 確認沒程序，再 `rm -rf .next` 重建一次**，不要去查 Google Fonts。
+    另：用 `&` 背景啟動的 headless Chrome 會隨指令結束被收掉（截圖腳本會 `ECONNREFUSED`），
+    要當成常駐背景任務跑。
+
 - **2026-10-13 (第六十四輪 追加查證；未改程式碼)**：① **判斷對方部署到哪一版，就打那一版新增
  的路由**——`/api/market/diagnostics` 在 UAT 回 **404 ＝ 還是舊建置**（Gitee `master` 早已有
  `c11769e`，所以是沒重新部署，不是沒交付）。比問「部署了嗎」可靠。② 線上仍是 uat 設定
