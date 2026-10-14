@@ -31,9 +31,26 @@
  * credentials. It never prints password hashes and never creates an account:
  * the first account is created by `onInit` / the `/admin` first-run screen.
  */
+import {writeSync} from 'node:fs';
+
 import {getPayload} from 'payload';
 
 import config from '@payload-config';
+
+/**
+ * Write straight to fd 1/2. Payload's pino logger buffers, and this script ends
+ * with `process.exit` (the database connection keeps the event loop alive), so
+ * logged lines can be truncated — an unlock that printed nothing at all looks
+ * exactly like one that silently did nothing.
+ */
+function say(message: string): void {
+  writeSync(1, `${message}\n`);
+}
+
+function fail(message: string): never {
+  writeSync(2, `${message}\n`);
+  process.exit(1);
+}
 
 const args = process.argv.slice(2);
 
@@ -84,8 +101,8 @@ async function fingerprint(): Promise<void> {
   // Host and database name only — never the credentials in the URI.
   const uri = process.env.DATABASE_URI ?? '';
   const safe = uri.replace(/\/\/[^@]*@/, '//<credentials>@');
-  payload.logger.info(`database: ${safe || '(DATABASE_URI not set)'}`);
-  payload.logger.info(`contents: ${counts.join(', ')}`);
+  say(`database: ${safe || '(DATABASE_URI not set)'}`);
+  say(`contents: ${counts.join(', ')}`);
 }
 
 async function list(): Promise<void> {
@@ -101,7 +118,7 @@ async function list(): Promise<void> {
     showHiddenFields: true
   });
 
-  payload.logger.info(`users: ${totalDocs}`);
+  say(`users: ${totalDocs}`);
   for (const user of docs) {
     const role = user.role;
     const roleLabel =
@@ -114,7 +131,7 @@ async function list(): Promise<void> {
     const auth = user as unknown as {lockUntil?: string | null; loginAttempts?: number};
     const lockedUntil = auth.lockUntil ? new Date(auth.lockUntil) : null;
     const locked = lockedUntil !== null && lockedUntil.getTime() > Date.now();
-    payload.logger.info(
+    say(
       `  ${user.email} — role: ${roleLabel}; failed attempts: ${auth.loginAttempts ?? 0}` +
         (locked ? `; 🔒 LOCKED until ${lockedUntil.toISOString()}` : '')
     );
@@ -127,11 +144,10 @@ if (checkEmail) {
   // rejects the same password, the site is talking to a different database.
   const password = process.env.ADMIN_PASSWORD;
   if (!password) {
-    payload.logger.error(
+    fail(
       'Set ADMIN_PASSWORD in the environment, e.g.\n' +
         "  ADMIN_PASSWORD='…' npm run payload:prd -- run scripts/admin-recover.ts -- --check you@example.com"
     );
-    process.exit(1);
   }
   await fingerprint();
   try {
@@ -140,31 +156,28 @@ if (checkEmail) {
       data: {email: checkEmail.trim().toLowerCase(), password},
       overrideAccess: true
     });
-    payload.logger.info(`✓ password is correct for ${result.user?.email}`);
+    say(`✓ password is correct for ${result.user?.email}`);
   } catch (error) {
-    payload.logger.error(`✗ rejected: ${(error as Error).message}`);
+    fail(`✗ rejected: ${(error as Error).message}`);
   }
 } else if (unlockEmail) {
   const user = await findUser(unlockEmail);
   if (!user) {
-    payload.logger.error(`No user with email ${unlockEmail} — run without flags to list.`);
-    process.exit(1);
+    fail(`No user with email ${unlockEmail} — run without flags to list.`);
   }
   await payload.unlock({collection: 'users', data: unlockData(user.email), overrideAccess: true});
-  payload.logger.info(`Unlocked ${user.email}.`);
+  say(`Unlocked ${user.email}.`);
 } else if (resetEmail) {
   const password = process.env.ADMIN_NEW_PASSWORD;
   if (!password || password.length < 8) {
-    payload.logger.error(
+    fail(
       'Set ADMIN_NEW_PASSWORD (at least 8 characters) in the environment, e.g.\n' +
-        "  ADMIN_NEW_PASSWORD='…' npm run payload -- run scripts/admin-recover.ts -- --reset you@example.com"
+        "  ADMIN_NEW_PASSWORD='…' npm run payload:prd -- run scripts/admin-recover.ts -- --reset you@example.com"
     );
-    process.exit(1);
   }
   const user = await findUser(resetEmail);
   if (!user) {
-    payload.logger.error(`No user with email ${resetEmail} — run without flags to list.`);
-    process.exit(1);
+    fail(`No user with email ${resetEmail} — run without flags to list.`);
   }
   await payload.update({
     collection: 'users',
@@ -174,7 +187,7 @@ if (checkEmail) {
   });
   // A reset is pointless while the account is still locked out.
   await payload.unlock({collection: 'users', data: unlockData(user.email), overrideAccess: true});
-  payload.logger.info(`Password updated and lockout cleared for ${user.email}.`);
+  say(`Password updated and lockout cleared for ${user.email}.`);
 } else {
   await list();
 }
