@@ -124,24 +124,30 @@ npm run build:stg && npm run start:stg
 驗收（在預覽主機上跑，三條都要對）：
 
 ```bash
-curl -s https://web.hatcmarket.com/robots.txt                     # 應為 Disallow: /
-curl -s https://web.hatcmarket.com/zh-Hant | grep -o 'rel="canonical"[^>]*'   # 應指 web.hatcmarket.com
-curl -s https://web.hatcmarket.com/zh-Hant | grep -o 'name="robots"[^>]*'     # 應為 noindex, nofollow
+curl -s https://<預覽網域>/robots.txt                     # 應為 Disallow: /
+curl -s https://<預覽網域>/zh-Hant | grep -o 'rel="canonical"[^>]*'   # 應指預覽網域自己
+curl -s https://<預覽網域>/zh-Hant | grep -o 'name="robots"[^>]*'     # 應為 noindex, nofollow
 ```
+
+> ⚠ `stg.env` 的 `NEXT_PUBLIC_SITE_URL` 自 2026-10-14 起**刻意留空**
+> （`web.hatcmarket.com` 已隨切換退役）。下次要做預覽站時**必須先填上那台主機真正的網址**，
+> 否則 canonical／sitemap／`og:image` 會指向 localhost。
 
 > ⚠ 密鑰是**按環境名**載入的：`build:stg` 讀的是 `config/env/stg.secrets.env`，
 > **不會**讀 `prd.secrets.env`。改用 `stg` 之後若行情消失，先確認生產的
 > `QUOTE_HTTP_CRYPT_SECRET` 在主機環境變數裡，或已複製一份到 `stg.secrets.env`。
 
-### 2.0b 預覽主機的實際組態（2026-10-14 第六十七輪實地確認）
+### 2.0b 正式主機的實際組態（2026-10-14 第六十七輪實地確認）
 
-`web.hatcmarket.com` 這台機器的事實，**排查前先看這一節，不要重新摸索**：
+這台機器**先是預覽站、當天切換後就是正式站 `www.hatcmarket.com`**（業主決定退役
+`web.hatcmarket.com`：兩者本來就是同一個 nginx server 區塊、同一份內容）。
+以下是實地確認的事實，**排查前先看這一節，不要重新摸索**：
 
 | 項目 | 值 |
 | --- | --- |
 | 專案目錄 | `/project/hatc-web`（**第六十七輪起是 GitHub 的 git checkout**） |
 | 程序管理 | **寶塔面板 → 網站 → Node項目 → `hatc_web`**（不是 pm2，`pm2 list` 是空的） |
-| 啟動指令 | 面板「設置 → 啟動選項」下拉選 `start:stg`（切換正式網域時改回 `start:prd`） |
+| 啟動指令 | 面板「設置 → 啟動選項」下拉選 **`start:prd`**（2026-10-14 切換後；切換前是 `start:stg`） |
 | node | `/www/server/nodejs/v22.22.3/bin/node`（**不在一般使用者的 PATH**） |
 | 登入帳號 | `ubuntu`，但檔案與程序都屬 `root` → 每個指令都要 `sudo` |
 | 密鑰 | 全部四個都在 `config/env/<環境>.secrets.env`，**機器上沒有 `.env`** |
@@ -161,8 +167,9 @@ curl -s https://web.hatcmarket.com/zh-Hant | grep -o 'name="robots"[^>]*'     # 
 cd /project/hatc-web
 sudo git pull
 sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH npm ci
-sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH npm run build:stg
-# 最後在面板按 hatc_web → 重啟
+sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH npm run build:prd
+# 面板按 hatc_web → 重啟
+# 最後到前置 nginx（13.251.150.207）清快取，否則使用者仍看到舊版 —— 見 §2.0c
 ```
 
 ⚠ `media/`（後台上傳的檔案）與 `config/env/*.secrets.env` 都被 git 忽略，**換目錄或
