@@ -864,3 +864,30 @@ commit 的圖片素材）。業主端上行只有 3–13 KiB/s，整包塞不進
    就會同時偏離官網與審核結果。嵌網址才能跟著更新。
 3. 這些頁是 `noindex, nofollow`、不在 `sitemap.xml`、官網也沒有任何連結指向，**只給 App 用**。
    不要拿去當對外宣傳連結（要對外就用沒有 `/embed` 的公開網址）。
+
+### 10.3 公告更新為什麼「官網有、App 沒有」（已修，2026-10-14）
+
+業主在 `/admin` 發佈公告後，embed 列表曾經不會更新。原因是 embed 頁有**自己的 root
+layout**，所以 `revalidatePath('/<locale>/announcements', 'layout')` **到不了**
+`/<locale>/embed/announcements`。`src/lib/revalidateContent.ts` 已補上第二條路徑，
+存檔後第一次開啟就會是新的。
+
+> 🚩 **以後新增任何 `/embed/` 路由，都要同步 `src/lib/revalidateContent.ts`。**
+> 多 root layout 的代價就是 revalidate 不會自動跨組。
+
+同一次也修掉一個既有問題：**`/sitemap.xml` 從來不會因為發佈公告或學院文章而更新**
+（它是預產生路由、沒有自己的 cache tag），所以新內容要等下一次完整 build 才進 sitemap。
+現在 `revalidateAnnouncements()` 與 `revalidateAcademyArticles()` 都會一併
+`revalidatePath('/sitemap.xml')`。
+
+**排查口訣：先用隨機 query 分辨是程式還是 nginx。**
+
+```bash
+# 不帶參數 = 可能是 nginx 的舊副本；帶參數一定打到 Next（nginx 快取鍵含 query）
+curl -s --compressed -H 'Accept-Encoding: gzip, deflate, br, zstd' \
+  "https://www.hatcmarket.com/zh-Hans/embed/announcements?cb=$RANDOM" | grep -c '公告'
+```
+
+兩者內容不同 ⇒ 程式是對的、使用者看到的是 nginx 的舊副本 → 依 §2.0c 清快取。
+⚠ **不要用 `x-nextjs-cache: HIT` 判斷**：nginx 會把上游標頭一起存下來重放，
+看到那個標頭不代表這次請求真的有打到 Next。

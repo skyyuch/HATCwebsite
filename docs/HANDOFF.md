@@ -51,6 +51,32 @@
 > 免責聲明／隱私權政策）、只給路徑不收參數、標題區改精簡。詳見下方「🟢 第七十輪」。
 > 無 schema 變更，i18n 仍 675 鍵（沒有新開任何鍵）。
 >
+> **✅ 第七十輪 追加（2026-10-14 傍晚，正式站實測）：embed 列表的 revalidate 漏洞 ＋
+> `/sitemap.xml` 從來不會因發佈公告而更新 —— 兩個都已修。**
+> 正式站已部署第七十輪的程式（四頁 embed 都 200、`noindex, nofollow`、無頭尾、可 iframe），
+> 但公告列表只顯示 **5 則**、實際 CMS 有 **6 則**，sitemap 更只有 **3 則**。逐層拆開後是
+> **三個獨立原因**：
+> 1. **`revalidateAnnouncementPages()` 沒有涵蓋 `/embed/announcements`**（第七十輪我自己
+>    留的洞）。embed 頁在自己的 root layout 底下，`revalidatePath('/<locale>/announcements',
+>    'layout')` **到不了** `/<locale>/embed/announcements` → 業主發新公告，官網會更新、
+>    **App 裡的列表要等到下次部署才更新**。已補上第二條路徑。
+> 2. **`/sitemap.xml` 沒有任何 revalidate**（既有問題，非本輪造成）。`src/app/sitemap.ts`
+>    會列出每一則公告與每一篇學院文章的網址，但它是預產生路由、自己沒有 cache tag，
+>    只有 path 能讓它失效 → **新公告／新文章永遠不會進 sitemap，要等下一次完整 build**。
+>    已新增 `revalidateSitemap()` 並掛進 `revalidateAnnouncements()` 與
+>    `revalidateAcademyArticles()`。
+> 3. **前置 nginx 的 `proxy_cache` 還存著部署前的 HTML**（§2.0c 的老問題，這次又踩到）。
+>    判別法＝**在網址後面加一個隨機 query（`?cb=12345`）**：nginx 的快取鍵含 query，
+>    所以帶參數的請求會直接打到 Next。實測帶參數 → 6 則都在、不帶 → 5 則
+>    ⇒ **程式是對的，使用者看到的是 nginx 的舊副本**。
+>    **部署後一定要清**：`sudo rm -rf /www/server/nginx/proxy_cache_dir/* &&
+>    sudo /www/server/nginx/sbin/nginx -s reload`（在 `13.251.150.207`，順序是先部署再清）。
+>
+> 驗收方式（沿用第六十一輪的做法）：`npm run build && npm start` → 建臨時全權帳號 →
+> 用 REST `POST /api/announcements`（與 `/admin` 存檔同一條 `afterChange` 路徑）→
+> **存檔後第 1 次請求**即確認 embed 列表、公開列表、`/sitemap.xml` 三處全部含新公告；
+> 刪除後第 1 次請求也立刻消失。臨時公告與臨時帳號**驗完已刪**（本機 DB 回到 1 則公告、1 個帳號）。
+>
 > **⚠ 要轉告開發端的三件事**（完整版在 `DEPLOYMENT.md` §10）：① 網址必須帶語系前綴
 > （`/zh-Hant`／`zh-Hans`／`en`）；② 本倉沒有設 `X-Frame-Options`／CSP，所以可以 iframe，
 > **但要請維運確認前置 nginx（寶塔）沒有自動加 `SAMEORIGIN`**，否則 h5 會白屏；
@@ -449,6 +475,39 @@ embed 頁 `canonical`／`hreflang` **0 個**、embed 列表 `<header>/<footer>/<
 - (d) 小優化（非必要）：embed 頁仍透過 `NextIntlClientProvider` 把**全部**三語訊息序列化進
   RSC payload（與公開頁相同的既有行為），所以 HTML 裡找得到 footer 地址等字串——**不是**版面
   殘留（已確認 markup 層為 0）。要縮可以只傳該頁需要的 namespace，但那會偏離全站慣例。
+
+### 7. 當天追加（正式站實測）：embed 列表 revalidate 漏洞 ＋ sitemap 從不更新 ＋ nginx 舊副本
+
+> 業主把四條網址貼回來、要簡體中文版，於是順手驗了一次**正式站**。四頁都 200、
+> `noindex, nofollow`、無頭尾、無 `X-Frame-Options`（可 iframe）——但公告列表只有 5 則，
+> CMS 實際有 6 則，sitemap 只有 3 則。**三個獨立原因**，不要混為一談：
+
+| 症狀 | 根因 | 處置 |
+| --- | --- | --- |
+| App 的 embed 列表少一則 | `revalidateAnnouncementPages()` 只有 `/<locale>/announcements`；**embed 頁在另一個 root layout 底下，這條 path 到不了** | 已補 `/<locale>/embed/announcements`（`'layout'`） |
+| `/sitemap.xml` 少 3 則 | sitemap 是預產生路由、**沒有自己的 cache tag**，而發佈公告／學院文章只 revalidate tag 與各自的頁面路徑 → 新內容永遠進不了 sitemap | 新增 `revalidateSitemap()`（`revalidatePath('/sitemap.xml')`），掛進 `revalidateAnnouncements()` ＋ `revalidateAcademyArticles()` |
+| 使用者看到部署前的頁面 | 前置 nginx `proxy_cache` 的舊副本（§2.0c） | 部署後清快取；**順序是先部署再清** |
+
+> 🚩 **判別「是程式還是 nginx」最快的方法＝網址加一個隨機 query**（`?cb=12345`）。
+> nginx 的快取鍵含 query string，所以帶參數的請求一定打到 Next。實測：
+> 帶參數 → 6 則都在；不帶 → 5 則 ⇒ **程式是對的，舊的是 nginx**。
+> 這比去比對 `x-nextjs-cache` 標頭可靠（nginx 會把上游標頭一起存起來重放，
+> 所以 `x-nextjs-cache: HIT` 不代表這次真的有打到 Next）。
+>
+> 🚩 **新增任何 `/embed/` 路由時，記得同步 `src/lib/revalidateContent.ts`。** 多 root layout
+> 的代價就是 `revalidatePath` 不會自動涵蓋另一組；這一條已寫進
+> `.cursor/rules/hatc-website.mdc` 的第七十輪段落。
+>
+> 驗收（沿用第六十一輪的方法）：`npm run build && npm start` → 臨時全權帳號 →
+> REST `POST /api/announcements`（與 `/admin` 存檔同一條 `afterChange`）→ **存檔後第 1 次
+> 請求**即確認 embed 列表／公開列表／`/sitemap.xml` 三處都含新公告，`DELETE` 後第 1 次請求
+> 也立刻消失。臨時公告、臨時帳號與臨時腳本**驗完全部刪除**。
+> `tsc --noEmit`／`lint`（0 error）／冷建綠且路由狀態不變。
+>
+> ⚠ 寫臨時維運腳本時：`payload run <script>` **直接執行整個檔案**（像
+> `scripts/admin-recover.ts` 那樣 top-level `await getPayload(...)`），**不是**呼叫
+> `export default`。我第一版寫成 default export → 什麼都沒做、也沒有任何錯誤訊息，
+> 看起來像「帳號建了但登入失敗」。
 
 ## 🟢 第六十九輪（實作，2026-10-14）：`/funding` 示意數據退役 ＋ 全站「示意」稽核
 

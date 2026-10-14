@@ -48,6 +48,17 @@ function safeRevalidatePath(path: string, type?: 'layout' | 'page'): void {
   }
 }
 
+/**
+ * `src/app/sitemap.ts` enumerates every announcement and academy-article slug,
+ * so publishing or unpublishing one of those changes the sitemap. It is a
+ * prerendered route with no cache tag of its own, so only the path invalidates
+ * it — without this, a new notice never reaches `/sitemap.xml` until the next
+ * full build (production was found serving a 3-entry sitemap for 6 notices).
+ */
+function revalidateSitemap(): void {
+  safeRevalidatePath('/sitemap.xml');
+}
+
 export function revalidateSiteSettings(): void {
   safeRevalidateTag(CACHE_TAGS.siteSettings);
 }
@@ -60,16 +71,23 @@ export function revalidateHomeActivities(): void {
   }
 }
 
-/** `/announcements` list + every `/announcements/[slug]` detail page. */
+/**
+ * `/announcements` list + every `/announcements/[slug]` detail page, **and the
+ * `/embed/announcements` webview twins** — the embed pages live under their own
+ * root layout (`src/app/(embed)`), so the public path does not reach them and a
+ * published notice would stay missing from the app until the next deploy.
+ */
 function revalidateAnnouncementPages(): void {
   for (const locale of routing.locales) {
     safeRevalidatePath(`/${locale}/announcements`, 'layout');
+    safeRevalidatePath(`/${locale}/embed/announcements`, 'layout');
   }
 }
 
 export function revalidateAnnouncements(): void {
   safeRevalidateTag(CACHE_TAGS.announcements);
   revalidateAnnouncementPages();
+  revalidateSitemap();
 }
 
 /** A category rename changes the badges/filters rendered on both surfaces. */
@@ -95,6 +113,7 @@ export function revalidateAcademyArticles(): void {
     // layout = list + /academy/[slug] detail pages
     safeRevalidatePath(`/${locale}/academy`, 'layout');
   }
+  revalidateSitemap();
 }
 
 export function revalidateInstruments(): void {

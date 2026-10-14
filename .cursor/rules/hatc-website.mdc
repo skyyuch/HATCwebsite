@@ -1201,6 +1201,23 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
     `ERR_CONNECTION_REFUSED` 的錯誤頁，看起來像版面壞掉）→ 用常駐背景任務；**IDE 內建瀏覽器
     連不到 `localhost:3000`** → 用 `Google Chrome --headless=new --no-sandbox
     --remote-debugging-port=9333` ＋ CDP 截圖。
+  - **🚩 當天追加：新增任何 `/embed/` 路由，必須同步 `src/lib/revalidateContent.ts`。**
+    多 root layout 的代價＝`revalidatePath` **不會跨 group**：
+    `revalidatePath('/<locale>/announcements','layout')` 到不了
+    `/<locale>/embed/announcements` → 業主發公告，官網更新但 **App 裡要等下次部署**。
+    已補第二條路徑（正式站實測發現）。
+  - **🚩 同時修掉既有問題：`/sitemap.xml` 從來不會因發佈公告／學院文章而更新。**
+    `src/app/sitemap.ts` 會列出每則公告與每篇文章，但它是預產生路由、**自己沒有 cache tag**，
+    只有 path 能讓它失效（正式站實測：6 則公告、sitemap 只有 3 則）。新增
+    `revalidateSitemap()` 掛進 `revalidateAnnouncements()` ＋ `revalidateAcademyArticles()`。
+    **日後新增任何會被 `sitemap.ts` 列舉的集合，revalidate 要一併叫它。**
+  - **🚩 「是程式還是 nginx」的判別口訣＝網址加隨機 query（`?cb=12345`）**：nginx 的
+    `proxy_cache` 鍵含 query string，帶參數必定打到 Next。帶參數與不帶參數內容不同
+    ⇒ 程式正確、使用者看到的是 nginx 舊副本（依 DEPLOYMENT §2.0c 清）。
+    **不要用 `x-nextjs-cache: HIT` 判斷** —— nginx 會把上游標頭一起存下來重放。
+  - ⚠ **臨時維運腳本**：`payload run <script>` **直接執行整個檔案**（照
+    `scripts/admin-recover.ts` 的 top-level `await getPayload(...)` 寫），**不是**呼叫
+    `export default`。寫成 default export 會**什麼都不做且不報錯**。
 
 - **2026-10-14 (第六十九輪): `/funding` 的「示意數據」退役 —— 出入金渠道改為對外正式資訊，
   並刪掉虛構後備。SUPERSEDES 第三十六／三十七輪把 `funding-methods` 當示意表的設計。**
