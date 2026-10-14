@@ -37,14 +37,15 @@ revalidate**。部署兩步：**備好 MongoDB → `build` → `start`**（Mongo
 
 ## 2. 環境變數與分環境配置
 
-### 2.0 三個環境各一份配置檔（第六十二輪新增）
+### 2.0 每個環境各一份配置檔（第六十二輪新增；第六十五輪加入 stg）
 
 公開的分環境值（站台網域、開戶等營運連結的後備、行情閘道位址）放在**已 commit** 的
 配置檔，切換環境**不需要改任何程式碼**：
 
 ```
 config/env/local.env     # 本機開發
-config/env/uat.env       # UAT / 驗收
+config/env/uat.env       # UAT / 驗收（www.666678910.com）
+config/env/stg.env       # 上線前預覽（web.hatcmarket.com，不可索引）
 config/env/prd.env       # 生產（www.hatcmarket.com）
 ```
 
@@ -52,9 +53,13 @@ config/env/prd.env       # 生產（www.hatcmarket.com）
 
 ```bash
 npm run build:prd && npm run start:prd     # 生產
+npm run build:stg && npm run start:stg     # 上線前預覽
 npm run build:uat && npm run start:uat     # UAT
 npm run dev                                # 本機（自動套 local）
 ```
+
+> 新增環境只要在 `config/env/` 放一份 `<名稱>.env` 並加上對應的 npm script；
+> `with-env.mjs` 與 `env:check` 會自動認得它。
 
 也可以**完全不用這些 script**：直接在主機／CI 設環境變數再跑 `npm run build`、
 `npm run start` —— 原本的指令行為完全沒變。
@@ -84,6 +89,37 @@ npm run dev                                # 本機（自動套 local）
 > 開發端把 `DATABASE_URI` 寫進全部三份檔案，結果 `build:prd`／`build:uat`／`build:local`
 > 與 CI 的 `env:check` 全部中止。錯誤訊息本身會列出該放哪裡
 > （`config/env/<環境>.secrets.env` 或主機環境變數），照著做即可。
+
+### 2.0a `stg`＝上線前預覽，為什麼不能直接用 `build:prd`（第六十五輪新增）
+
+正式站還沒切換時，生產建置被部署到 **`web.hatcmarket.com`**，而
+`www.hatcmarket.com` 當時仍服務**另一個既有站**。用 `build:prd` 跑在這個網域上會同時
+造成兩件事，而且**頁面上完全看不出來**：
+
+- `robots.txt` 變成 `Allow: /`、每頁 `index, follow` → **預覽站被搜尋引擎收錄**；
+- canonical、`hreflang`、`sitemap.xml` 全部指向 `https://www.hatcmarket.com`
+  → 指到一個**內容不同**的網址。
+
+`stg.env` 就是為此存在：**除了「站台自己的網址」與「可不可以被索引」之外，其餘與
+`prd.env` 完全相同**（同樣的營運連結、同樣的生產行情閘道）。正式切換當天把那台主機
+改回 `build:prd` / `start:prd` 即可，不需要改其他東西。
+
+```bash
+# 預覽主機（上線前）
+npm run build:stg && npm run start:stg
+```
+
+驗收（在預覽主機上跑，三條都要對）：
+
+```bash
+curl -s https://web.hatcmarket.com/robots.txt                     # 應為 Disallow: /
+curl -s https://web.hatcmarket.com/zh-Hant | grep -o 'rel="canonical"[^>]*'   # 應指 web.hatcmarket.com
+curl -s https://web.hatcmarket.com/zh-Hant | grep -o 'name="robots"[^>]*'     # 應為 noindex, nofollow
+```
+
+> ⚠ 密鑰是**按環境名**載入的：`build:stg` 讀的是 `config/env/stg.secrets.env`，
+> **不會**讀 `prd.secrets.env`。改用 `stg` 之後若行情消失，先確認生產的
+> `QUOTE_HTTP_CRYPT_SECRET` 在主機環境變數裡，或已複製一份到 `stg.secrets.env`。
 
 ### 2.1 必填（只能放主機環境變數或 git-ignored 的 `.env`）
 
@@ -319,7 +355,8 @@ npm ci
 cp .env.example .env && vi .env
 
 # 3. 建置與啟動（Mongo 不需要建表，也沒有 migration 步驟）
-npm run build:prd      # UAT 用 build:uat；或自行注入環境變數後跑 npm run build
+npm run build:prd      # UAT 用 build:uat、上線前預覽用 build:stg（§2.0a）；
+                       # 或自行注入環境變數後跑 npm run build
 npm run start:prd      # 預設 3000 埠；請用反向代理掛上 TLS
 ```
 

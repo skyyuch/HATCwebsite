@@ -20,8 +20,18 @@
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
-## ▶ 下一輪任務（第六十四輪已把行情問題收斂到部署主機，等開發端回覆）
+## ▶ 下一輪任務（第六十五輪已查出行情卡在「握手」，並修掉預覽站的索引問題）
 
+> **✅ 第六十五輪（2026-10-14）完成：** 站台改部署到 **`web.hatcmarket.com`**（業主確認
+> ＝**上線前的暫時展示位址**，正式仍會切回 `www.hatcmarket.com`）。從外部證明
+> **閘道握手每一次都失敗**（不是「遊客組沒配產品」那一關），最可能是生產
+> `QUOTE_HTTP_CRYPT_SECRET` 沒設或用了 UAT 的值；並新增 **`stg` 環境**修掉預覽站
+> 被開放索引、canonical 指向別人內容的問題。詳見下方「🟢 第六十五輪」。
+>
+> **下一棒最可能要做的事**：等開發端補上生產密鑰＋部署新版後，請他們開
+> `/api/market/diagnostics` 貼回 `verdict`。**預期會看到第二道關卡**
+> （「握手成功但遊客交易組沒有 HATC 產品」），那是後端業務後台的設定，官網不必改碼。
+>
 > **✅ 第六十四輪（2026-10-13）完成：行情失效的範圍已從外部證實，並補上可診斷性。
 > 詳見下方「🟢 第六十四輪」。** 結論兩句話：**閘道、UAT 遊客交易組、我們手上的 UAT 密鑰
 > 全都是好的**（本機實測當場取到金 4184.65／銀 60.231／公斤條 900.04）；**問題在部署主機
@@ -212,6 +222,81 @@
 >   （舊說明要求的 `npm run migrate` 指令已不存在）；② **頁面文案類 global 要保持留空**
 >   （填入就會永久覆蓋內建三語文案，日後修正看不見）；③ **按鈕沒有目的地就不顯示**
 >   （模擬帳戶、會員登入）是設計行為不是 bug；④ **交易條件刻意不開放後台編輯**（治理設計）。
+## 🟢 第六十五輪（實作，2026-10-14）：行情卡在「握手」而非白名單 ＋ 新增 `stg` 預覽環境
+
+> 業主截圖問：「接口是 200 通的，但沒有行情，你可以怎麼分析？」
+> **`/api/market/quotes` 回 200 與有沒有行情無關** —— `{"ok":false}` 本來就是 200
+> （契約：「沒有真資料，前台維持示意」）。要看的是 body，不是狀態碼。
+
+### 1. 現況變了：站台已改部署到 `web.hatcmarket.com`，而且跑的是 prd 設定
+
+| 量到的 | 值 |
+| --- | --- |
+| `web.hatcmarket.com/robots.txt` | `Allow: /`（＝`SITE_INDEXABLE=true` ＝ prd 設定） |
+| canonical／sitemap | 全部指向 `https://www.hatcmarket.com`（**服務另一個既有站**） |
+| `/api/market/diagnostics` | **404 ＝ 仍是第六十四輪之前的建置** |
+| DNS | `web.hatcmarket.com` 與 `node.hatcmarket.com` **同一台 `13.251.150.207`** |
+
+也就是說：開發端說的「UAT 跑不起來只能跑 prd」＝**他們真的改用 prd 設定了**，正是
+第六十四輪追加警告過的那個做法。
+
+### 2. 🚩 用快取 TTL 當探針，分辨出「握手失敗」vs「白名單沒產品」
+
+第六十四輪只證明到「主機有設 `QUOTE_GATEWAY_URL` 且真的發了請求」。本輪再進一步，
+**方法記下來，日後診斷遠端一律可用**：
+
+- **基準線**＝`/api/market/bars?symbol=EURUSD`（不在 `MARKET_SYMBOLS`，程式更早 return，
+  不發任何外部請求）→ 穩定 **0.245–0.283s**，這是純路由開銷。
+- **`/api/market/quotes` 的報價快取只有 2 秒，但閘道 context token 壽命是 10 分鐘**
+  （本輪用 UAT 密鑰實測 `expiresAt`，減去程式的 60 秒更新邊際＝約 9 分鐘內不會重握手）。
+  → **每隔 3 秒打 6 次**：若握手成功過一次，第 2 次起就該掉回基準線（白名單是空的話
+  `loadQuotes` 零網路呼叫直接 return）。實測 **6 次全部 0.325–0.367s**。
+- **結論：每一次都在重握手、每一次都失敗。**
+
+這**排除了**原本的頭號嫌疑「生產遊客交易組沒配產品」—— 那一關握手是會成功的。
+也排除網路不通：程式對外逾時 8 秒，而失敗只多 60–110ms（何況網站與閘道同一台機器）。
+生產閘道 `POST /v1/context/resolve` 從外部打也回 200。
+
+**剩下的可能，依序**：① 生產 `QUOTE_HTTP_CRYPT_SECRET` 沒設、或填成了 UAT 那一組
+（密鑰不符時解密是瞬間失敗，符合觀測到的毫秒級）；② 生產閘道拒絕 `scene:"guest"`
+或回錯誤碼。兩者從外部無法再細分 —— **而 `/api/market/diagnostics` 一句話就會說完，
+偏偏他們部署的還是舊版**。十分鐘的鑑識，部署新版後是十秒的事。
+
+⚠ **密鑰修好後很可能會撞上第二道關卡**（生產遊客組沒配產品，第四十三輪起的後端阻塞）。
+兩件事要一起交辦，否則會以為修了沒用。
+
+### 3. 新增 `stg` 環境（`config/env/stg.env` ＋ `build:stg` / `start:stg`）
+
+業主確認 `web.hatcmarket.com`＝**上線前的暫時展示位址**，正式仍會切回 `www`。
+在這個網域上跑 `build:prd` 會同時造成兩件**畫面上完全看不出來**的事：預覽站
+**被開放收錄**，而且 canonical／`hreflang`／`sitemap.xml` 全部指向一個**內容不同**的網址。
+
+`stg.env`＝**除了「站台自己的網址」與「可不可以被索引」之外，與 `prd.env` 完全相同**
+（同樣的營運連結、同樣的生產行情閘道 `node.hatcmarket.com`）。切換當天改回
+`build:prd`／`start:prd` 即可，其他都不用動。實測產物：canonical
+`https://web.hatcmarket.com/zh-Hant`、每頁 `noindex, nofollow`、`robots.txt` `Disallow: /`、
+sitemap 用 `web.hatcmarket.com`。
+
+- **刻意不叫開發端臨時 `export` 兩個變數**：主機環境變數雖然也會贏，但看不見、無法複查，
+  而這支團隊已經兩次跟錯設定。一份 commit 的環境檔是自我說明的，一行指令就能切。
+- **營運連結刻意與 prd 相同**（不學 UAT 留空）：這是正式站的忠實預覽，按鈕要通往
+  上線後會去的地方。UAT 留空是為了避免測試人員開到真帳戶，預覽站沒有這個問題。
+- ⚠ **密鑰按環境名載入**：`build:stg` 讀 `config/env/stg.secrets.env`，**不會**讀
+  `prd.secrets.env`。改用 stg 後若行情消失先查這個。
+- `scripts/with-env.mjs` 無需修改（`availableEnvironments()` 自動掃 `config/env/*.env`），
+  `env:check` 已自動納入：`✓ local, prd, stg, uat contain no credentials`。
+- `web.hatcmarket.com` **刻意不寫進 `HATC_FACTS.md`**（暫時位址不是公司對外事實，
+  同 UAT 網域的處置）；它只出現在 `config/env/stg.env`，**不得出現在任何頁面內容**。
+
+### 4. 驗收
+
+`env:check`（含新環境）／`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／
+`tsc --noEmit`／`i18n:check` 三語 **730 鍵不變**（本輪未新增任何文案）／
+`pkill` → `rm -rf .next` → `npm run build:stg` 綠、203 個靜態頁照常產生。
+未動 schema，`generate:types` 無變更。
+
+---
+
 ## 🟢 第六十四輪（實作，2026-10-13）：部署後沒有行情 —— 從外部定位 ＋ 補上可診斷性
 
 > 業主指定題目：「部署了到服務器，但目前是沒有行情。」業主本輪拍板**兩件一起做**

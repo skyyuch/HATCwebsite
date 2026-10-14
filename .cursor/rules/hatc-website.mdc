@@ -998,6 +998,35 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  - **`DEPLOYMENT.md` §5.1 已改寫**成「先開 `/api/market/diagnostics` → 對照 verdict 表格」，
  並在 §5 記下 **UAT 閘道與遊客交易組已驗證正常**（UAT 沒行情＝主機設定問題，不是閘道）。
 
+- **2026-10-14 (第六十五輪): 行情卡在「閘道握手」而非白名單 ＋ 新增 `stg` 上線前預覽環境。**
+ 業主截圖問「接口是 200 通的，但沒有行情」——**`/api/market/quotes` 回 200 與有無行情無關**，
+ `{"ok":false}` 本來就是 200（契約）。站台已改部署到 **`web.hatcmarket.com`**（業主確認＝
+ **上線前暫時展示位址**，正式仍切回 `www.hatcmarket.com`），且**真的改用了 prd 設定**。
+ - **🚩 用快取 TTL 當探針分辨失敗點（新慣例，接續第六十四輪）**：基準線＝
+ `/api/market/bars?symbol=EURUSD`（不在 `MARKET_SYMBOLS`，更早 return，零外部請求）＝
+ 0.245–0.283s。`/api/market/quotes` 報價快取只有 **2 秒**，但閘道 context token 壽命
+ **10 分鐘**（本輪以 UAT 密鑰實測 `expiresAt`，減 60 秒更新邊際）→ 每隔 3 秒打 6 次，
+ **若握手成功過一次，第 2 次起必回基準線**（白名單空時 `loadQuotes` 零網路呼叫）。
+ 實測 6 次全部 0.325–0.367s ⇒ **每次都在重握手、每次都失敗**。
+ → **排除**「生產遊客組沒配產品」（那關握手會成功）；**排除**網路不通（對外逾時 8 秒，
+ 實際只多 60–110ms，且 DNS 顯示 `web.hatcmarket.com` 與 `node.hatcmarket.com`
+ **同一台 13.251.150.207**）。剩下：① 生產 `QUOTE_HTTP_CRYPT_SECRET` 沒設／填成 UAT 那組
+ （解密瞬間失敗，符合觀測）；② 閘道拒絕 `scene:"guest"`。
+ ⚠ **密鑰修好後很可能撞上第二道關卡**（生產遊客組沒配產品），兩件事要一起交辦。
+ ⚠ 他們部署的仍是舊版（`/api/market/diagnostics` 404），所以那支一句話說完原因的端點還不存在。
+ - **新增第四個環境 `stg`**（`config/env/stg.env` ＋ npm `build:stg`／`start:stg`）：在
+ `web.hatcmarket.com` 上跑 `build:prd` 會讓**預覽站被開放收錄**，且 canonical／`hreflang`／
+ `sitemap.xml` 全指向 `www.hatcmarket.com`（**服務另一個既有站**）——兩者在畫面上**毫無跡象**。
+ `stg.env`＝**除了站台網址與可否索引之外，與 `prd.env` 完全相同**（同樣的營運連結、同樣的
+ 生產閘道）。切換當天改回 `build:prd` 即可。**營運連結刻意與 prd 相同**（不學 UAT 留空：
+ 這是正式站的忠實預覽；UAT 留空是為了不讓測試人員開到真帳戶）。
+ ⚠ **密鑰按環境名載入**：`build:stg` 讀 `stg.secrets.env`，**不會**讀 `prd.secrets.env`。
+ `with-env.mjs` 無需修改（`availableEnvironments()` 自動掃 `config/env/*.env`）。
+ **`web.hatcmarket.com` 刻意不寫進 FACTS**（暫時位址不是公司對外事實，同 UAT 網域處置），
+ 只能出現在 `config/env/stg.env`，不得出現在任何頁面內容。文件＝`DEPLOYMENT.md` §2.0／**§2.0a**。
+ - **慣例**：要在非正式網域上預覽生產建置時，**不要叫人臨時 `export` 兩個變數**
+ （看不見、無法複查）——新增一份 commit 的環境檔，一行指令切換。
+
 - **2026-10-13 (第六十四輪 追加查證；未改程式碼)**：① **判斷對方部署到哪一版，就打那一版新增
  的路由**——`/api/market/diagnostics` 在 UAT 回 **404 ＝ 還是舊建置**（Gitee `master` 早已有
  `c11769e`，所以是沒重新部署，不是沒交付）。比問「部署了嗎」可靠。② 線上仍是 uat 設定
