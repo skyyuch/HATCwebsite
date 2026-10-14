@@ -5,7 +5,7 @@ import {
   getAcademyArticleBySlug,
   getAcademyArticleSlugs
 } from '@/lib/academyArticles';
-import {siteUrl, localeAlternates} from '@/lib/seo';
+import {siteUrl, localeAlternates, SHARE_CARD} from '@/lib/seo';
 import type {Locale} from '@/i18n/routing';
 import AcademyArticleView from '@/components/academy/AcademyArticleView';
 
@@ -22,6 +22,7 @@ export async function generateMetadata({
   const {locale, slug} = await params;
   const article = await getAcademyArticleBySlug(locale as Locale, slug);
   const t = await getTranslations({locale, namespace: 'metadata.academy'});
+  const brand = await getTranslations({locale, namespace: 'common'});
 
   if (!article) {
     return {
@@ -32,6 +33,9 @@ export async function generateMetadata({
 
   const description = article.excerpt || t('description');
   const path = `/academy/${article.slug}`;
+  const image = article.coverUrl
+    ? {url: article.coverUrl, alt: article.coverAlt || article.title}
+    : {...SHARE_CARD, alt: brand('brandFull')};
 
   return {
     title: article.title,
@@ -40,12 +44,19 @@ export async function generateMetadata({
       canonical: `${siteUrl}/${locale}${path}`,
       languages: localeAlternates(path)
     },
+    // Own cover when the article has one, brand card otherwise. Both
+    // `openGraph` and `twitter` have to be given the image: declaring one of
+    // them replaces the layout's version of that object only, which is how
+    // articles ended up advertising their cover to Facebook and the brand card
+    // to X.
     openGraph: {
       title: article.title,
       description,
       type: 'article',
-      ...(article.coverUrl ? {images: [{url: article.coverUrl}]} : {})
-    }
+      url: `${siteUrl}/${locale}${path}`,
+      images: [image]
+    },
+    twitter: {card: 'summary_large_image', images: [image]}
   };
 }
 

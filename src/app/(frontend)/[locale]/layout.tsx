@@ -3,7 +3,7 @@ import {notFound} from 'next/navigation';
 import {hasLocale, NextIntlClientProvider} from 'next-intl';
 import {getMessages, getTranslations, setRequestLocale} from 'next-intl/server';
 import {routing} from '@/i18n/routing';
-import {siteUrl, siteIndexable, localeAlternates} from '@/lib/seo';
+import {siteUrl, siteIndexable, localeAlternates, SHARE_CARD} from '@/lib/seo';
 import Header from '@/components/Header/Header';
 import Footer from '@/components/Footer/Footer';
 import Analytics from '@/components/Analytics/Analytics';
@@ -33,10 +33,20 @@ export async function generateMetadata({
       canonical: `${siteUrl}/${locale}`,
       languages: localeAlternates()
     },
+    // Deliberately no `og:url`: a layout cannot know the current path, so it
+    // could only point at the locale root — and scrapers treat `og:url` as the
+    // canonical URL of what was shared, so every subpage would be reported as
+    // the homepage. Without it they fall back to the fetched URL, which is
+    // correct. Only add it in a page that can supply its own path.
     openGraph: {
       type: 'website',
       siteName: t('brandFull'),
-      locale
+      locale,
+      images: [{...SHARE_CARD, alt: t('brandFull')}]
+    },
+    twitter: {
+      card: 'summary_large_image',
+      images: [{...SHARE_CARD, alt: t('brandFull')}]
     },
     // `robots.txt` alone does not stop an externally linked UAT URL from being
     // indexed, so non-production builds also emit a page-level noindex.

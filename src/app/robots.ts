@@ -12,7 +12,11 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: '*',
-      allow: '/',
+      // Uploaded media has to stay crawlable: academy article covers are
+      // served from /api/media/file/… and are the `og:image` of every article,
+      // and the Facebook/WhatsApp scrapers honour robots.txt — a blanket
+      // `Disallow: /api` leaves those shares with no thumbnail.
+      allow: ['/', '/api/media/'],
       disallow: ['/admin', '/api']
     },
     sitemap: `${siteUrl}/sitemap.xml`,

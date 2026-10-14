@@ -24,6 +24,49 @@ Build SEO in from the start, not as an afterthought.
     the mockups with real terminal screenshots. Still true today: `metadata.funding`
     (sample withdrawal channels), `home.mt5.screenshotAlt`, `trading.hero.imageAlt`.
 
+## Share cards & app icons (第六十六輪, 2026-10-14)
+
+- **Every page must advertise an image.** The brand card is `SHARE_CARD` in
+  `src/lib/seo.ts` (`public/brand/share-card.jpg`, 1200×630), applied in the locale
+  layout to both `openGraph.images` and `twitter.images`.
+- 🚩 **A page that declares `openGraph` replaces the parent's whole `openGraph`
+  object — images included.** This is not a deep merge, and it is silent: declaring
+  `openGraph: {title, description, type}` in `/announcements/[slug]` left the page
+  with a Twitter image (inherited) and **no `og:image` at all**, i.e. no thumbnail on
+  WhatsApp or Facebook while X looked fine. So:
+  - when a page sets `openGraph`, give it `images` too (own cover, else `SHARE_CARD`);
+  - when its image differs from the layout's, set `twitter.images` as well, or the
+    two networks will advertise different pictures (that is what `/academy/[slug]`
+    did for months);
+  - for the same reason the share card is a plain `public/` asset rather than an
+    `opengraph-image.jpg` route file — a file-convention image attaches to one
+    segment and vanishes from any descendant that declares `openGraph`.
+- **Do not set `og:url` in the layout.** A layout cannot know the current path, so it
+  can only name the locale root, and scrapers treat `og:url` as the canonical URL of
+  what was shared — every subpage would be reported as the homepage. Omitted, they
+  use the fetched URL, which is right. Only set it where the page knows its own path
+  (`/academy/[slug]`, `/announcements/[slug]`).
+- **Keep uploaded media crawlable.** Article covers are served from
+  `/api/media/file/…` and are the `og:image` of every academy article, and the
+  Facebook/WhatsApp scrapers honour `robots.txt` — hence `Allow: /api/media/`
+  alongside `Disallow: /api` in `src/app/robots.ts`. Do not collapse that back.
+- **Card copy is governed by the fact red lines.** It currently carries only the legal
+  name and `home.heroV2.badge`（香港黃金交易所 AA類行員 008號）. No trading conditions,
+  client counts or award claims.
+- **Icons**: `src/app/{favicon.ico,icon.png,apple-icon.png}`, regenerated together with
+  the card by `node scripts/generate-brand-images.mjs` from the real wordmark. The mark
+  is the "A" glyph plus the green triangle, lifted out of `public/brand/hatc-logo.png`
+  by connected-component labelling — the full 3.4:1 wordmark is an unreadable smudge at
+  16px, and a rectangular crop cannot avoid the neighbouring "T" crossbar. `icon.png`
+  is rounded; `apple-icon.png` is full-bleed because iOS applies its own mask.
+- The card's URL is absolute via `metadataBase`, so **a preview host built with
+  `prd` settings advertises an image on `www.hatcmarket.com`** — one more reason the
+  preview host must use `build:stg` (DEPLOYMENT §2.0a).
+- WhatsApp and Telegram cache previews per URL for a long time; expect to append a
+  query string when re-checking after a deploy. Keep the card well under ~300 KB
+  (currently ~61 KB as JPEG; the same design as PNG was 350 KB and some clients skip
+  images that large).
+
 ## Crawlability & structure
 
 - Provide `sitemap.xml` (all locales) and `robots.txt`.
@@ -50,6 +93,8 @@ Build SEO in from the start, not as an afterthought.
 - Semantic HTML: one `<h1>` per page, correct heading order, `<nav>/<main>/<footer>`,
   descriptive `alt` text, meaningful link text.
 - Add JSON-LD structured data (e.g. `Organization`) sourced from `docs/HATC_FACTS.md`.
+  `OrganizationJsonLd` carries `logo` (the wordmark, not the square app icon — search
+  engines want the logo itself, not a logo on a tile).
 - Set `<html lang>` to the active locale.
 
 ## Analytics / tracking

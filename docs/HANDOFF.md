@@ -1,6 +1,15 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-13（第六十四輪：**部署後沒有行情** —— 從外部證明**閘道／UAT 遊客組／
+> 最後更新：2026-10-14（第六十六輪：**品牌圖示 ＋ 社群分享預覽卡** —— favicon 原本是
+> **Next.js 範本預設圖示**，而且全站**完全沒有 `og:image`**，所以貼到 WhatsApp／Telegram／
+> Facebook 只有純文字。現在圖示是從真實 wordmark 取出的「A ＋ 綠三角」（16px 仍可辨識），
+> 分享卡是 1200×630 深色品牌卡，學院文章用自己的封面。本輪查出三個會無聲出錯的機制：
+> **頁面宣告 `openGraph` 會把父層整個物件換掉（圖一起不見）**、**layout 設 `og:url` 會讓
+> 每個子頁被歸給首頁**、**`Disallow: /api` 會讓 Facebook 抓不到文章封面**。詳見下方第六十六輪。
+> 第六十五輪：站台改部署到 **`web.hatcmarket.com`**（上線前的暫時位址）；從外部證明
+> **閘道握手每一次都失敗**（不是「遊客組沒配產品」那一關）；新增 **`stg` 環境**修掉預覽站
+> 被開放索引、canonical 指向別人內容的問題。
+> 第六十四輪：**部署後沒有行情** —— 從外部證明**閘道／UAT 遊客組／
 > UAT 密鑰全都正常**（本機當場取到三個產品的即時價），問題在部署主機自己的設定；用端點
 > 自身的 60 秒失敗快取當指紋，證明主機**有**設 `QUOTE_GATEWAY_URL`，失敗落在與閘道的那次
 > 對話。並補上可診斷性：原本兩條**完全靜默**的失敗路徑現在會各印一次 log，另加
@@ -20,8 +29,21 @@
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
-## ▶ 下一輪任務（第六十五輪已查出行情卡在「握手」，並修掉預覽站的索引問題）
+## ▶ 下一輪任務（第六十六輪做了圖示／分享卡；行情與網域切換仍在等開發端）
 
+> **✅ 第六十六輪（2026-10-14）完成：品牌圖示 ＋ 社群分享預覽卡。** 詳見下方
+> 「🟢 第六十六輪」。上線前要記得：分享卡的 `og:image` 是絕對網址，**只有在部署主機
+> 用對環境（`build:stg` 或正式的 `build:prd`）時才抓得到圖**。
+>
+> **🚩 2026-10-14 實測：`web.hatcmarket.com` 仍在跑 `prd` 設定，不是 `stg`。**
+> `robots.txt` 是 `Allow: /` ＋ `Host: https://www.hatcmarket.com`、每頁 `index, follow`、
+> canonical 指 `https://www.hatcmarket.com/zh-Hant`（而那個網址 307 轉到既有站的 `/zh-HK`，
+> 內容完全不同）。`/api/market/diagnostics` 仍 404 ＝**部署的還是舊版**，
+> `/api/market/quotes` 仍 `{"ok":false}`。搜尋引擎目前查不到這個網域（還沒被收錄），
+> 所以**現在改成 `build:stg` 就來得及**。⚠ 若日後真的被收錄了，處置相反：要先**允許抓取
+> 但保留 `noindex`**（robots.txt 擋掉抓取，爬蟲就看不到 `noindex`，頁面會卡在索引裡），
+> 等移除後再擋。
+>
 > **✅ 第六十五輪（2026-10-14）完成：** 站台改部署到 **`web.hatcmarket.com`**（業主確認
 > ＝**上線前的暫時展示位址**，正式仍會切回 `www.hatcmarket.com`）。從外部證明
 > **閘道握手每一次都失敗**（不是「遊客組沒配產品」那一關），最可能是生產
@@ -222,6 +244,87 @@
 >   （舊說明要求的 `npm run migrate` 指令已不存在）；② **頁面文案類 global 要保持留空**
 >   （填入就會永久覆蓋內建三語文案，日後修正看不見）；③ **按鈕沒有目的地就不顯示**
 >   （模擬帳戶、會員登入）是設計行為不是 bug；④ **交易條件刻意不開放後台編輯**（治理設計）。
+## 🟢 第六十六輪（實作，2026-10-14）：品牌圖示 ＋ 社群分享預覽卡
+
+> 業主原話：「我看到 favicon 是沒有 hatc 的 logo，需要更換。另外…在不同媒介（例如 whatsapp,
+> telegram 等）都需要顯示到公司 logo 及內容。」＝兩件不同的事：瀏覽器／手機圖示，以及
+> Open Graph／Twitter Card 分享預覽卡。
+
+### 1. 修掉的兩個問題
+
+| 項目 | 原狀 | 現狀 |
+| --- | --- | --- |
+| `src/app/favicon.ico` | **Next.js 範本預設圖示**（建立時間與 `next.svg`／`vercel.svg` 同批），只有 16／32 | HATC 標記，16／32／48 |
+| `icon.png`／`apple-icon.png` | 不存在 → 手機「加到主畫面」沒有品牌圖示 | 512（圓角）／180（滿版） |
+| `og:image`／`twitter:image` | **完全沒有** → WhatsApp／Telegram／Facebook 分享只有純文字 | 品牌卡 1200×630；學院文章用自己的封面 |
+| `twitter:card` | `summary`（因為沒有圖） | `summary_large_image` |
+| `OrganizationJsonLd` | 沒有 `logo` | 加上 wordmark（搜尋引擎的組織標誌） |
+
+### 2. 業主拍板（`AskQuestion`，2026-10-14）
+
+① **圖示＝深藍底白色標記、圓角**（不是白底、也不是滿版方形）；② **分享卡＝深色交易檯**
+（配合使用者點進來看到的首頁深色系，不是品牌深藍或白底）；③ **學院文章用 CMS 封面當縮圖、
+沒有封面的頁面（含公告）退回品牌卡**。
+
+### 3. 圖示為什麼是「A ＋ 綠三角」而不是整個 HATC 字樣
+
+字樣是 **3.4:1 橫式**，壓進 16px 分頁只是一團糊（已做 16／32px 對照才決定）。標記是用
+**連通區域標記（connected-component labelling）** 從真實 logo 裡取出來的，**不是重畫**：
+`A` 與隔壁 `T` 的 x 範圍重疊（A 右腳到 1660、T 橫畫左端從 1588 起），**矩形裁切一定會
+框到 T 的一截**。`icon.png` 圓角、`apple-icon.png` **刻意滿版**——iOS 會自己套 squircle
+遮罩，預先圓角會變成雙重圓角、navy 角落外露。
+
+### 4. 🚩 `openGraph` 是整個物件被覆蓋，不是深層合併（本輪最重要的發現）
+
+頁面只要宣告 `openGraph: {title, description, type}`，**父層的 `openGraph` 整個被換掉，
+圖一起消失**，而 `twitter` 若沒宣告則照常繼承 → 同一則公告**分享到 WhatsApp／Facebook
+沒有圖、分享到 X 有圖**，而且毫無錯誤訊息。`/academy/[slug]` 則是反過來：`og:image` 是
+文章封面、`twitter:image` 卻是品牌卡（兩個平台顯示不同的圖）。
+**處置**：分享卡改成 `src/lib/seo.ts` 的 **`SHARE_CARD`**（`public/brand/share-card.jpg`），
+由 layout 同時給 `openGraph.images` 與 `twitter.images`；兩個詳情頁各自明確宣告。
+**刻意不用 Next 的 `opengraph-image.jpg` 檔案約定**——它掛在單一 segment 上，正好會被
+「宣告了 `openGraph` 的子頁」弄丟，而且放在 `[locale]` 下產生的網址是
+`/-/opengraph-image-xxx.jpg`（`[locale]` 被代換成 `-`）。
+
+### 5. 🚩 不要在 layout 設 `og:url`
+
+本輪一度加上去，實測 `/privacy` 的 `og:url` 變成首頁 → **抓取端把 `og:url` 當成被分享的
+正規網址**，等於每個子頁分享出去都被歸給首頁。layout 不可能知道當前路徑，所以**已移除**；
+沒有 `og:url` 時抓取端會用實際抓到的網址，是正確的。只有知道自己路徑的頁面才設
+（`/academy/[slug]`、`/announcements/[slug]` 已設）。
+
+### 6. 🚩 `robots.txt` 原本會擋掉文章縮圖
+
+學院文章封面是 `/api/media/file/…`，而原本是 `Disallow: /api`。**Facebook／WhatsApp 的
+抓取器會遵守 robots.txt** → 文章分享永遠沒有縮圖。已加 **`Allow: /api/media/`**（維持
+`Disallow: /api` 擋其餘端點）。**不要把這條合併回去。**
+
+### 7. 檔案
+
+- **`scripts/generate-brand-images.mjs`**（新）＝從 `public/brand/hatc-logo.png` 一次產出
+  `favicon.ico`／`icon.png`／`apple-icon.png`／`public/brand/share-card.jpg`。圖示只用
+  sharp（含自寫的 ICO 容器，sharp 不能寫 .ico）；**分享卡用無頭 Chrome 排版截圖**，因為
+  Sora 沒有中文字、中文要靠系統字體（PingFang TC）→ **這一步依賴 macOS ＋ 網路**，committed
+  的 JPEG 才是正式產物。
+- 卡片是 **JPEG 61 KB**（同一設計 PNG 要 350 KB，部分通訊軟體會跳過過大的預覽圖）。
+- 順手刪掉 5 個從未被引用的 Next 範本素材（`public/{next,vercel,file,globe,window}.svg`）。
+
+### 8. 驗收
+
+`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit`／`i18n:check`
+**三語 730 鍵不變**（卡片的 alt 重用 `common.brandFull`，**沒有新增鍵**）／`env:check`／
+冷建綠且全頁維持 ● SSG。逐頁檢查建置產物的 `og:`／`twitter:` 標籤：首頁、`/privacy`
+（無自有圖）、公告詳情（品牌卡）、學院文章（封面，兩個平台一致）、英文版 alt 為
+`HATC Group Limited`。`npm start` 實測 `/brand/share-card.jpg`、`/favicon.ico`、
+`/icon.png`、`/apple-icon.png` 皆 200。未動 schema、未動 CMS 資料。
+
+### 9. 待業主
+
+(a) 分享卡的中文是用系統字體排版，若日後要用品牌中文字體需業主提供字檔；
+(b) 公告沒有封面欄位——若希望公告分享時各有不同縮圖，需要在 CMS `announcements` 加上
+`cover` 上傳欄（schema 變更，Mongo 免 migration，只需 `generate:types`）；
+(c) WhatsApp／Telegram 會長時間快取預覽，上線後重新檢查要在網址後加參數。
+
 ## 🟢 第六十五輪（實作，2026-10-14）：行情卡在「握手」而非白名單 ＋ 新增 `stg` 預覽環境
 
 > 業主截圖問：「接口是 200 通的，但沒有行情，你可以怎麼分析？」

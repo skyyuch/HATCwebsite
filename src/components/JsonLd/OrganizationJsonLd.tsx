@@ -10,6 +10,14 @@ export default function OrganizationJsonLd() {
     legalName: company.legalNameZh,
     alternateName: company.legalNameZh,
     url: siteUrl,
+    // What search engines use for the organisation logo. The wordmark, not the
+    // square app icon — Google wants the logo itself, not a logo on a tile.
+    logo: {
+      '@type': 'ImageObject',
+      url: `${siteUrl}/brand/hatc-logo.png`,
+      width: 3065,
+      height: 903
+    },
     address: {
       '@type': 'PostalAddress',
       streetAddress: company.addressEn,

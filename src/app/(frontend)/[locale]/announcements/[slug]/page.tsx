@@ -6,7 +6,7 @@ import {
   getAnnouncementBySlug,
   getAnnouncementSlugs
 } from '@/lib/announcements';
-import {siteUrl, localeAlternates} from '@/lib/seo';
+import {siteUrl, localeAlternates, SHARE_CARD} from '@/lib/seo';
 import type {Locale} from '@/i18n/routing';
 
 export async function generateStaticParams() {
@@ -22,6 +22,7 @@ export async function generateMetadata({
   const {locale, slug} = await params;
   const announcement = await getAnnouncementBySlug(locale as Locale, slug);
   const t = await getTranslations({locale, namespace: 'metadata.announcements'});
+  const brand = await getTranslations({locale, namespace: 'common'});
 
   if (!announcement) {
     return {title: t('title'), description: t('description')};
@@ -37,10 +38,14 @@ export async function generateMetadata({
       canonical: `${siteUrl}/${locale}${path}`,
       languages: localeAlternates(path)
     },
+    // Announcements carry no image of their own, and declaring `openGraph`
+    // here drops whatever the layout set — so repeat the brand card.
     openGraph: {
       title: announcement.title,
       description,
-      type: 'article'
+      type: 'article',
+      url: `${siteUrl}/${locale}${path}`,
+      images: [{...SHARE_CARD, alt: brand('brandFull')}]
     }
   };
 }

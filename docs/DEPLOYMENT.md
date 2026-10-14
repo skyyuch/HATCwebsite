@@ -98,7 +98,9 @@ npm run dev                                # 本機（自動套 local）
 
 - `robots.txt` 變成 `Allow: /`、每頁 `index, follow` → **預覽站被搜尋引擎收錄**；
 - canonical、`hreflang`、`sitemap.xml` 全部指向 `https://www.hatcmarket.com`
-  → 指到一個**內容不同**的網址。
+  → 指到一個**內容不同**的網址；
+- 社群分享卡的 `og:image` 也是絕對網址，同樣會指向 `www.hatcmarket.com`
+  → 在 WhatsApp／Telegram 貼預覽站的連結**抓不到圖**（圖在那個網域上不存在）。
 
 `stg.env` 就是為此存在：**除了「站台自己的網址」與「可不可以被索引」之外，其餘與
 `prd.env` 完全相同**（同樣的營運連結、同樣的生產行情閘道）。正式切換當天把那台主機
