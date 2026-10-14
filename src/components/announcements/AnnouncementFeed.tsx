@@ -50,13 +50,19 @@ function CategoryQuerySync({
  * Categories are owner-managed CMS documents (`announcement-categories`), so
  * the filter options can never drift from the notices the way a free-text tag
  * would. Empty CMS → neutral empty copy; no notice is ever invented in code.
+ *
+ * `embed` is the app-webview variant: notice links stay under `/embed` so a tap
+ * cannot navigate the webview out to the full site, and this heading becomes
+ * the page's h1 because the embedded list renders no hero.
  */
 export default function AnnouncementFeed({
   items,
-  categories
+  categories,
+  embed = false
 }: {
   items: AnnouncementSummary[];
   categories: AnnouncementCategoryRef[];
+  embed?: boolean;
 }) {
   const t = useTranslations('announcements');
   // Generic list chrome ("全部", pagination labels) is identical to the Academy
@@ -106,6 +112,9 @@ export default function AnnouncementFeed({
     );
   };
 
+  const Heading = embed ? 'h1' : 'h2';
+  const basePath = embed ? '/embed' : '';
+
   const chipClass = (selected: boolean) =>
     [
       'rounded-full px-4 py-2 text-[13px] font-semibold transition-colors',
@@ -124,9 +133,9 @@ export default function AnnouncementFeed({
         {/* Reading column, left-aligned with the hero copy above it. */}
         <div className="flex max-w-[920px] flex-col gap-8">
           <div className="flex items-center gap-3">
-            <h2 className="font-sans text-[22px] font-black text-[#0c111d]">
+            <Heading className="font-sans text-[22px] font-black text-[#0c111d]">
               {t('results.title')}
-            </h2>
+            </Heading>
             <span className="rounded-full bg-[rgba(212,175,55,0.12)] px-2.5 py-1 text-[13px] font-bold text-[#9a7b1a]">
               {t('results.count', {count: filtered.length})}
             </span>
@@ -169,7 +178,7 @@ export default function AnnouncementFeed({
               {paged.map((item) => (
                 <li key={item.id}>
                   <Link
-                    href={`/announcements/${item.slug}`}
+                    href={`${basePath}/announcements/${item.slug}`}
                     className="group flex flex-col gap-4 rounded-xl border border-[var(--fig-border-light)] bg-white p-6 shadow-[0px_4px_6px_rgba(0,0,0,0.02)] transition-colors hover:border-[rgba(212,175,55,0.45)] sm:flex-row sm:items-start sm:gap-6"
                   >
                     <div className="flex shrink-0 flex-wrap items-center gap-2 sm:w-[112px] sm:flex-col sm:items-start">

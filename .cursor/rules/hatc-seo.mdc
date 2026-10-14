@@ -74,6 +74,23 @@ Build SEO in from the start, not as an afterthought.
   (currently ~61 KB as JPEG; the same design as PNG was 350 KB and some clients skip
   images that large).
 
+## Webview twins under `/embed` (第七十輪, 2026-10-14)
+
+`/<locale>/embed/{announcements,announcements/[slug],disclaimer,privacy}` are chrome-less
+copies of public pages, rendered for the HATC app / h5 webview. They are duplicates by
+design, so they carry a very specific SEO treatment — do not "complete" it:
+
+- `robots: {index: false, follow: false}` is set once in
+  `src/app/(embed)/[locale]/embed/layout.tsx` and inherited by every embed page (a page
+  that declares its own `robots` would drop it — only `title`/`description` are overridden).
+- **No canonical and no `hreflang`, deliberately.** Pointing a canonical at the public
+  twin while the page says `noindex` is a contradictory pair of signals and risks the
+  noindex being attributed to the canonical target — i.e. deindexing the real page.
+- **Not in `sitemap.ts`** (there is a note in that file) and nothing on the site links to
+  them, so they are effectively undiscoverable.
+- **`robots.txt` stays permissive for `/embed`.** A `Disallow` would stop crawlers from
+  ever reading the `noindex`, which is the only signal actually doing the work here.
+
 ## Crawlability & structure
 
 - Provide `sitemap.xml` (all locales) and `robots.txt`.

@@ -5,6 +5,10 @@ import {getAnnouncementSlugs} from '@/lib/announcements';
 import {siteUrl} from '@/lib/seo';
 
 // Static pages available for indexing.
+//
+// 🚩 The `/<locale>/embed/*` webview twins are deliberately absent: they
+// duplicate the public pages for the HATC app and are marked noindex in
+// src/app/(embed)/[locale]/embed/layout.tsx. Do not "fix" the omission.
 const staticPaths = [
   '',
   '/about',

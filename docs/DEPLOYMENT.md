@@ -829,3 +829,38 @@ commit 的圖片素材）。業主端上行只有 3–13 KiB/s，整包塞不進
 > 另一個可行方案（目前未啟用）：Gitee 網頁「倉庫鏡像管理 → 拉取」從 GitHub 自動同步
 > （`https://github.com/skyyuch/HATCwebsite.git`，公開倉、免憑證），機房對機房、完全不經過
 > 本地上行。若改走這條，就會變成 Gitee 完整複製 GitHub 歷史，上面的腳本即可退役。
+
+## 10. App／h5 嵌入用的無頭尾頁面（第七十輪，2026-10-14）
+
+開發端要在 App／h5 的 webview 裡放公告與免責聲明，問官網有沒有「去掉頭尾的參數」。
+**沒有參數，改用獨立網址**——原因與取捨見 `docs/HANDOFF.md`「🟢 第七十輪」第 1 節
+（簡短版：Next 的 layout 讀不到 query 參數，硬做會讓頁面失去靜態輸出或在 webview 裡
+先閃一次完整官網頭尾）。
+
+### 10.1 網址（契約，請直接用）
+
+| 用途 | 網址 |
+| --- | --- |
+| 公告列表 | `https://www.hatcmarket.com/<locale>/embed/announcements` |
+| 公告詳情 | `https://www.hatcmarket.com/<locale>/embed/announcements/<網址代稱>` |
+| 免責聲明 | `https://www.hatcmarket.com/<locale>/embed/disclaimer` |
+| 隱私權政策 | `https://www.hatcmarket.com/<locale>/embed/privacy` |
+
+- **`<locale>` 必須帶**：`zh-Hant`（繁中）／`zh-Hans`（簡中）／`en`。不帶會被轉到預設語系。
+  請用 App 當前語言對應，不要固定寫死一個。
+- 這些頁**沒有** Header、Footer、麵包屑，只有內容；標題區是一行精簡標題，不會和 App 自己的
+  標題欄打架。
+- 公告列表可用 `?category=<分類網址代稱>` 直接開在某個分類（代稱＝後台「公告分類」的欄位）。
+- 公告詳情**不需要官網重新部署**：後台發佈新公告後該網址立即可用。
+- 內容與官網公開頁完全同一份（同一個 CMS、同一份文案），後台改完即生效（見 §6）。
+
+### 10.2 三件要注意的事
+
+1. **iframe**：本倉不送 `X-Frame-Options`／CSP `frame-ancestors`，所以可以被 iframe 嵌。
+   但**寶塔／nginx 常會自動加 `X-Frame-Options: SAMEORIGIN`**，加了 h5 就會白屏。
+   驗證：`curl -sI https://www.hatcmarket.com/zh-Hant/embed/disclaimer | grep -i x-frame`
+   —— 應該**沒有**任何輸出。App 原生 webview 不受此限制。
+2. **不要把文案抄進 App。** 免責聲明與隱私權政策仍待業主／法務審核，抄一份進 App 之後
+   就會同時偏離官網與審核結果。嵌網址才能跟著更新。
+3. 這些頁是 `noindex, nofollow`、不在 `sitemap.xml`、官網也沒有任何連結指向，**只給 App 用**。
+   不要拿去當對外宣傳連結（要對外就用沒有 `/embed` 的公開網址）。

@@ -16,6 +16,9 @@
   **隱私權政策 `/privacy` 與免責聲明 `/disclaimer`**（第五十六輪；共用
   `src/components/legal/LegalPage.tsx`，內文在 i18n `legal.{privacy,disclaimer}`。
   ⚠ 文字為**依網站實況撰寫的保守版草稿，待業主／法務審核**——治理註記寫在該元件檔頭）
+- **App／h5 嵌入版（第七十輪）**：`/[locale]/embed/{announcements,announcements/[slug],
+  disclaimer,privacy}` ＝公開頁的**無頭尾**孿生版本，給 HATC App／h5 的 webview 用。
+  見下方「App／h5 嵌入版面」。
 - CMS：Phase 0–4 完成（infra／FAQ／新聞活動／學堂／行銷 globals＋示意表）
 - 後續階段（待規劃）：交易平台細節、Credentials 獨立頁、Contact 獨立頁（如需）
 
@@ -178,10 +181,38 @@
   - 業務區改為 7 項真實產品；辦公室區改為真實相片畫廊；頁尾加入公司地址。
   - 仍為佔位【待確認】：Hero 定位語、關於區定位段落、聯絡帶標題／說明。
 
+## App／h5 嵌入版面（第七十輪，2026-10-14，開發端需求）
+
+開發端要把公告與兩份法律文件放進 App／h5 的 webview，問官網有沒有「去掉頭尾的參數」。
+**答案是沒有參數，改成獨立路徑** `/[locale]/embed/…`（業主拍板：四頁全做、只給路徑不收
+參數、標題區精簡）。網址契約給開發端的版本在 `docs/DEPLOYMENT.md` §10。
+
+- **為什麼不是 `?embed=1`**：**Next 的 layout 讀不到 search params**（layout 導航時不重渲染，
+  值會過期；官方文件 `file-conventions/layout.md`），而 Header／Footer 依本站慣例只在
+  `(frontend)/[locale]/layout.tsx` 渲染一次。靠參數只能走「把頭尾搬進每一頁」（失去 ● SSG
+  並破壞全域版面慣例）或「前端 JS 事後隱藏」（webview 先閃一次完整官網頭尾）。
+- **實作＝平行 route group ＋ 自己的 root layout**：`src/app/(embed)/[locale]/embed/layout.tsx`。
+  **巢狀 layout 無法移除父層 chrome**，所以必須是平行 group，不是子資料夾；本倉本來就有兩個
+  root layout（`(frontend)`／`(payload)`），`[locale]` 同時出現在兩個 group 已實測可行。
+  公開頁面零改動。
+- **紅線（檔頭有完整版，改動前先讀）**：`noindex, nofollow` 且**刻意不給 canonical**
+  （canonical 與 noindex 併用是矛盾訊號，有讓 noindex 被套到正式頁的風險）；不進 `sitemap.ts`；
+  `robots.txt` 不加 `Disallow`（擋了抓取，爬蟲就讀不到 noindex）；不放 Header／Footer／麵包屑／
+  skip link／JSON-LD，頁內連結全部留在 `/embed` 底下；**文案與資料與公開頁同一份，不得為 App
+  另開一份**（兩份法律文件仍待業主／法務審核）。
+- **元件以 `embed` 旗標切換**（`AnnouncementsList`／`AnnouncementFeed`／`AnnouncementView`／
+  `LegalPage`）。兩個刻意的差別：① embed 列表不渲染 hero（它帶著回首頁的麵包屑），所以
+  **列表的 h1 是 `announcements.results.title`「公告列表」而非「官方公告」**，避免 App 標題欄
+  ＋h1＋h2 三層標題；② 公告內文裡業主自己打的連結不會被改寫。
+- 日後要再嵌別的頁：照這套加路由＋傳旗標，**不要**動公開頁版面。第三個頁面出現時再把精簡
+  標題抽成共用元件（目前只有 `LegalPage` 用，刻意不先抽）。
+
 ## 導覽與版面
 
 - **Header 與 Footer 為全域共用**：在 `[locale]/layout.tsx` 只渲染一次，
   各頁面不得各自實作；頁面只負責兩者之間的內容。
+  - **唯一例外＝`/[locale]/embed/*`**（第七十輪，App／h5 webview）：它在自己的 route group
+    `(embed)` 內有獨立 root layout，刻意不渲染頭尾。見上方「App／h5 嵌入版面」。
 - **Header 頂層項目（第六十輪起 5 項）**＝關於HATC `/about`／交易 `/trading`（含 mega-menu）／
   交易平台 `/platforms`／黃金學院 `/academy`／**公告 `/announcements`**；右側＝語言切換、
   （CMS 設定後才出現的）登入、立即開戶。

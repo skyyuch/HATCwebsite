@@ -38,7 +38,24 @@
 
 ## ▶ 下一輪任務（第六十八輪：首頁 K 線接即時報價 ＋ 可點選的產品切換）
 
-> ## 🟩 2026-10-14 17:00 現況（最新，先看這段）
+> ## 🟩 2026-10-14 18:30 現況（最新，先看這段）
+>
+> **✅ 第七十輪完成：公告與法律頁多了一組「去掉頭尾」的 webview 版本給 App／h5 嵌入
+> （`/<locale>/embed/…`，共四頁 × 三語 ＝ 12 條路由，全部 ● SSG）。**
+> 開發端問「官網是否有去掉頭尾的參數？公告、免責聲明的連結，因為要放著 h5 跟 App」。
+> **答案是「參數做不到乾淨版本」**——layout 讀不到 search params（Next 的設計：layout 導航時
+> 不重渲染，參數會過期），所以 `?embed=1` 只能靠「把 Header/Footer 搬進每一頁」（失去 SSG、
+> 破壞全域版面慣例）或「前端 JS 事後隱藏」（webview 會先閃一次完整官網頭尾）。
+> 改用**獨立 root layout 的 `/embed/` 路徑**，沿用本倉已有的多 root layout 模式
+> （`(frontend)` / `(payload)`），公開頁面零改動。業主拍板：四頁全做（公告列表／公告詳情／
+> 免責聲明／隱私權政策）、只給路徑不收參數、標題區改精簡。詳見下方「🟢 第七十輪」。
+> 無 schema 變更，i18n 仍 675 鍵（沒有新開任何鍵）。
+>
+> **⚠ 要轉告開發端的三件事**（完整版在 `DEPLOYMENT.md` §10）：① 網址必須帶語系前綴
+> （`/zh-Hant`／`zh-Hans`／`en`）；② 本倉沒有設 `X-Frame-Options`／CSP，所以可以 iframe，
+> **但要請維運確認前置 nginx（寶塔）沒有自動加 `SAMEORIGIN`**，否則 h5 會白屏；
+> ③ **不要把免責聲明的文字抄進 App**——那兩份文字仍待業主／法務審核，抄一份就會跟官網
+> 與審核結果各走各的。
 >
 > **✅ 第六十九輪完成：`/funding` 的「示意數據」標籤退役 —— 出入金渠道變成對外正式資訊，
 > 並刪掉會在資料庫讀不到時冒出來的 14 筆虛構渠道。順便做了全站「示意」字樣稽核。**
@@ -338,6 +355,101 @@
 >   （舊說明要求的 `npm run migrate` 指令已不存在）；② **頁面文案類 global 要保持留空**
 >   （填入就會永久覆蓋內建三語文案，日後修正看不見）；③ **按鈕沒有目的地就不顯示**
 >   （模擬帳戶、會員登入）是設計行為不是 bug；④ **交易條件刻意不開放後台編輯**（治理設計）。
+## 🟢 第七十輪（實作，2026-10-14）：App／h5 嵌入用的 `/embed/` 無頭尾版面（4 頁 × 3 語）
+
+開發端的問題：「官網的是否有去掉頭尾的參數？公告、免責聲明的連結，因為要放著 h5 跟 App。」
+
+### 1. 🚩 為什麼不是做一個 `?embed=1` 參數
+
+**Next 的 layout 讀不到 search params**，這不是我們的架構問題而是框架設計：layout 在導航時
+不會重新渲染，所以參數值會過期，官方文件（`node_modules/next/dist/docs` →
+`03-api-reference/03-file-conventions/layout.md` 第 180 行）明寫只有 page 與 client component
+能讀。Header／Footer 是在 `(frontend)/[locale]/layout.tsx` 全域渲染一次的（這是本倉的既定
+慣例），所以參數只剩兩條路，兩條都有代價：
+
+| 做法 | 代價 |
+| --- | --- |
+| 頁面讀 `searchParams` 再自己渲染頭尾 | 該頁從 ● SSG 變成動態渲染，而且 Header/Footer 必須搬進每一頁（破壞全域版面慣例，影響全站） |
+| 前端 JS 事後隱藏頭尾 | webview 會先閃出一次完整官網頭尾才消失 |
+
+**採用的做法＝獨立路徑 ＋ 獨立 root layout**：`src/app/(embed)/[locale]/embed/layout.tsx`。
+巢狀 layout **無法移除父層的 chrome**，所以必須是**平行的 route group**，不是子資料夾。
+本倉本來就有兩個 root layout（`(frontend)` 與 `(payload)`），這是沿用既有模式；
+**`[locale]` 在兩個 group 同時出現是可行的**（已實測冷建通過，12 條路由全部 ● SSG）。
+
+### 2. 路由（這就是給開發端的網址契約）
+
+```
+/<locale>/embed/announcements            公告列表（分類篩選同樣支援 ?category=<slug>）
+/<locale>/embed/announcements/<代稱>      公告詳情
+/<locale>/embed/disclaimer               免責聲明
+/<locale>/embed/privacy                  隱私權政策
+```
+
+`<locale>` ＝ `zh-Hant`／`zh-Hans`／`en`，**必須帶**（`localePrefix: 'always'`；不帶會被
+proxy 轉到預設語系）。詳情頁的 `dynamicParams` 維持預設 true，所以**建置之後才發佈的公告
+不會 404**，App 不需要等官網重新部署。
+
+### 3. 治理紅線（寫在 `(embed)/[locale]/embed/layout.tsx` 檔頭，改動前先讀）
+
+- **`noindex, nofollow`（layout 層設定，每頁繼承）＋ 刻意不給 canonical。** 這些頁是公開頁
+  的複製品，但 canonical 與 noindex 併用是互相矛盾的訊號，**有讓 noindex 被套到 canonical
+  目標（＝正式頁被移出索引）的風險**。它們同時不進 `sitemap.ts`（已在該檔加註，不要「補上」）、
+  站上也沒有任何連結指向，所以不會被發現。**`robots.txt` 刻意不加 `Disallow`**——擋了抓取，
+  爬蟲就永遠讀不到那個 `noindex`。
+- **不放 Header、Footer、麵包屑、skip link、`Organization` JSON-LD**，也不放任何會把 webview
+  帶去完整官網的連結。頁內連結全部留在 `/embed` 底下（元件收一個 `embed` 旗標就是為了這件事）。
+- **文案與資料與公開頁同一份**（同樣的 i18n、同樣的 CMS collection）。**不得為 App 另開一份
+  文字**——兩份法律文件仍待業主／法務審核，複製一份就會同時偏離官網與審核結果。
+
+### 4. 元件改動（都是加一個 `embed` 旗標，公開頁行為不變）
+
+- `AnnouncementsList({embed})`：embed 時**不渲染 `AnnouncementsHero`**（它帶著回首頁的麵包屑，
+  而 App 自己有標題欄）。
+- `AnnouncementFeed({embed})`：卡片連結加 `/embed` 前綴；**它的區塊標題在 embed 時渲染成
+  `h1`**（因為列表頁沒有 hero 了，否則該頁會沒有 h1）。所以 embed 列表的大標是
+  `announcements.results.title`「公告列表 / Notices」，**不是**「官方公告」——刻意如此，
+  避免「App 標題欄 ＋ h1 ＋ h2」三層標題。
+- `AnnouncementView({embed})`：兩個「返回公告列表」指向 embed 列表。**公告內文裡業主自己打的
+  連結不會被改寫**（要連去哪是編輯決定）。
+- `LegalPage({embed})`：麵包屑不渲染、深藍 hero 收成一行白底精簡標題（標題＋最後更新日）、
+  指向另一份法律文件的連結加 `/embed`。順手把原本 `doc === 'privacy' ? <Link/> : <Link/>`
+  的重複 JSX 收斂成一個 `siblingHref`，公開頁輸出一字不變（已截圖比對 390／1440）。
+- embed layout 的 `<body>` 加 `min-h-dvh bg-[var(--fig-light)]`：全站 `body` 底色是暖白，
+  短頁（只有一則公告的列表）在手機上會出現下半截換色的斷層。
+
+### 5. 驗收
+
+`npm run lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`npx tsc --noEmit` 乾淨／
+`npm run i18n:check` 三語 **675 鍵不變（沒有新開鍵：標題借用 `announcements.results.title`、
+`metadata.*`、`legal.updated*`、`home.footerV2.{privacy,disclaimer}`）**／`npm run env:check`／
+`rm -rf .next` 冷建綠、**12 條 embed 路由全部 ● SSG**、公開頁一條都沒有變成 Dynamic。
+`npm start` 實測：三語四頁 200、未知代稱 404、`?category=important` 200。
+以預產生 HTML 逐項確認：embed 頁 `noindex, nofollow`（公開頁仍 `index, follow`）、
+embed 頁 `canonical`／`hreflang` **0 個**、embed 列表 `<header>/<footer>/<nav>` 全 0、
+每頁剛好 1 個 `<h1>`、頁內連結只出現 `/zh-Hant/embed/...`。
+截圖看過：手機 390 的四頁（繁中／簡中／英文）＋ 平板 834，以及公開 `/disclaimer` 的
+390／1440 回歸比對。
+
+> ⚠ 兩個驗證環境雷又各中一次：① **`npm start` 用 `&` 丟背景會被收掉**，截圖腳本就會拿到
+> `ERR_CONNECTION_REFUSED` 的錯誤頁（看起來像版面壞掉）——要用常駐背景任務跑。
+> ② **IDE 內建瀏覽器連不到 `localhost:3000`**，改用 `Google Chrome --headless=new
+> --no-sandbox --remote-debugging-port=9333` ＋ CDP 截圖。
+
+### 6. 待業主／待轉告
+
+- (a) **請維運確認前置 nginx 沒有加 `X-Frame-Options: SAMEORIGIN`／CSP `frame-ancestors`**。
+  本倉沒有設任何一個（已 `curl -I` 確認），所以 iframe 可嵌；但寶塔面板常自動加，加了 h5 會白屏。
+  若是 App 原生 webview 則不受影響。
+- (b) **兩份法律文件仍待業主／法務逐條審核**（原待辦 e）。嵌進 App 等於這份草稿同時對 App
+  使用者生效，業主已被告知。
+- (c) 若日後 App 還要嵌其他頁（例如客戶支援／學院），照 `(embed)` 這套做：加路由、傳 `embed`
+  旗標、**不要**動公開頁的版面。第三個頁面出現時可以把精簡標題抽成共用元件（目前只有
+  `LegalPage` 用，刻意不先抽）。
+- (d) 小優化（非必要）：embed 頁仍透過 `NextIntlClientProvider` 把**全部**三語訊息序列化進
+  RSC payload（與公開頁相同的既有行為），所以 HTML 裡找得到 footer 地址等字串——**不是**版面
+  殘留（已確認 markup 層為 0）。要縮可以只傳該頁需要的 namespace，但那會偏離全站慣例。
+
 ## 🟢 第六十九輪（實作，2026-10-14）：`/funding` 示意數據退役 ＋ 全站「示意」稽核
 
 > 業主：「/funding 頁的示意數據拿掉，你順便檢查一下全站，還有沒有此字，因為要準備上線了。

@@ -25,8 +25,20 @@ type Section = {heading: string; body: string[]};
  *
  * Contact details are operational, so they come from CMS `SiteSettings` (never
  * hard-coded); the registered office is an approved fact and always shows.
+ *
+ * `embed` renders the app-webview variant (`/<locale>/embed/{privacy,
+ * disclaimer}`): the breadcrumb is dropped because it links back out to the
+ * full site, the navy hero collapses to a slim title row (the app has its own
+ * title bar), and the link to the sibling document stays under `/embed`. Same
+ * copy, same CMS contact details — see src/app/(embed)/[locale]/embed/layout.tsx.
  */
-export default async function LegalPage({doc}: {doc: LegalDoc}) {
+export default async function LegalPage({
+  doc,
+  embed = false
+}: {
+  doc: LegalDoc;
+  embed?: boolean;
+}) {
   const t = await getTranslations('legal');
   const footer = await getTranslations('home.footerV2');
   const nav = await getTranslations('nav');
@@ -40,46 +52,59 @@ export default async function LegalPage({doc}: {doc: LegalDoc}) {
   // appended only where it differs from the localised one.
   const legalName = common('brandFull');
   const address = footerFacts('address');
+  const updated = `${t('updatedLabel')}：${t('updatedAt')}`;
+  const siblingHref = `${embed ? '/embed' : ''}/${doc === 'privacy' ? 'disclaimer' : 'privacy'}`;
 
   return (
     <>
-      <nav
-        aria-label={title}
-        className="border-b border-[var(--fig-border-light)] bg-white"
-      >
-        <div className="mx-auto flex max-w-[1440px] items-center gap-2 px-6 py-5 text-[13px] text-[var(--fig-text-muted)] sm:px-10 lg:px-[120px]">
-          <Link href="/" className="transition-colors hover:text-[#09395f]">
-            {nav('home')}
-          </Link>
-          <span aria-hidden className="text-[var(--fig-border-light)]">
-            ›
-          </span>
-          <span className="font-semibold text-[#0c111d]">{title}</span>
-        </div>
-      </nav>
+      {embed ? (
+        <header className="border-b border-[var(--fig-border-light)] bg-white">
+          <div className="mx-auto flex max-w-[1440px] flex-col gap-1.5 px-6 py-7 sm:px-10 lg:px-[120px]">
+            <h1 className="font-sans text-[22px] font-extrabold leading-[1.3] text-[var(--fig-heading-dark)]">
+              {title}
+            </h1>
+            <p className="text-[13px] text-[var(--fig-text-muted)]">{updated}</p>
+          </div>
+        </header>
+      ) : (
+        <>
+          <nav
+            aria-label={title}
+            className="border-b border-[var(--fig-border-light)] bg-white"
+          >
+            <div className="mx-auto flex max-w-[1440px] items-center gap-2 px-6 py-5 text-[13px] text-[var(--fig-text-muted)] sm:px-10 lg:px-[120px]">
+              <Link href="/" className="transition-colors hover:text-[#09395f]">
+                {nav('home')}
+              </Link>
+              <span aria-hidden className="text-[var(--fig-border-light)]">
+                ›
+              </span>
+              <span className="font-semibold text-[#0c111d]">{title}</span>
+            </div>
+          </nav>
 
-      <section className="relative overflow-hidden bg-[linear-gradient(118deg,#0b1a2f_0%,#09395f_55%,#123a63_100%)]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage:
-              'repeating-linear-gradient(115deg, transparent 0 46px, #d4af37 46px 47px)'
-          }}
-        />
-        <div className="relative mx-auto flex max-w-[1440px] flex-col gap-3 px-6 py-14 sm:px-10 lg:px-[120px] lg:py-16">
-          <h1 className="font-sans text-[clamp(1.9rem,4.5vw,2.75rem)] font-black leading-[1.15] text-white">
-            {title}
-          </h1>
-          <p className="text-[14px] text-white/70">
-            {t('updatedLabel')}：{t('updatedAt')}
-          </p>
-          <div
-            aria-hidden
-            className="mt-2 h-px w-full max-w-[1200px] bg-[linear-gradient(90deg,rgba(212,175,55,0.7),transparent)]"
-          />
-        </div>
-      </section>
+          <section className="relative overflow-hidden bg-[linear-gradient(118deg,#0b1a2f_0%,#09395f_55%,#123a63_100%)]">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 opacity-[0.06]"
+              style={{
+                backgroundImage:
+                  'repeating-linear-gradient(115deg, transparent 0 46px, #d4af37 46px 47px)'
+              }}
+            />
+            <div className="relative mx-auto flex max-w-[1440px] flex-col gap-3 px-6 py-14 sm:px-10 lg:px-[120px] lg:py-16">
+              <h1 className="font-sans text-[clamp(1.9rem,4.5vw,2.75rem)] font-black leading-[1.15] text-white">
+                {title}
+              </h1>
+              <p className="text-[14px] text-white/70">{updated}</p>
+              <div
+                aria-hidden
+                className="mt-2 h-px w-full max-w-[1200px] bg-[linear-gradient(90deg,rgba(212,175,55,0.7),transparent)]"
+              />
+            </div>
+          </section>
+        </>
+      )}
 
       <section className="bg-white">
         <div className="mx-auto max-w-[1440px] px-6 py-16 sm:px-10 lg:px-[120px] lg:py-20">
@@ -167,21 +192,12 @@ export default async function LegalPage({doc}: {doc: LegalDoc}) {
             </div>
 
             <p className="text-[13px] leading-[1.7] text-[var(--fig-text-muted)]">
-              {doc === 'privacy' ? (
-                <Link
-                  href="/disclaimer"
-                  className="font-semibold text-gold underline-offset-4 hover:underline"
-                >
-                  {footer('disclaimer')}
-                </Link>
-              ) : (
-                <Link
-                  href="/privacy"
-                  className="font-semibold text-gold underline-offset-4 hover:underline"
-                >
-                  {footer('privacy')}
-                </Link>
-              )}
+              <Link
+                href={siblingHref}
+                className="font-semibold text-gold underline-offset-4 hover:underline"
+              >
+                {footer(doc === 'privacy' ? 'disclaimer' : 'privacy')}
+              </Link>
             </p>
           </div>
         </div>

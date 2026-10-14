@@ -9,22 +9,30 @@ import {formatDateLong} from '@/lib/dates';
  * rendered through Payload's `RichText` (same prose styling as the Academy
  * detail page, plus table support since trading-arrangement notices often
  * carry a schedule table).
+ *
+ * `embed` is the app-webview variant: the two "back to list" links point at the
+ * embedded list so they cannot navigate the webview out to the full site. Links
+ * the owner types inside the notice body are not rewritten — if a notice needs
+ * to link elsewhere, that is an editorial decision.
  */
 export default async function AnnouncementView({
   announcement,
-  locale
+  locale,
+  embed = false
 }: {
   announcement: AnnouncementDetail;
   locale: string;
+  embed?: boolean;
 }) {
   const t = await getTranslations('announcements');
+  const listHref = embed ? '/embed/announcements' : '/announcements';
 
   return (
     <article className="bg-[var(--fig-light)]">
       <div className="mx-auto flex max-w-[800px] flex-col gap-10 px-6 py-16 sm:px-10 lg:py-20">
         <nav aria-label={t('breadcrumb')}>
           <Link
-            href="/announcements"
+            href={listHref}
             className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#09395f] underline-offset-4 hover:underline"
           >
             <span aria-hidden>←</span>
@@ -88,7 +96,7 @@ export default async function AnnouncementView({
 
         <footer className="border-t border-[var(--fig-border-light)] pt-8">
           <Link
-            href="/announcements"
+            href={listHref}
             className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#09395f] underline-offset-4 hover:underline"
           >
             <span aria-hidden>←</span>
