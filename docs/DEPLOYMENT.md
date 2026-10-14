@@ -346,7 +346,7 @@ build-prd:
 | `DATABASE_URI` / `PAYLOAD_SECRET` | CMS 與 `/admin` | 前台走內建三語文案，無 `/admin` |
 | `QUOTE_GATEWAY_URL` | MT5 行情閘道位址（`uat.env`／`prd.env` 已填） | 首頁／`/trading` 顯示標示清楚的「示意數據」 |
 | `QUOTE_HTTP_CRYPT_SECRET` | 閘道回應解密共享密鑰（**只放主機**） | 同上 |
-| `MT_API_KEY` | 後台「一鍵機器翻譯」按鈕（Gemini 金鑰） | 按鈕不顯示、`/api/translate` 回 501 |
+| `MT_API_KEY` | 後台「一鍵機器翻譯」按鈕（Gemini 金鑰） | 按鈕標「尚未設定翻譯服務（缺少 API 金鑰）」且不可按、`/api/translate` 回 501 |
 | `GITBOOK_*` | 學院文章匯入腳本 | 腳本不可用 |
 
 > 這些之所以是真 runtime：行情走 `force-dynamic` 的 `/api/market/*`、翻譯走後台 API、
@@ -360,6 +360,9 @@ build-prd:
 > 🚩 **不要只設 `MT_API_KEY` 而讓另外三個走程式預設** —— 預設是 OpenAI
 > （`api.openai.com` / `gpt-4o-mini`），香港連不上，Gemini 金鑰打過去會直接 401／404。
 > 🚩 只有全權角色看得到那顆按鈕（第三十三輪），所以測試要用管理員帳號登入。
+> 🚩 **加完金鑰一定要重啟站台程序。** 環境變數只在程序啟動時讀入，所以金鑰填進
+> `prd.secrets.env` 之後，仍在運行的程序看不到它 —— 後台會繼續顯示「尚未設定翻譯服務
+> （缺少 API 金鑰）」。不需要重新 build，面板按一次重啟即可（2026-10-14 實地踩到）。
 > ⚠ 若部署主機存在 git-ignored 的 `.env` 且裡面出現過 `MT_BASE_URL` 等鍵（即使是空值），
 > `with-env.mjs` 會依鍵名讓路、`config/env/*.env` 的值就不會套用（§2.3a 的優先序）。
 >
@@ -727,6 +730,11 @@ curl -s -m 10 -X POST "$QUOTE_GATEWAY_URL/v1/context/resolve" \
 - 改了 `src/messages/*`（程式內建文案）或任何程式碼 → **需要重新 build 並重啟**。
 - ⚠ **重新 build 前請先 `rm -rf .next`。** `next build` 會重用 `.next/cache` 裡的 CMS 讀取
   結果，可能把舊值烤進靜態頁面。CI 用全新 runner 沒這問題，但在同一台伺服器上重複建置會。
+  🚩 **`src/messages/*` 的修正同樣會被這個快取吃掉（2026-10-14 生產環境實地踩到）**：
+  同一個 build 的 `/admin` 顯示新的欄位說明，但 `/funding` 的靜態 HTML 還是舊那句
+  「…為示意數據」。判別法＝**比對 `/admin` 與該頁引用的 `/_next/static/chunks/*.js` 檔名**，
+  相同就是同一個 build，那麼畫面新舊不一致只可能是重用了舊的預產生頁面（不是 nginx 快取，
+  也不是 CMS 覆寫 —— 後者可用 `/api/globals/<slug>?locale=…` 確認文字欄是否真的留空）。
 
 ---
 
