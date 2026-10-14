@@ -1169,6 +1169,45 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
     另：用 `&` 背景啟動的 headless Chrome 會隨指令結束被收掉（截圖腳本會 `ECONNREFUSED`），
     要當成常駐背景任務跑。
 
+- **2026-10-14 (第六十九輪): `/funding` 的「示意數據」退役 —— 出入金渠道改為對外正式資訊，
+  並刪掉虛構後備。SUPERSEDES 第三十六／三十七輪把 `funding-methods` 當示意表的設計。**
+  業主：「/funding 頁的示意數據拿掉，你順便檢查一下全站還有沒有此字，因為要準備上線了。」
+  同事已在 CMS 填入真實渠道（入金 銀行卡支付／支付寶／微信／數字貨幣，出金 網上銀行卡轉賬／數字貨幣）。
+  - **🚩 拿掉標籤 ⇒ 必須同時刪掉 i18n 後備種子**（本輪最重要的一條）。舊種子是 Figma 範本的
+    **虛構渠道**（Visa/Mastercard、Apple Pay、Neteller、Skrill、Fasapay、Perfect Money、JCB、
+    電匯，入金 8 列／出金 6 列），HATC 全都沒有。只拿掉標籤會讓「DB 讀不到／該 type 沒有啟用列」
+    時把這 14 個不存在的渠道**當成正式渠道、且無任何標示**印出來。業主拍板走
+    **「空就隱藏整個表格區塊」**（＝見證／最新消息／公告的同一條紅線）。
+    `lib/fundingMethods.ts` 因此**沒有 fallback**：無 DB／讀取失敗／空清單一律回 `[]`，
+    `FundingMethods` 收到 0 列就 `return null`。已用 `DATABASE_URI=` 空值冷建實測：
+    兩個表格區塊完整消失、`Neteller/Skrill/Visa` 皆 0 次。**日後不要「順手」把種子加回來。**
+  - **改動**：`FundingMethods.tsx` 移除金色「示意數據」badge（它借用的
+    `productsAll.table.sampleLabel` 本輪**已成死鍵並刪除**——`/products/all` 的 badge 早在
+    第四十七輪就移除了）；`funding.{deposit,withdraw}.note`（三語）改寫為**不承諾**的說明
+    （處理時間為預估、受銀行／支付機構／區塊鏈網絡影響；手續費欄＝華安泰昌收取的費用，
+    第三方費用不在此列——與 FACTS「交易手續費全免不含出入金費用」一致）；
+    `metadata.funding.description`（三語）移除「出金渠道與時間為示意數據」。
+    i18n **732 → 675 鍵**（刪 14 列 × 4 欄 ＋ sampleLabel）。
+  - **CMS 治理**：`collections/FundingMethods.ts` 的欄位標籤去掉「（示意）」、集合說明改成
+    「存進來就是客戶看到的內容、沒有預設資料、整張表留空則不顯示」，並在 `time`／`fee` 欄加上
+    不得寫成保證到賬時限／不得寫「免任何費用」的提示。**這些值仍不寫入 `HATC_FACTS.md`**
+    （營運資訊會變動，不是交易條件）。`scripts/seed-funding.ts` 的渠道種子**整段移除**，
+    只保留背景圖連結（圖片欄沒有 i18n fallback 層，種圖仍安全）。
+  - **🚩 localized 欄位被填成同一份值的陷阱（業主本輪另問）**：同事把**簡體**文字貼進三個語系
+    → 繁中站顯示「银行卡支付／免费」、英文站也是中文。Payload `fallback:true` 只在某語系**為空**
+    時回退，**三語都有值就各自顯示**，所以「貼同一份」比「留空」更糟。慣例：
+    **要嘛三語都填對，要嘛只填 `zh-Hant` 讓其餘留空**（後台 Save 旁有一鍵機器翻譯可產生草稿）。
+    本機 DB 已換成校對過的三語版本（6 列），正式站資料由業主自行修正。
+  - **全站稽核結果（14 筆「示意」字樣）**：① **必須保留**＝行情降級標籤
+    `home.heroV2.sampleData`／`home.goldServices.chartSample`（紅線：標籤隨資料來源切換）、
+    以及 `home.footerV2.risk` 與 `legal.disclaimer.sections[2]` 對該標籤的說明（仍為真）。
+    ② **真的是佔位、待業主素材**＝`home.mt5.screenshotAlt`（首頁 `figma/raw/raw_3.png` ＝ AI 算圖，
+    與 FACTS「Trading platforms」的「站上已無標示為示意的平台裝置圖」直接衝突，待業主決定換真實截圖）
+    ＋`trading.hero.imageAlt`（`figma/trading/hero-tablet.png`）。③ 三個 `bgAlt`（heroV2／finalCta／
+    products.hero）＝裝飾背景圖的描述，合理。④ `funding-page` global 的媒體 `alt` 雖含「（示意）」，
+    但三個元件都用 `alt=""`（裝飾圖），不會進畫面。**稽核要用 `src/messages/*` 的鍵路徑掃描，
+    不要只 grep `*.tsx`** ——絕大多數命中都在 i18n 字串裡。
+
 - **2026-10-13 (第六十四輪 追加查證；未改程式碼)**：① **判斷對方部署到哪一版，就打那一版新增
  的路由**——`/api/market/diagnostics` 在 UAT 回 **404 ＝ 還是舊建置**（Gitee `master` 早已有
  `c11769e`，所以是沒重新部署，不是沒交付）。比問「部署了嗎」可靠。② 線上仍是 uat 設定

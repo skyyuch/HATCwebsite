@@ -21,8 +21,15 @@ Build SEO in from the start, not as an afterthought.
     the RMB kilobar (`HATC_FACTS.md` → "CFD business") — never just two of them.
   - Keep a「示意」/ "illustrative" caveat **only while that page really does show sample
     content**. `/platforms` carried「平台介面為示意」long after 第五十一／五十二輪 replaced
-    the mockups with real terminal screenshots. Still true today: `metadata.funding`
-    (sample withdrawal channels), `home.mt5.screenshotAlt`, `trading.hero.imageAlt`.
+    the mockups with real terminal screenshots, and `metadata.funding` carried
+    「出金渠道與時間為示意數據」until 第六十九輪 published the owner's real channels.
+    **The only remaining honest uses are the two placeholder images**
+    (`home.mt5.screenshotAlt` = the Figma AI render on the homepage,
+    `trading.hero.imageAlt` = the Figma tablet placeholder) **and the market-data
+    degradation labels** (`home.heroV2.sampleData`, `home.goldServices.chartSample`,
+    which only render when live quotes are unavailable). Nothing else on the site may
+    say「示意」— audit with a key-path sweep of `src/messages/*`, not a code grep,
+    because most hits live in i18n strings.
 
 ## Share cards & app icons (第六十六輪, 2026-10-14)
 

@@ -38,7 +38,21 @@
 
 ## ▶ 下一輪任務（第六十八輪：首頁 K 線接即時報價 ＋ 可點選的產品切換）
 
-> ## 🟩 2026-10-14 15:30 現況（最新，先看這段）
+> ## 🟩 2026-10-14 17:00 現況（最新，先看這段）
+>
+> **✅ 第六十九輪完成：`/funding` 的「示意數據」標籤退役 —— 出入金渠道變成對外正式資訊，
+> 並刪掉會在資料庫讀不到時冒出來的 14 筆虛構渠道。順便做了全站「示意」字樣稽核。**
+> 業主：「/funding 頁的示意數據拿掉，你順便檢查一下全站還有沒有此字，因為要準備上線了。」
+> 詳見下方「🟢 第六十九輪」。無 schema 變更。
+>
+> 🚩 **上線前還剩兩處「示意」是真的佔位，需要業主素材**：首頁 MT5 區塊用的
+> `public/figma/raw/raw_3.png` 是 **AI 算圖的假 MT5 畫面**（與 `HATC_FACTS.md`
+> 「Trading platforms」寫的「站上已無標示為示意的平台裝置圖」直接衝突），以及 `/trading`
+> hero 的 `figma/trading/hero-tablet.png`。兩者都可以改用既有的真實交易端截圖
+> （`components/platforms/platformVisuals.ts` ＋ `PlatformVisualPanel`），**待業主決定**。
+>
+> 🚩 **正式站的出入金資料要業主自己修**：同事把**簡體**文字貼進三個語系，所以繁中站顯示
+> 「银行卡支付／免费」、英文站也是中文。校對過的三語對照表在第六十九輪那一節。
 >
 > **✅ 第六十八輪完成：首頁服務區的 K 線可切換三個產品，當日那根蠟燭接即時報價，
 > 並加上現價橫線＋每秒跳動的價格標籤。**
@@ -312,6 +326,106 @@
 >   （舊說明要求的 `npm run migrate` 指令已不存在）；② **頁面文案類 global 要保持留空**
 >   （填入就會永久覆蓋內建三語文案，日後修正看不見）；③ **按鈕沒有目的地就不顯示**
 >   （模擬帳戶、會員登入）是設計行為不是 bug；④ **交易條件刻意不開放後台編輯**（治理設計）。
+## 🟢 第六十九輪（實作，2026-10-14）：`/funding` 示意數據退役 ＋ 全站「示意」稽核
+
+> 業主：「/funding 頁的示意數據拿掉，你順便檢查一下全站，還有沒有此字，因為要準備上線了。
+> 另外，同事在 CMS 處理了出入金渠道，但目前只是 3 個語言用同一個值，那要怎麼處理比較好？」
+
+### 1. 拿掉標籤的前提＝必須同時刪掉虛構後備（本輪最重要的一條）
+
+`funding-methods` 自第三十六／三十七輪起是「示意表」，所以 `lib/fundingMethods.ts` 有一層
+i18n 後備種子 `funding.{deposit,withdraw}.methodsSample`。那份種子是 **Figma 範本的虛構渠道**：
+入金 8 列（Visa/Mastercard、Apple Pay/Google Pay、銀聯、SWIFT 電匯、Neteller、Perfect Money、
+Fasapay、JCB）、出金 6 列（Visa/Mastercard、銀聯原路返回、網上銀行轉帳、國際電匯、Neteller、
+Skrill）——**HATC 一個都沒有**。
+
+只把「示意數據」badge 拿掉、種子留著的話，只要資料庫讀不到、或某個 `type` 沒有啟用列，官網就會
+把這 14 個不存在的渠道**當成正式渠道、而且毫無標示**印出來。業主拍板 **「空就隱藏整個表格區塊」**
+（＝見證 `testimonials`／最新消息／公告的同一條「不造假、空則中性隱藏」紅線）。落地：
+
+- `lib/fundingMethods.ts` **沒有 fallback**：無 DB／讀取失敗／空清單一律回 `[]`。
+- `FundingMethods.tsx` 收到 0 列就 `return null`（移除 badge 與 `productsAll.table.sampleLabel` 的引用）。
+- `scripts/seed-funding.ts` 的渠道種子**整段移除**，只留背景圖連結（圖片欄沒有 i18n fallback 層，
+  種圖仍安全，這點第五十七輪已確立）。
+- i18n 三語刪 `funding.{deposit,withdraw}.methodsSample`（14 列 × 4 欄）＋
+  **`productsAll.table.sampleLabel`**（`/products/all` 的 badge 早在第四十七輪移除，它只剩
+  `/funding` 在借用，本輪成死鍵）→ **732 → 675 鍵**。
+
+**實測**：`DATABASE_URI=` 空值冷建後 `/funding` 的 `zh-Hant` 靜態 HTML **`<tbody>` 0 個**、
+`Neteller`／`Skrill`／`Visa` 各 0 次，rendered `<h2>` 只剩「如何將資金存入…／如何從…提取資金？／
+經常查詢的交易支援主題／準備好開始了嗎？」＝兩個表格區塊完整消失，頁面照常 200。
+⚠ 降級時會變成三個連續的淺色區塊（入金 intro → 出金 intro → 支援主題），版面偏平但可接受。
+
+### 2. 文案改寫（三語，紅線對齊）
+
+- `funding.{deposit,withdraw}.note` 改成**不承諾**的說明：處理時間為一般情況下的預估、實際到賬／
+  入賬時間受銀行／支付機構／區塊鏈網絡影響；**手續費欄只涵蓋華安泰昌收取的費用**，第三方費用
+  不在此列 —— 這一句同時對齊 `HATC_FACTS.md`「交易手續費全免**不含**入金／出金費用」。
+- `metadata.funding.description` 移除「出金渠道與時間為示意數據，實際條件以官方公告為準」
+  （SEO 規則：`metadata.*.description` 與頁面內容受同一套紅線管轄，第五十五輪）。
+- `collections/FundingMethods.ts`：欄位標籤去掉「（示意）」，集合說明改為「存進來就是客戶看到的
+  內容、沒有預設資料、整張表留空則不顯示」，並在 `time`／`fee` 欄位加上**不得寫成保證到賬時限**、
+  **不得寫「免任何費用」**的提示。**這些值仍不寫入 FACTS**（營運資訊會變動，不是交易條件）。
+
+### 3. 🚩 localized 欄位被填成同一份值（業主本輪另問的問題）
+
+線上三語的表格內容**完全相同且全部是簡體**：繁中站顯示「银行卡支付／免费／视区块链处理时间」、
+英文站也是同一份中文。根因不是程式——Payload `localization.fallback: true` **只在某語系為空時**
+回退到 `zh-Hant`，三個語系都有值就各自顯示，所以**「把同一份文字貼進三個語系」比「留空」更糟**。
+
+**慣例**：要嘛三語都填對，要嘛**只填 `zh-Hant` 讓其餘留空**（後台 Save 旁的「一鍵機器翻譯」可
+產生另兩語草稿，第三十二輪起內建，需主機設 `MT_API_KEY`）。集合說明已寫進這一條。
+
+**本機 DB 已換成校對過的三語版本（6 列，取代原本 14 筆虛構種子）**；正式站資料由業主自行修正。
+對照表（入金 4 列、出金 2 列；`free` 勾選＝手續費顯示綠色）：
+
+| 類型 | 繁體中文 | 简体中文 | English |
+| --- | --- | --- | --- |
+| 入金 | 銀行卡支付 ｜ 15 - 30 分鐘 ｜ 免費 ｜ CNY | 银行卡支付 ｜ 15 - 30 分钟 ｜ 免费 ｜ CNY | Bank card payment ｜ 15 – 30 minutes ｜ Free ｜ CNY |
+| 入金 | 支付寶 ｜ 15 分鐘內 ｜ 免費 ｜ CNY | 支付宝 ｜ 15 分钟内 ｜ 免费 ｜ CNY | Alipay ｜ Within 15 minutes ｜ Free ｜ CNY |
+| 入金 | 微信 ｜ 15 分鐘內 ｜ 免費 ｜ CNY | 微信 ｜ 15 分钟内 ｜ 免费 ｜ CNY | WeChat Pay ｜ Within 15 minutes ｜ Free ｜ CNY |
+| 入金 | 數字貨幣 ｜ 視區塊鏈處理時間 ｜ 視區塊鏈手續費 ｜ USDT-ERC20、USDT-TRC20、USDT-Polygon | 数字货币 ｜ 视区块链处理时间 ｜ 视区块链手续费 ｜ USDT-ERC20、USDT-TRC20、USDT-Polygon | Cryptocurrency ｜ Depends on blockchain confirmation ｜ Blockchain network fee ｜ USDT-ERC20, USDT-TRC20, USDT-Polygon |
+| 出金 | 網上銀行卡轉賬（本地銀行）｜ 一個工作天內 ｜ 免費 ｜ CNY | 网上银行卡转账(本地银行) ｜ 一个工作天内 ｜ 免费 ｜ CNY | Online bank card transfer (local bank) ｜ Within one business day ｜ Free ｜ CNY |
+| 出金 | 數字貨幣 ｜ 視區塊鏈處理時間 ｜ 免費 ｜ USDT-ERC20、USDT-TRC20、USDT-Polygon | 数字货币 ｜ 视区块链处理时间 ｜ 免费 ｜ USDT-ERC20、USDT-TRC20、USDT-Polygon | Cryptocurrency ｜ Depends on blockchain confirmation ｜ Free ｜ USDT-ERC20, USDT-TRC20, USDT-Polygon |
+
+⚠ 英文的「微信 → WeChat Pay」與「數字貨幣 → Cryptocurrency」是我按通用產品名譯的，業主可改。
+簡體一欄是同事原本輸入的字面值（只補了數字與單位之間的空格），繁體是逐字轉換。
+
+### 4. 全站「示意」稽核（14 筆，逐一分類）
+
+**稽核方法**：掃 `src/messages/*` 的**鍵路徑**，不要只 grep `*.tsx` —— 絕大多數命中都在 i18n
+字串裡，元件檔只看得到 `t('sampleData')` 這種取鍵呼叫。
+
+| 分類 | 鍵 | 處置 |
+| --- | --- | --- |
+| 行情降級標籤（**紅線必須留**） | `home.heroV2.sampleData`、`home.goldServices.chartSample` | 保留 —— 標籤隨資料來源切換，拿不到行情時必須標示 |
+| 對降級標籤的說明（仍為真） | `home.footerV2.risk`、`legal.disclaimer.sections[2].{heading,body[1]}` | 保留 |
+| **真的是佔位圖，待業主素材** | `home.mt5.screenshotAlt`（`figma/raw/raw_3.png` ＝ AI 算圖的假 MT5 畫面）、`trading.hero.imageAlt`（`figma/trading/hero-tablet.png`） | **待業主決定** |
+| 裝飾背景圖描述 | `home.heroV2.bgAlt`、`home.finalCta.bgAlt`、`products.hero.bgAlt` | 保留（「示意圖」＝illustration，合理） |
+| 本輪移除 | `metadata.funding.description`、`funding.{deposit,withdraw}.note`、`productsAll.table.sampleLabel`（刪鍵） | 已處理 |
+
+🚩 **首頁 `raw_3.png` 與 FACTS 直接衝突**：`HATC_FACTS.md`「Trading platforms」寫著
+「官網現已改用真實交易端截圖……**站上已無標示為「示意」的平台裝置圖**，相關文案不得再這樣描述」，
+但首頁 MT5 區塊仍是 Figma 的 AI 算圖（含浮動金塊的假 MT5 畫面），第五十二輪就列為待業主決定。
+素材與元件都現成（`platformVisuals.ts` 的 `resolvePlatformVisual()` ＋ `PlatformVisualPanel`），
+換掉是小工程，**但屬首頁視覺變更，需業主同意再動**。
+
+另註：`funding-page` global 的媒體 `alt` 雖然含「（示意）」（種子寫的），但 `FundingHero`／
+`FundingIntro`／`FundingCta` 三個元件都用 `alt=""`（裝飾圖），所以不會進畫面，無需處理。
+
+### 5. 驗收
+
+`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc --noEmit` 乾淨／`i18n:check`
+三語 **675 鍵**／`env:check` 通過／冷建綠且維持 **53 個 ● SSG**。`npm start` 實測三語
+`/funding` 200，桌機 1440／平板 834／手機 390 截圖逐一看過（手機維持橫向捲動＋捲動提示）。
+另以 `DATABASE_URI=` 空值冷建驗證空資料路徑（見第 1 節）。未動 schema，`generate:types` 無變更。
+
+### 6. 待業主
+
+- (a) **正式站 CMS 的三語內容**（現為三語同一份簡體）——對照表見第 3 節。
+- (b) 首頁 `raw_3.png` 與 `/trading` hero 佔位圖是否改用真實交易端截圖。
+- (c) 若要讓「一鍵機器翻譯」在正式站可用，主機要設 `MT_API_KEY`（Gemini，server-only）。
+
 ## 🟢 第六十八輪（實作，2026-10-14）：首頁 K 線接即時報價 ＋ 可點選的產品切換
 
 > 業主兩句話：「1. 首頁的 K 線並沒有更新 2. 我想點擊不同產品會更換指定產品的日 K」。

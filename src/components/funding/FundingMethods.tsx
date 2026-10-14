@@ -6,23 +6,29 @@ import type {Locale} from '@/i18n/routing';
 /**
  * Supported deposit / withdrawal channels & timelines (Figma deposit 75:42 /
  * withdrawal 75:226). Light section, a responsive table. `variant` selects the
- * direction. Rows come from the CMS (`funding-methods`, filtered by `type`) with
- * an i18n SAMPLE fallback (`funding.{deposit,withdraw}.methodsSample`). Every
- * channel, time, fee and currency is SAMPLE「示意數據」— NOT an approved fact or a
- * delivery guarantee.
+ * direction. Rows come from the CMS (`funding-methods`, filtered by `type`).
+ *
+ * ⚠️ Governance (第六十九輪): these are the owner's REAL channels, so the section
+ * carries NO「示意數據」label — and therefore has **no sample fallback**. An empty
+ * CMS list renders nothing at all (same rule as testimonials / news): a fabricated
+ * channel list must never appear unlabelled. The note below stays, because
+ * processing times depend on third parties and must not read as a guarantee.
  */
 type Variant = 'deposit' | 'withdraw';
 
 export default async function FundingMethods({variant}: {variant: Variant}) {
   const locale = (await getLocale()) as Locale;
   const t = await getTranslations('funding.methods');
-  const sampleLabel = await getTranslations('productsAll.table');
   const marketing = await getFundingMarketing(locale);
   const copy = marketing[variant];
   const rows = await getFundingMethods(
     locale,
     variant === 'deposit' ? 'deposit' : 'withdrawal'
   );
+
+  if (rows.length === 0) {
+    return null;
+  }
 
   return (
     <section className="bg-white">
@@ -31,14 +37,9 @@ export default async function FundingMethods({variant}: {variant: Variant}) {
           <span className="text-[13px] font-bold uppercase tracking-[0.14em] text-gold">
             {copy.kicker}
           </span>
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="font-sans text-[clamp(1.6rem,3.5vw,2rem)] font-extrabold leading-[1.15] text-[var(--fig-heading-dark)]">
-              {copy.heading}
-            </h2>
-            <span className="rounded-[4px] bg-gold/10 px-2.5 py-1 text-xs font-bold text-gold">
-              {sampleLabel('sampleLabel')}
-            </span>
-          </div>
+          <h2 className="font-sans text-[clamp(1.6rem,3.5vw,2rem)] font-extrabold leading-[1.15] text-[var(--fig-heading-dark)]">
+            {copy.heading}
+          </h2>
         </div>
 
         <p className="text-sm text-[var(--fig-text-muted)] lg:hidden">

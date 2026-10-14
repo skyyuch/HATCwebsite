@@ -28,6 +28,16 @@
 - 黃金交易概覽 ✅（`/[locale]/trading`）
 - 產品／交易條件 ✅（`/[locale]/products`）／所有交易產品 ✅（`/[locale]/products/all`）
 - 交易帳戶 ✅（`/[locale]/accounts`）／入金與出金 ✅（`/[locale]/funding`）
+  - **出入金渠道表＝對外正式資訊（第六十九輪，業主 2026-10-14 指示拿掉「示意數據」）**。
+    資料只來自 CMS `funding-methods`（以 `type` 分入金／出金），**沒有 i18n 後備種子**——
+    舊種子是 Figma 範本的虛構渠道（Neteller／Skrill／JCB…），拿掉標籤後若還留著，
+    資料庫讀不到時就會把不存在的渠道當成正式渠道印出來。因此**空清單＝整個表格區塊不渲染**
+    （與見證／最新消息／公告同一條「不造假、空則隱藏」紅線）。
+  - 表格下方的說明（`funding.{deposit,withdraw}.note`）必須保留：處理時間為預估且受銀行／
+    支付機構／區塊鏈網絡影響，手續費欄只涵蓋華安泰昌收取的費用（對齊 FACTS「交易手續費全免
+    不含出入金費用」）。這些值**不寫入 `HATC_FACTS.md`**（營運資訊會變動，非交易條件）。
+  - ⚠ 每一列都要**三語各自填對**。Payload 的 fallback 只在某語系為空時回退，把同一份文字
+    貼進三個語系會讓繁中站與英文站都顯示那份文字（上線前同事即如此，三語全簡體）。
 - 交易平台 ✅（`/[locale]/platforms`，Figma `89:4`；分頁 MT5＋HATC App＋網頁交易端＝
   業主確認之平台，Payload `trading-platforms`＋faqs `platforms`）
   - 平台圖（`/platforms` hero＋分頁、`/accounts` 卡片）一律經

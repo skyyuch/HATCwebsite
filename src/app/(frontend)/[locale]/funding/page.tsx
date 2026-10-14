@@ -31,11 +31,11 @@ export async function generateMetadata({
  * 75:5 + withdrawal 75:189) into one `/funding` page, rebuilt on the shared
  * dark/gold system (the Figma orange accent is mapped to HATC gold). One hero →
  * deposit intro + deposit channel table → withdrawal intro + withdrawal channel
- * table → shared support topics / testimonials / CTA. Channels, times and fees
- * are SAMPLE「示意數據」(CMS `funding-methods`, routed by `type`), NOT approved
- * facts or guarantees; testimonials come only from the CMS (`testimonials`) with
- * no fabricated seed (section hidden when empty). The global white Header + dark
- * Footer frame the page (the Figma's own nav/footer are dropped).
+ * table → shared support topics / testimonials / CTA. Channels, times and fees are
+ * the owner's REAL data (CMS `funding-methods`, routed by `type`) and since 第六十九輪
+ * carry no「示意數據」label — so, like `testimonials`, they have no fabricated seed
+ * and their section is hidden when the CMS list is empty. The global white Header +
+ * dark Footer frame the page (the Figma's own nav/footer are dropped).
  */
 export default async function FundingPage({
   params

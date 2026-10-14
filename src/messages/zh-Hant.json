@@ -22,7 +22,7 @@
     },
     "funding": {
       "title": "入金與出金",
-      "description": "華安泰昌入金與出金說明：安全便捷的資金存取方式、處理時間與手續費一覽。出金渠道與時間為示意數據，實際條件以官方公告為準。"
+      "description": "華安泰昌入金與出金說明：支援的資金存取渠道、處理時間與手續費一覽，實際條件以本公司最新公告為準。"
     },
     "platforms": {
       "title": "交易平台",
@@ -529,7 +529,6 @@
     "table": {
       "kicker": "ALL PRODUCTS",
       "heading": "可交易產品一覽",
-      "sampleLabel": "示意數據",
       "note": "下列合約規模、點差、槓桿、最低手數、交易手續費與交易時段均為華安泰昌已確認之交易條件。點差依帳戶類型而異，表列為最低值；實際成交點差以 MT5 平台即時報價為準。交易手續費全免僅指交易時不收取手續費或佣金，不包含隔夜利息及入金／出金相關費用。",
       "colProduct": "產品",
       "colContractSize": "合約規模",
@@ -796,7 +795,7 @@
     "deposit": {
       "kicker": "DEPOSIT CHANNELS",
       "heading": "支援的入金渠道與時間表",
-      "note": "下表之入金渠道、處理時間、手續費與可選貨幣為示意數據，實際可用渠道與條件以華安泰昌正式公告為準。",
+      "note": "表列處理時間為一般情況下的預估，實際到賬時間亦受銀行、支付機構或區塊鏈網絡狀況影響；手續費一欄為華安泰昌收取的費用，銀行、支付機構或區塊鏈網絡另行收取的費用不在此列。可用渠道與條件可能調整，以本公司最新公告為準。",
       "intro": {
         "heading": "如何將資金存入您的交易帳戶？",
         "body": "開立帳戶後，您可登入客戶後台進行入金；我們支援多種便捷的入金方案，為您構築安全的資金橋樑。",
@@ -812,70 +811,12 @@
         {
           "text": "選擇入金渠道，輸入金額並完成交易"
         }
-      ],
-      "methodsSample": [
-        {
-          "method": "Visa / Mastercard 信用卡",
-          "time": "即時至 30 分鐘",
-          "fee": "免費",
-          "free": true,
-          "currencies": "USD, EUR, GBP, AUD, SGD"
-        },
-        {
-          "method": "Apple Pay / Google Pay",
-          "time": "即時",
-          "fee": "免費",
-          "free": true,
-          "currencies": "USD, EUR, GBP"
-        },
-        {
-          "method": "銀聯 UnionPay 支付",
-          "time": "15 - 30 分鐘",
-          "fee": "免費",
-          "free": true,
-          "currencies": "CNH, USD"
-        },
-        {
-          "method": "電匯（SWIFT Wire Transfer）",
-          "time": "2 - 5 個工作天",
-          "fee": "本公司免收（銀行或收中轉費）",
-          "free": false,
-          "currencies": "所有主流貨幣"
-        },
-        {
-          "method": "Neteller 電子錢包",
-          "time": "即時",
-          "fee": "免費",
-          "free": true,
-          "currencies": "USD, EUR, GBP"
-        },
-        {
-          "method": "Perfect Money",
-          "time": "即時",
-          "fee": "免費",
-          "free": true,
-          "currencies": "USD, EUR"
-        },
-        {
-          "method": "Fasapay",
-          "time": "即時",
-          "fee": "免費",
-          "free": true,
-          "currencies": "USD, IDR"
-        },
-        {
-          "method": "JCB 信用卡",
-          "time": "即時",
-          "fee": "免費",
-          "free": true,
-          "currencies": "JPY, USD"
-        }
       ]
     },
     "withdraw": {
       "kicker": "WITHDRAWAL CHANNELS",
       "heading": "支援的出金渠道與時間表",
-      "note": "下表之出金渠道、處理時間、手續費與可選貨幣為示意數據，實際可用渠道與條件以華安泰昌正式公告為準。",
+      "note": "表列處理時間為一般情況下的預估，實際入賬時間亦受銀行、支付機構或區塊鏈網絡狀況影響；手續費一欄為華安泰昌收取的費用，銀行、支付機構或區塊鏈網絡另行收取的費用不在此列。可用渠道與條件可能調整，以本公司最新公告為準。",
       "intro": {
         "heading": "如何從您的交易帳戶提取資金？",
         "body": "為遵守國際反洗錢相關規範，出金一般以「原路返回」方式退回至您的原入金渠道。",
@@ -890,50 +831,6 @@
         },
         {
           "text": "點選送出，我們的後台專員將於工作日進行審理"
-        }
-      ],
-      "methodsSample": [
-        {
-          "method": "Visa / Mastercard 信用卡",
-          "time": "1 - 3 個工作天",
-          "fee": "免費",
-          "free": true,
-          "currencies": "USD, EUR, GBP, AUD, SGD"
-        },
-        {
-          "method": "銀聯卡 UnionPay（原路返回）",
-          "time": "1 - 2 個工作天",
-          "fee": "免費",
-          "free": true,
-          "currencies": "CNH, USD"
-        },
-        {
-          "method": "網上銀行轉帳（本地銀行）",
-          "time": "1 個工作天內",
-          "fee": "免費",
-          "free": true,
-          "currencies": "本地法定貨幣"
-        },
-        {
-          "method": "國際電匯（International Wire）",
-          "time": "3 - 5 個工作天",
-          "fee": "本公司免收（中轉行或另收）",
-          "free": false,
-          "currencies": "所有主流貨幣"
-        },
-        {
-          "method": "Neteller 電子錢包",
-          "time": "審核通過後即時",
-          "fee": "免費",
-          "free": true,
-          "currencies": "USD, EUR, GBP"
-        },
-        {
-          "method": "Skrill 電子錢包",
-          "time": "審核通過後即時",
-          "fee": "免費",
-          "free": true,
-          "currencies": "USD, EUR, GBP"
         }
       ]
     },

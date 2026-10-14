@@ -22,7 +22,7 @@
     },
     "funding": {
       "title": "Deposits & withdrawals",
-      "description": "HATC deposits and withdrawals: secure, convenient funding methods with processing times and fees. Channels and timelines are illustrative; actual conditions follow official announcements."
+      "description": "HATC deposits and withdrawals: supported funding channels, processing times and fees. HATC’s latest announcement prevails."
     },
     "platforms": {
       "title": "Trading platforms",
@@ -529,7 +529,6 @@
     "table": {
       "kicker": "ALL PRODUCTS",
       "heading": "Tradeable products",
-      "sampleLabel": "Sample data",
       "note": "The contract sizes, spreads, leverage, minimum lot sizes, trading commission and trading hours below are HATC's confirmed trading conditions. Spreads vary by account type and the table shows the lowest; actual execution spreads follow live MetaTrader 5 quotes. Commission-free means no dealing fee or commission is charged on trades; it does not cover overnight financing or deposit and withdrawal charges.",
       "colProduct": "Product",
       "colContractSize": "Contract size",
@@ -796,7 +795,7 @@
     "deposit": {
       "kicker": "DEPOSIT CHANNELS",
       "heading": "Supported deposit channels & timelines",
-      "note": "The channels, processing times, fees and available currencies below are illustrative. Actual available channels and conditions follow HATC's official announcements.",
+      "note": "Processing times are estimates under normal conditions; when funds are credited also depends on your bank, payment provider or the blockchain network. The fee column shows charges levied by HATC — fees charged separately by banks, payment providers or blockchain networks are not included. Available channels and conditions may change; HATC’s latest announcement prevails.",
       "intro": {
         "heading": "How to deposit funds into your trading account",
         "body": "After opening an account, log in to your client portal to deposit. We support a range of convenient deposit options to build a secure bridge for your funds.",
@@ -812,70 +811,12 @@
         {
           "text": "Choose a deposit channel, enter the amount and complete the transaction"
         }
-      ],
-      "methodsSample": [
-        {
-          "method": "Visa / Mastercard",
-          "time": "Instant to 30 minutes",
-          "fee": "Free",
-          "free": true,
-          "currencies": "USD, EUR, GBP, AUD, SGD"
-        },
-        {
-          "method": "Apple Pay / Google Pay",
-          "time": "Instant",
-          "fee": "Free",
-          "free": true,
-          "currencies": "USD, EUR, GBP"
-        },
-        {
-          "method": "UnionPay",
-          "time": "15 - 30 minutes",
-          "fee": "Free",
-          "free": true,
-          "currencies": "CNH, USD"
-        },
-        {
-          "method": "Wire transfer (SWIFT)",
-          "time": "2 - 5 business days",
-          "fee": "Free from us (bank may charge)",
-          "free": false,
-          "currencies": "All major currencies"
-        },
-        {
-          "method": "Neteller e-wallet",
-          "time": "Instant",
-          "fee": "Free",
-          "free": true,
-          "currencies": "USD, EUR, GBP"
-        },
-        {
-          "method": "Perfect Money",
-          "time": "Instant",
-          "fee": "Free",
-          "free": true,
-          "currencies": "USD, EUR"
-        },
-        {
-          "method": "Fasapay",
-          "time": "Instant",
-          "fee": "Free",
-          "free": true,
-          "currencies": "USD, IDR"
-        },
-        {
-          "method": "JCB",
-          "time": "Instant",
-          "fee": "Free",
-          "free": true,
-          "currencies": "JPY, USD"
-        }
       ]
     },
     "withdraw": {
       "kicker": "WITHDRAWAL CHANNELS",
       "heading": "Supported withdrawal channels & timelines",
-      "note": "The channels, processing times, fees and available currencies below are illustrative. Actual available channels and conditions follow HATC's official announcements.",
+      "note": "Processing times are estimates under normal conditions; when funds reach your account also depends on your bank, payment provider or the blockchain network. The fee column shows charges levied by HATC — fees charged separately by banks, payment providers or blockchain networks are not included. Available channels and conditions may change; HATC’s latest announcement prevails.",
       "intro": {
         "heading": "How to withdraw funds from your trading account",
         "body": "To comply with international anti-money-laundering rules, withdrawals are generally returned to your original deposit channel (\"same-route\" return).",
@@ -890,50 +831,6 @@
         },
         {
           "text": "Submit — our back-office specialists review it on business days"
-        }
-      ],
-      "methodsSample": [
-        {
-          "method": "Visa / Mastercard",
-          "time": "1 - 3 business days",
-          "fee": "Free",
-          "free": true,
-          "currencies": "USD, EUR, GBP, AUD, SGD"
-        },
-        {
-          "method": "UnionPay (same-route return)",
-          "time": "1 - 2 business days",
-          "fee": "Free",
-          "free": true,
-          "currencies": "CNH, USD"
-        },
-        {
-          "method": "Online bank transfer (local bank)",
-          "time": "Within 1 business day",
-          "fee": "Free",
-          "free": true,
-          "currencies": "Local fiat currency"
-        },
-        {
-          "method": "International wire",
-          "time": "3 - 5 business days",
-          "fee": "Free from us (intermediary bank may charge)",
-          "free": false,
-          "currencies": "All major currencies"
-        },
-        {
-          "method": "Neteller e-wallet",
-          "time": "Instant after approval",
-          "fee": "Free",
-          "free": true,
-          "currencies": "USD, EUR, GBP"
-        },
-        {
-          "method": "Skrill e-wallet",
-          "time": "Instant after approval",
-          "fee": "Free",
-          "free": true,
-          "currencies": "USD, EUR, GBP"
         }
       ]
     },

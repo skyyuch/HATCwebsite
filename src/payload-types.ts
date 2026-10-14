@@ -573,7 +573,7 @@ export interface TradingPlatform {
   createdAt: string;
 }
 /**
- * ⚠️ SAMPLE deposit/withdrawal channels for /funding. Use "Type" to route each row to the deposit or withdrawal table. Method / time / fee / currencies are illustrative (front-end keeps the sample label), NOT approved facts or guarantees. Empty / no DB = i18n seed fallback.
+ * ⚠️ The REAL deposit/withdrawal channels published on /funding — there is no sample label and no fallback, so whatever you save here is what customers see. Use "Type" to route each row to the deposit or withdrawal table. Fill every row in all three locales (use the Machine-translate button next to Save); an empty list hides the whole table section.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "funding-methods".
@@ -585,7 +585,13 @@ export interface FundingMethod {
    */
   type: 'deposit' | 'withdrawal';
   method: string;
+  /**
+   * Shown as typed. The page already notes that times are estimates affected by banks, payment providers and blockchain networks — do not phrase this as a guarantee.
+   */
   time?: string | null;
+  /**
+   * The fee HATC charges. Third-party bank / payment / network fees are excluded by the note under the table, so do not write「免任何費用」or imply there are no overnight or transfer charges.
+   */
   fee?: string | null;
   free?: boolean | null;
   currencies?: string | null;
