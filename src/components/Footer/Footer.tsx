@@ -52,7 +52,11 @@ const FOOTER_LINKS: Record<
     {href: '/about', labelKey: 'home.footerV2.cols.about.l2'},
     {href: '/about', labelKey: 'home.footerV2.cols.about.l3'},
     {href: '/announcements', labelKey: 'announcements.hero.title'},
-    {href: '/news', labelKey: 'home.footerV2.cols.about.l4'}
+    {href: '/news', labelKey: 'home.footerV2.cols.about.l4'},
+    // 第七十二輪: the new FAQ page. The header reaches it through the 關於 HATC
+    // dropdown; this is the second entry point, in the column that already
+    // collects the other about/notice surfaces.
+    {href: '/faq', labelKey: 'faq.hero.title'}
   ],
   platforms: [
     {href: '/platforms', labelKey: 'home.footerV2.cols.platforms.l1'},

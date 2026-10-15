@@ -15,10 +15,11 @@
   ＋`/academy/[slug]`（CMS `academy-articles`，本機現有 49 篇原創長文；封面為佔位圖）、
   **隱私權政策 `/privacy` 與免責聲明 `/disclaimer`**（第五十六輪；共用
   `src/components/legal/LegalPage.tsx`，內文在 i18n `legal.{privacy,disclaimer}`。
-  ⚠ 文字為**依網站實況撰寫的保守版草稿，待業主／法務審核**——治理註記寫在該元件檔頭）
-- **App／h5 嵌入版（第七十輪）**：`/[locale]/embed/{announcements,announcements/[slug],
-  disclaimer,privacy}` ＝公開頁的**無頭尾**孿生版本，給 HATC App／h5 的 webview 用。
-  見下方「App／h5 嵌入版面」。
+  ⚠ 文字為**依網站實況撰寫的保守版草稿，待業主／法務審核**——治理註記寫在該元件檔頭）、
+  **常見問題 `/faq`**（第七十二輪；彙總 CMS `faqs` 全部分類）
+- **App／h5 嵌入版（第七十輪；第七十二輪加入 `faq`）**：
+  `/[locale]/embed/{announcements,announcements/[slug],disclaimer,privacy,faq}`
+  ＝公開頁的**無頭尾**孿生版本，給 HATC App／h5 的 webview 用。見下方「App／h5 嵌入版面」。
 - CMS：Phase 0–4 完成（infra／FAQ／新聞活動／學堂／行銷 globals＋示意表）
 - 後續階段（待規劃）：交易平台細節、Credentials 獨立頁、Contact 獨立頁（如需）
 
@@ -81,6 +82,23 @@
   - 聯絡卡的電郵／電話讀 CMS `SiteSettings`（營運資料紅線），**未設定即不顯示該列** →
     **上線前必須在後台填入**（值為 FACTS 已核可的 `info@hatchk.com`／`(852) 2322 2888`）。
     公司名稱與註冊地址用在地化的 `common.brandFull`／`footer.address`，三語各自正確。
+- 常見問題 ✅（`/[locale]/faq`，第七十二輪；業主 2026-10-15 指定做成「關於 HATC」下的子選單
+  ＋一份給 h5／App 的無頭尾版）
+  - **資料與 `/trading`、`/accounts`、`/platforms` 內嵌的 FAQ 區是同一份 CMS `faqs`**，
+    只是兩種呈現：那三頁各自只顯示自己的分類，`/faq` 用 `getAllFaqs()` 把**全部分類**彙總。
+    業主選定「彙總既有三類＋保留『一般問題』分類給之後填」，內嵌區塊**不動**。
+  - `getAllFaqs()` 走訪 `FAQ_CATEGORIES` **全部五類**（含目前沒有專屬頁的 `products`／
+    `general`），空分類自動不出現。這是刻意的：業主在後台把問題歸到 `products` 或 `general`
+    時，不會變成「存了卻沒有任何頁面顯示」的隱形內容。
+  - 🚩 **分類清單有三個地方描述，必須同一次改動一起改**：`src/collections/Faqs.ts` 的
+    `category` select、`src/lib/faqs.ts` 的 `FAQ_CATEGORIES`、三語 `src/messages/*` 的
+    `faq.categories.*`（少了最後一項會讓該分類在 `/faq` 上沒有標題）。
+  - 分類標籤**刻意另開 `faq.categories.*`**，不借用 `nav.*`：`/faq` 需要的是「交易服務與市場」
+    這種描述分類範圍的字，而 `nav.platforms`「交易平台」是指那一頁。
+  - 頁內是純 server 渲染＋原生 `<details>`（全部預設收合）＋錨點跳轉 `#faq-<category>`，
+    **沒有 `useSearchParams`、不需要 JS**，所以維持 ● SSG。
+  - 結尾聯絡卡只在**公開版**且 CMS 有客服連結時渲染（`primaryContactHref`）；embed 版
+    刻意不渲染（App 內有自己的客服入口，且 webview 不該把人帶出 App）。
 - 資質與證書 Credentials 【後續】
   - 真實證書展示（About 已有牌照牆）
 - 聯絡我們 Contact 【後續】
@@ -185,7 +203,8 @@
 
 開發端要把公告與兩份法律文件放進 App／h5 的 webview，問官網有沒有「去掉頭尾的參數」。
 **答案是沒有參數，改成獨立路徑** `/[locale]/embed/…`（業主拍板：四頁全做、只給路徑不收
-參數、標題區精簡）。網址契約給開發端的版本在 `docs/DEPLOYMENT.md` §10。
+參數、標題區精簡）。**第七十二輪加入第五頁 `/[locale]/embed/faq`**（業主同時要求常見問題也
+要有 h5／App 版）。網址契約給開發端的版本在 `docs/DEPLOYMENT.md` §10。
 
 - **為什麼不是 `?embed=1`**：**Next 的 layout 讀不到 search params**（layout 導航時不重渲染，
   值會過期；官方文件 `file-conventions/layout.md`），而 Header／Footer 依本站慣例只在
@@ -201,11 +220,18 @@
   skip link／JSON-LD，頁內連結全部留在 `/embed` 底下；**文案與資料與公開頁同一份，不得為 App
   另開一份**（兩份法律文件仍待業主／法務審核）。
 - **元件以 `embed` 旗標切換**（`AnnouncementsList`／`AnnouncementFeed`／`AnnouncementView`／
-  `LegalPage`）。兩個刻意的差別：① embed 列表不渲染 hero（它帶著回首頁的麵包屑），所以
-  **列表的 h1 是 `announcements.results.title`「公告列表」而非「官方公告」**，避免 App 標題欄
-  ＋h1＋h2 三層標題；② 公告內文裡業主自己打的連結不會被改寫。
-- 日後要再嵌別的頁：照這套加路由＋傳旗標，**不要**動公開頁版面。第三個頁面出現時再把精簡
-  標題抽成共用元件（目前只有 `LegalPage` 用，刻意不先抽）。
+  `LegalPage`／`FaqList`）。兩個刻意的差別：① embed 列表不渲染 hero（它帶著回首頁的麵包屑），
+  所以 **列表的 h1 是 `announcements.results.title`「公告列表」而非「官方公告」**，避免 App
+  標題欄＋h1＋h2 三層標題；② 公告內文裡業主自己打的連結不會被改寫。
+- **精簡標題列＝`src/components/common/EmbedPageTitle.tsx`**（第七十二輪抽出；原本只有
+  `LegalPage` 內嵌一份，加入 `/embed/faq` 後成為第二個使用者）。h1 是 22px，所以
+  **頁內的區段標題要用 20px 以下**，否則 App 裡的標題層級會變平（`FaqList` 的分類標題與
+  `LegalPage` 的章節標題都是 20px）。
+- 日後要再嵌別的頁：照這套加路由＋傳旗標＋用 `EmbedPageTitle`，**不要**動公開頁版面。
+- 🚩 **新增 `/embed/` 路由必須同步 `src/lib/revalidateContent.ts`**：`revalidatePath` 不會
+  跨 route group，少了那一行會變成「官網更新了、App 裡要等下次部署」。`faqs` 現在要
+  revalidate **四個**表面：`/trading`、`/accounts`、`/platforms`（內嵌區塊）＋`/faq`
+  ＋`/embed/faq`。
 
 ## 導覽與版面
 
@@ -213,16 +239,27 @@
   各頁面不得各自實作；頁面只負責兩者之間的內容。
   - **唯一例外＝`/[locale]/embed/*`**（第七十輪，App／h5 webview）：它在自己的 route group
     `(embed)` 內有獨立 root layout，刻意不渲染頭尾。見上方「App／h5 嵌入版面」。
-- **Header 頂層項目（第六十輪起 5 項）**＝關於HATC `/about`／交易 `/trading`（含 mega-menu）／
-  交易平台 `/platforms`／黃金學院 `/academy`／**公告 `/announcements`**；右側＝語言切換、
-  （CMS 設定後才出現的）登入、立即開戶。
+- **Header 頂層項目（第七十二輪起仍 5 項，但內容變了）**＝**關於HATC `/about`（含下拉）**／
+  交易 `/trading`（含 mega-menu）／交易平台 `/platforms`／黃金學院 `/academy`／
+  公告 `/announcements`；右側＝語言切換、（CMS 設定後才出現的）登入、立即開戶。
+  - **關於HATC 下拉**＝關於我們 `/about`／常見問題 `/faq`／客戶支援 `/#support`
+    （`Header.tsx` 的 `ABOUT_MENU`）。業主 2026-10-15 選定把**客戶支援從頂層收進這個下拉**，
+    所以加了常見問題之後頂層仍是 5 項、沒有再逼近 1360px 斷點。
+  - 下拉用 `HeaderNav` 的 **`menu`** 型（`MenuPanel`，264px、只有標籤），與交易的 **`mega`** 型
+    （`MegaPanel`，720px、雙欄＋圖示＋說明＋開戶橫幅）是兩種面板，共用同一組
+    hover／focus／Escape／120ms 延遲關閉邏輯（`openKey` 一次只開一個）。
+    **刻意不給下拉項目「說明文字」**——那會變成憑空發明的描述。
+  - `ABOUT_MENU` 的標籤**借用目的地自己的鍵**（`home.footerV2.cols.about.title`／
+    `faq.hero.title`／`nav.support`），比照 footer 的 `labelKey` 慣例，所以不會漂移。
+    因此 `Header.tsx` 需要一份 root-scoped 的 `getTranslations()` 來解析完整鍵路徑。
   - 🚩 **桌機橫列的斷點是 `min-[1360px]`，不是 `lg`（第六十輪實測）**。加入第五個項目後，
     英文標籤最長的情況在 1024／1280 會把 logo 擠成 0 寬並讓標籤換行。於 1920 量到不換行
     所需的實際寬度＝**1411px**（含業主尚未設定、設定後會出現的登入連結）；再把導覽間距收為
     `gap-6`（`2xl` 才放大到 `gap-8`）、header 內距收為 `lg:px-12`（`2xl:px-20`）後降到
     **1307px**，因此以 1360px 為切換點（餘裕 53px），未達者走手機抽屜
     （`HeaderMobileMenu` 的 `min-[1360px]:hidden`）。**不要把導覽改回 `lg`／`xl`。**
-    日後再加頂層項目必須重新量測，或改採收納式設計。
+    日後再加頂層項目必須重新量測，或改採收納式設計。第七十二輪把客戶支援收進關於HATC
+    下拉後餘裕變大了，但斷點**刻意不調回去**（登入連結仍未設定，設定後會再長出一項）。
 - **開戶入口**：全站「立即開戶」按鈕讀 CMS `SiteSettings → 開戶（註冊）連結`
   （業主 2026-10-11 提供線上註冊頁，見 `HATC_FACTS.md`）；未設定時退回客服連結，
   兩者皆無才退到 `/register`「即將推出」佔位頁。解析器＝`openAccountHref()`。
@@ -264,6 +301,8 @@
     **也刻意不做分類深連**：公告分類在 CMS，深連進全域 footer 會讓每個靜態頁都依賴
     `announcementCategories` tag（它只 revalidate `/announcements`），業主改分類後其他頁的
     footer 就會是舊的；學院欄能深連是因為它的 slug 是程式常數。
+  - 第七十二輪在同一欄加了 **`常見問題` → `/faq`**（該欄現 6 列），標籤同樣借用該頁 h1 的
+    `faq.hero.title`。欄數仍維持 4，理由同上。
   - 仍待整理（下一棒候選）：關於我們欄前三列都指 `/about` **沒有錨點**（第十三輪 About 改版
     後舊的 `#milestones`／`#credentials` 等區段 id 全部消失，全站也沒有東西連過去），
     且 l3 標籤「安全與監管 / Security & supervision」容易被讀成 HATC 本身受監管；

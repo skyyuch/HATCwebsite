@@ -886,7 +886,7 @@ commit 的圖片素材）。業主端上行只有 3–13 KiB/s，整包塞不進
 > （`https://github.com/skyyuch/HATCwebsite.git`，公開倉、免憑證），機房對機房、完全不經過
 > 本地上行。若改走這條，就會變成 Gitee 完整複製 GitHub 歷史，上面的腳本即可退役。
 
-## 10. App／h5 嵌入用的無頭尾頁面（第七十輪，2026-10-14）
+## 10. App／h5 嵌入用的無頭尾頁面（第七十輪，2026-10-14；第七十二輪加入常見問題）
 
 開發端要在 App／h5 的 webview 裡放公告與免責聲明，問官網有沒有「去掉頭尾的參數」。
 **沒有參數，改用獨立網址**——原因與取捨見 `docs/HANDOFF.md`「🟢 第七十輪」第 1 節
@@ -901,6 +901,7 @@ commit 的圖片素材）。業主端上行只有 3–13 KiB/s，整包塞不進
 | 公告詳情 | `https://www.hatcmarket.com/<locale>/embed/announcements/<公告編號>` |
 | 免責聲明 | `https://www.hatcmarket.com/<locale>/embed/disclaimer` |
 | 隱私權政策 | `https://www.hatcmarket.com/<locale>/embed/privacy` |
+| 常見問題 | `https://www.hatcmarket.com/<locale>/embed/faq` |
 
 - **`<locale>` 必須帶**：`zh-Hant`（繁中）／`zh-Hans`（簡中）／`en`。不帶會被轉到預設語系。
   請用 App 當前語言對應，不要固定寫死一個。
@@ -912,6 +913,9 @@ commit 的圖片素材）。業主端上行只有 3–13 KiB/s，整包塞不進
   ⚠ 2026-10-14 以前曾用日期當代稱（如 `2026-09-05`），**已全部換成編號，舊網址會 404**。
 - 公告詳情**不需要官網重新部署**：後台發佈新公告後該網址立即可用。
 - 內容與官網公開頁完全同一份（同一個 CMS、同一份文案），後台改完即生效（見 §6）。
+- **常見問題**（第七十二輪新增）彙總後台「常見問題」的全部分類，可用 `#faq-<分類代號>`
+  跳到某一段（`trading`／`products`／`accounts`／`platforms`／`general`）。嵌入版**不含**
+  公開頁結尾的「聯絡客服」卡片，App 請用自己的客服入口。
 
 ### 10.2 三件要注意的事
 

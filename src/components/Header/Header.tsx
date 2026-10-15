@@ -18,17 +18,32 @@ import HeaderMobileMenu from './HeaderMobileMenu';
 // Gold-trading mega-menu point at dedicated pages/anchors.
 // `label` is resolved from i18n at render time (see the `.map` below), so the
 // static table omits it — hence Omit<NavLink, 'label'>.
-const NAV: ReadonlyArray<Omit<NavLink, 'label'>> = [
-  {key: 'aboutHatc', href: '/about'},
+const NAV: ReadonlyArray<Omit<NavLink, 'label' | 'menu'> & {menu?: boolean}> = [
+  // Owner request 2026-10-15 (第七十二輪): 關於 HATC opens a compact dropdown.
+  // The top link still goes to /about, so the entry stays usable as a link.
+  {key: 'aboutHatc', href: '/about', menu: true},
   // 「交易」top link → the gold-trading overview page (owner IA decision
   // 2026-08-10); /products remains the trading-conditions detail sub-page.
   {key: 'goldTrading', href: '/trading', mega: true},
   {key: 'platforms', href: '/platforms'},
   {key: 'goldAcademy', href: '/academy'},
   // Owner request 2026-10-12: announcements get their own top-level entry.
-  {key: 'announcements', href: '/announcements'},
-  {key: 'support', href: '/#support'}
+  {key: 'announcements', href: '/announcements'}
 ];
+
+// 關於 HATC dropdown. 客戶支援 moved in here from the top level in the same
+// round, at the owner's choice: it is a homepage section rather than a page,
+// and folding it in took the header back from six top-level entries to five.
+//
+// Labels are read from the key that owns the string at its destination rather
+// than duplicated into `nav.*` — the convention already used by the footer
+// (`FOOTER_LINKS.labelKey`), and the i18n rule that identical text never gets a
+// second key.
+const ABOUT_MENU = [
+  {key: 'about', href: '/about', labelKey: 'home.footerV2.cols.about.title'},
+  {key: 'faq', href: '/faq', labelKey: 'faq.hero.title'},
+  {key: 'support', href: '/#support', labelKey: 'nav.support'}
+] as const;
 
 // Mega-menu destinations: real routes/anchors where a page exists (/trading,
 // /products/all, /accounts, /products#conditions, /funding). These are content
@@ -44,6 +59,8 @@ const MEGA_HREF = {
 export default async function Header() {
   const t = await getTranslations('common');
   const nav = await getTranslations('nav');
+  // Root-scoped, for the dropdown labels borrowed from other namespaces.
+  const all = await getTranslations();
   const settings = await getSiteSettings();
   // Open-account and member login are operational links → resolve via CMS,
   // never hard-coded. Login stays hidden until the owner supplies a real
@@ -51,7 +68,17 @@ export default async function Header() {
   const openHref = openAccountHref(settings);
   const loginHref = memberLoginHref(settings);
 
-  const links: NavLink[] = NAV.map((item) => ({...item, label: nav(item.key)}));
+  const aboutMenu = ABOUT_MENU.map((item) => ({
+    key: item.key,
+    href: item.href,
+    label: all(item.labelKey)
+  }));
+
+  const links: NavLink[] = NAV.map(({menu, ...item}) => ({
+    ...item,
+    label: nav(item.key),
+    menu: menu ? aboutMenu : undefined
+  }));
 
   const megaItem = (key: MegaData['products'][number]['key']) => ({
     key,
@@ -79,11 +106,13 @@ export default async function Header() {
   return (
     <header className="sticky top-0 z-50 h-20 border-b border-[#e6e6e6] bg-white">
       {/*
-        The desktop row only fits from 1360px up. Measured at 1440 (English, the
-        widest labels, including the member-login link the owner has yet to
-        configure): logo 119 + nav 766 + actions 326 + 2×48 padding = 1307.
-        Below that the drawer takes over — do not move the nav back to `lg`,
-        which squeezed the logo to zero width (第六十輪).
+        The desktop row only fits from 1360px up. Measured at 1440 with six
+        top-level entries (English, the widest labels, including the
+        member-login link the owner has yet to configure): logo 119 + nav 766 +
+        actions 326 + 2×48 padding = 1307. 第七十二輪 folded 客戶支援 into the
+        關於 HATC dropdown, so there is now more headroom, not less — the
+        breakpoint stays put. Below it the drawer takes over; do not move the
+        nav back to `lg`, which squeezed the logo to zero width (第六十輪).
       */}
       <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-6 sm:px-10 lg:px-12 2xl:px-20">
         <Link

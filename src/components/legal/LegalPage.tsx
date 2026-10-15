@@ -1,5 +1,6 @@
 import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
+import EmbedPageTitle from '@/components/common/EmbedPageTitle';
 import {company} from '@/content/company';
 import {getSiteSettings} from '@/lib/siteSettings';
 
@@ -58,14 +59,7 @@ export default async function LegalPage({
   return (
     <>
       {embed ? (
-        <header className="border-b border-[var(--fig-border-light)] bg-white">
-          <div className="mx-auto flex max-w-[1440px] flex-col gap-1.5 px-6 py-7 sm:px-10 lg:px-[120px]">
-            <h1 className="font-sans text-[22px] font-extrabold leading-[1.3] text-[var(--fig-heading-dark)]">
-              {title}
-            </h1>
-            <p className="text-[13px] text-[var(--fig-text-muted)]">{updated}</p>
-          </div>
-        </header>
+        <EmbedPageTitle title={title} meta={updated} />
       ) : (
         <>
           <nav

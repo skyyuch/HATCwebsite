@@ -1313,6 +1313,61 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
   - **待業主**：那 10 則的機翻草稿需逐筆校對（公告＝對外聲明）；學院另有 22 篇缺簡中／英文標題
     （非關鍵，前台顯示繁中），要補就跑 `--only academy-articles`。
 
+- **2026-10-15 (第七十二輪): 常見問題頁 `/faq` ＋ header「關於 HATC」下拉 ＋ 第五個 `/embed` 頁。**
+ 業主：「我想做常見問題頁，可以在關於我們 menu 下做子菜單，另外也要像公告一樣，做一個去除
+ header, footer 給 h5, app 用。」兩個方向題業主拍板：① `/faq` **彙總既有三類（交易 6／帳戶 5／
+ 平台 7 ＝ 18 題）＋保留「一般問題」分類給之後填**，`/trading`／`/accounts`／`/platforms` 的
+ 內嵌 FAQ 區**不動**（同一份 CMS 資料、兩種呈現）；② **關於 HATC 下拉＝關於我們／常見問題／
+ 客戶支援**，並把**客戶支援從頂層收走**（頂層 6 → 維持 5 項）。收走客戶支援是關鍵：頂層變 6 項
+ 會把第六十輪量到的 1307px 需求再往上推，而桌機斷點已被迫設在 `min-[1360px]`。
+ - **路由**：`(frontend)/[locale]/faq` ＋ `(embed)/[locale]/embed/faq`，**同一個 `FaqList`、
+ 差一個 `embed` 旗標**。`src/components/faq/FaqList.tsx`＝server，標題帶 → 分類膠囊跳轉
+ （`#faq-<category>`）→ 每類一組原生 `<details>`（全部預設收合）→ 聯絡卡。
+ **沒有 `useSearchParams`、不需要 JS** → 三語兩條路由全部 ● SSG。
+ - **`lib/faqs.ts` 新增 `getAllFaqs(locale)`**：走訪 `FAQ_CATEGORIES` **全部五類**（含目前
+ 沒有專屬頁的 `products`／`general`），空分類自動不出現。**刻意不只跑有內嵌區塊的三類** ——
+ 否則業主把問題歸到 `products`／`general` 時會「存了卻沒有任何頁面顯示」。
+ 🚩 **分類清單有三個地方描述，必須同一次改動一起改**：`collections/Faqs.ts` 的 `category`
+ select、`lib/faqs.ts` 的 `FAQ_CATEGORIES`、三語 `messages/*` 的 `faq.categories.*`
+ （警告註解已寫在 `FAQ_CATEGORIES` 上方）。分類標籤**刻意另開 `faq.categories.*`** 不借
+ `nav.*`（`/faq` 要的是「交易服務與市場」這種描述範圍的字，`nav.platforms` 指的是那一頁）。
+ - **抽掉兩組重複（本輪唯一的既有程式改動）**：① **`src/components/common/PageHeroBand.tsx`**
+ ＝navy→gold 標題帶＋白色麵包屑列；`AcademyHero`／`AnnouncementsHero` 原本是**逐字相同**的
+ 兩份（只差 namespace 與一個 padding），`/faq` 會是第三份 → 兩者現為薄包裝（公告傳
+ `density="tight"`）。**`LegalPage` 刻意保留自己那份**（無 badge、副標位置是「最後更新」、
+ 無 radial tint、標題字級較小），註解已寫明。② **`src/components/common/EmbedPageTitle.tsx`**
+ ＝`/embed/*` 精簡標題列（第七十輪刻意「等第三個使用者出現再抽」）。
+ ⚠ 它的 h1 是 22px → **頁內區段標題要 20px 以下**，否則 App 內標題層級變平（第一版 FAQ 分類
+ 標題做成 22px 與 h1 同級，已改 20px 對齊 `LegalPage`）。
+ - **Header 下拉＝`HeaderNav` 的第二種面板型**：`NavLink` 現為 `mega?: boolean`（交易，720px
+ 雙欄＋圖示＋說明＋開戶橫幅）**或** `menu?: NavMenuItem[]`（關於 HATC，**264px** 純標籤）。
+ 單一 `open` boolean 換成 **`openKey: string | null`**（一次只開一個），hover／focus／Escape／
+ 120ms 延遲關閉兩種面板共用；手機抽屜 `megaOpen` → `sectionKey`。**刻意不給下拉項目「說明
+ 文字」**（會變成憑空發明的描述）。264px 是量出來的——220px 會讓英文
+ `Frequently asked questions` 折兩行。`ABOUT_MENU` 標籤**借用目的地自己的鍵**
+ （`home.footerV2.cols.about.title`／`faq.hero.title`／`nav.support`），比照 footer 的
+ `labelKey` 慣例 → 不會漂移；因此 `Header.tsx` 多一份 root-scoped `getTranslations()`。
+ - **四處同步（都做了）**：`sitemap.ts` 加 `/faq`（**`/embed/faq` 不加**，紅線）；
+ **`revalidateFaqs()` 現在 revalidate 四個表面**＝`/trading`／`/accounts`／`/platforms`
+ ＋`/faq`＋**`/embed/faq`**（🚩 `revalidatePath` 不跨 route group，第七十輪教訓）；
+ Footer 關於我們欄第 6 列 `常見問題`→`/faq`（標籤借 `faq.hero.title`，欄數仍 4）；
+ i18n `metadata.faq`＋`faq.*` 共 15 鍵 → 三語 **675 → 690 鍵**。
+ - **驗收**：`tsc`／`lint` 0 error（僅 `seed-academy.ts` 1 既有 warning）／`i18n:check` 690 鍵／
+ 冷建綠且兩條路由三語 ● SSG；六個新網址 200、繁中與英文各 18 個 `<details>`、區段 id 只有
+ `faq-{trading,accounts,platforms}`、公開頁 canonical＋4 個 hreflang、**embed 頁
+ `noindex, nofollow`＋無 canonical＋無頭尾＋無聯絡卡**。截圖看過 1440／834／390 × 繁中＋英文、
+ embed、展開狀態、桌機下拉與手機抽屜手風琴；**`/academy`、`/announcements` 標題帶與正式站
+ （仍跑舊碼）逐像素一致** ⇒ `PageHeroBand` 抽離是視覺 no-op。
+ - ⚠ **兩個驗證陷阱（舊帳重演）**：① `pkill -f "next start"` 後仍有 `next-server` 殘留，要
+ `ps aux | grep next` 確認再 `kill -9`；② **不要用 `grep -c` 判斷 build 成敗** —— 
+ `npm run build:local | grep -cE "^$|●"` 回報成功，其實是 JSX 語法錯誤的失敗建置（空行也被
+ 計數），直到 `npm start` 才報「Could not find a production build」。看 build 結果就看 `tail`。
+ - **待業主**：(a)「一般問題」分類目前**零題** → `/faq` 不會出現該段，要加就在
+ `/admin → 常見問題` 選該分類並**三語都填**（缺繁中會整題在三個語系消失）；(b) 既有 18 題是
+ 第十八／三十一／三十八輪依紅線軟化過的版本（不承諾時限／渠道），要調整請在後台改，**不要改回
+ 程式種子**；(c) `platforms.faq.items[3]`（MT5 支援 EA）仍是 FACTS 的**【待業主確認】**，
+ 本輪未動，它現在會同時出現在 `/platforms` 與 `/faq`。
+
 - **2026-10-14 (第六十九輪): `/funding` 的「示意數據」退役 —— 出入金渠道改為對外正式資訊，
   並刪掉虛構後備。SUPERSEDES 第三十六／三十七輪把 `funding-methods` 當示意表的設計。**
   業主：「/funding 頁的示意數據拿掉，你順便檢查一下全站還有沒有此字，因為要準備上線了。」

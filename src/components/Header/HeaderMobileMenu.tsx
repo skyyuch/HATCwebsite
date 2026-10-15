@@ -9,10 +9,11 @@ import type {MegaData, NavLink} from './HeaderNav';
 
 /**
  * Compact drawer for the white Figma header (node 38:5) below 1360px. Mirrors
- * the desktop nav: top-level links plus an expandable "交易" section that lists
- * the mega-menu items, then login / open-account actions.
+ * the desktop nav: top-level links, plus an expandable section for each entry
+ * that opens a panel on desktop — "交易" (mega-menu items) and "關於 HATC"
+ * (compact link list, 第七十二輪) — then login / open-account actions.
  *
- * The cutover is 1360px, not `lg`: six top-level links plus the locale
+ * The cutover is 1360px, not `lg`: the top-level links plus the locale
  * switcher, login link and open-account button need 1307px of header (measured,
  * English labels) — at 1024 the labels wrapped and squeezed the logo to zero
  * width (第六十輪). See the note in `Header.tsx`.
@@ -37,9 +38,14 @@ export default function HeaderMobileMenu({
   closeLabel: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [megaOpen, setMegaOpen] = useState(false);
+  // Which accordion is expanded (null = none); 交易 was the only one until
+  // 關於 HATC gained a menu too (第七十二輪).
+  const [sectionKey, setSectionKey] = useState<string | null>(null);
   const close = () => setOpen(false);
   const megaItems = [...mega.products, ...mega.support];
+
+  const toggle = (key: string) =>
+    setSectionKey((current) => (current === key ? null : key));
 
   return (
     <div className="min-[1360px]:hidden">
@@ -56,52 +62,71 @@ export default function HeaderMobileMenu({
       {open ? (
         <div className="absolute inset-x-0 top-20 max-h-[calc(100vh-5rem)] overflow-y-auto border-b border-[#e6e6e6] bg-white shadow-[0px_12px_12px_rgba(0,0,0,0.12)]">
           <nav className="mx-auto flex max-w-[1440px] flex-col gap-1 px-6 py-4 sm:px-10">
-            {links.map((item) =>
-              item.mega ? (
+            {links.map((item) => {
+              if (!item.mega && !item.menu) {
+                return (
+                  <Link
+                    key={item.key}
+                    href={item.href}
+                    onClick={close}
+                    className="rounded-[6px] px-3 py-3 text-[15px] font-semibold text-[#8e99b0] hover:bg-[#f4f6f9] hover:text-[#0c111d]"
+                  >
+                    {item.label}
+                  </Link>
+                );
+              }
+
+              const expanded = sectionKey === item.key;
+
+              return (
                 <div key={item.key} className="flex flex-col">
                   <button
                     type="button"
-                    aria-expanded={megaOpen}
-                    onClick={() => setMegaOpen((v) => !v)}
+                    aria-expanded={expanded}
+                    onClick={() => toggle(item.key)}
                     className="flex items-center justify-between rounded-[6px] px-3 py-3 text-left text-[15px] font-semibold text-[#181917] hover:bg-[#f4f6f9]"
                   >
                     {item.label}
                     <ChevronDown
                       className={cn(
                         'size-4 text-[#8e99b0] transition-transform',
-                        megaOpen && 'rotate-180'
+                        expanded && 'rotate-180'
                       )}
                     />
                   </button>
-                  {megaOpen ? (
+                  {expanded ? (
                     <div className="mb-1 flex flex-col gap-0.5 border-l border-[#e6e6e6] pl-3">
-                      {megaItems.map((it) => (
-                        <Link
-                          key={it.key}
-                          href={it.href}
-                          onClick={close}
-                          className="flex flex-col gap-0.5 rounded-[6px] px-3 py-2 hover:bg-[#f4f6f9]"
-                        >
-                          <span className="text-sm font-semibold text-[#0c111d]">
-                            {it.title}
-                          </span>
-                          <span className="text-xs text-[#475467]">{it.desc}</span>
-                        </Link>
-                      ))}
+                      {item.mega
+                        ? megaItems.map((it) => (
+                            <Link
+                              key={it.key}
+                              href={it.href}
+                              onClick={close}
+                              className="flex flex-col gap-0.5 rounded-[6px] px-3 py-2 hover:bg-[#f4f6f9]"
+                            >
+                              <span className="text-sm font-semibold text-[#0c111d]">
+                                {it.title}
+                              </span>
+                              <span className="text-xs text-[#475467]">
+                                {it.desc}
+                              </span>
+                            </Link>
+                          ))
+                        : item.menu?.map((it) => (
+                            <Link
+                              key={it.key}
+                              href={it.href}
+                              onClick={close}
+                              className="rounded-[6px] px-3 py-2 text-sm font-semibold text-[#0c111d] hover:bg-[#f4f6f9]"
+                            >
+                              {it.label}
+                            </Link>
+                          ))}
                     </div>
                   ) : null}
                 </div>
-              ) : (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  onClick={close}
-                  className="rounded-[6px] px-3 py-3 text-[15px] font-semibold text-[#8e99b0] hover:bg-[#f4f6f9] hover:text-[#0c111d]"
-                >
-                  {item.label}
-                </Link>
-              )
-            )}
+              );
+            })}
 
             <div className="mt-3 flex flex-col gap-3 border-t border-[#e6e6e6] pt-4">
               {loginHref && loginLabel ? (

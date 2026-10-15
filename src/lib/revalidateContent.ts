@@ -97,12 +97,21 @@ export function revalidateAnnouncementCategories(): void {
   revalidateAnnouncementPages();
 }
 
+/**
+ * Four surfaces read `faqs`: the inline sections on `/trading`, `/accounts` and
+ * `/platforms`, and the consolidated `/faq` page — **plus its `/embed/faq`
+ * webview twin**, which lives under its own root layout, so the public path
+ * does not reach it (第七十輪 lesson: an edited FAQ would stay stale in the app
+ * until the next deploy).
+ */
 export function revalidateFaqs(): void {
   safeRevalidateTag(CACHE_TAGS.faqs);
   for (const locale of routing.locales) {
     safeRevalidatePath(`/${locale}/trading`);
     safeRevalidatePath(`/${locale}/accounts`);
     safeRevalidatePath(`/${locale}/platforms`);
+    safeRevalidatePath(`/${locale}/faq`);
+    safeRevalidatePath(`/${locale}/embed/faq`);
   }
 }
 

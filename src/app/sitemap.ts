@@ -22,6 +22,7 @@ const staticPaths = [
   '/news',
   '/announcements',
   '/academy',
+  '/faq',
   '/privacy',
   '/disclaimer'
 ];

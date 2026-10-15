@@ -74,9 +74,9 @@ Build SEO in from the start, not as an afterthought.
   (currently ~61 KB as JPEG; the same design as PNG was 350 KB and some clients skip
   images that large).
 
-## Webview twins under `/embed` (第七十輪, 2026-10-14)
+## Webview twins under `/embed` (第七十輪, 2026-10-14; `faq` added 第七十二輪)
 
-`/<locale>/embed/{announcements,announcements/[slug],disclaimer,privacy}` are chrome-less
+`/<locale>/embed/{announcements,announcements/[slug],disclaimer,privacy,faq}` are chrome-less
 copies of public pages, rendered for the HATC app / h5 webview. They are duplicates by
 design, so they carry a very specific SEO treatment — do not "complete" it:
 
