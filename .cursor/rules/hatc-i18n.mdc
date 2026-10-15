@@ -49,3 +49,10 @@ canonical locale has nothing to fall back to.
 - A missing-title gap is surfaced in `/admin` above each collection's list table
   (`src/components/payload/LocaleCoverageNotice.tsx`); batch backfill via
   `scripts/translate-content.ts` (DEPLOYMENT §4.2). Machine output is a draft.
+- 🚩 **"It shows up in `/admin`" does not mean that locale has content.** Payload's
+  admin list query honours `localization.fallback: true`, so an empty `zh-Hant`
+  title is displayed as the `zh-Hans` one and the back office looks healthy while
+  the public site drops the document. Check coverage with
+  `?locale=<l>&fallback-locale=null` against the REST API, or read the notice panel
+  (it queries with `fallbackLocale: false`). A CLI backfill does not revalidate —
+  press Save once in `/admin` afterwards or the public pages stay stale.

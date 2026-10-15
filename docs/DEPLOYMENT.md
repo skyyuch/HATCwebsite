@@ -639,11 +639,33 @@ $N npm run payload:prd -- run scripts/translate-content.ts -- --only announcemen
 **來源是自動選的＝內容最完整的語系**（一樣完整時以繁體中文為正本），所以用簡體寫的
 內容也翻得出來；`--only` 省略就會跑所有集合與 global。**只填空、不覆蓋**已經填過的值。
 
-跑完要做兩件事：
+跑完要做兩件事（**順序不能反**）：
 
-1. **到 `/admin` 開任何一筆按一次「儲存」** —— CLI 沒有 request context，無法讓快取失效
-   （`revalidateContent.ts` 按設計吞掉），所以列表／`/embed`／`sitemap.xml` 要靠這一下才更新。
-2. 清前置 nginx 快取（§2.0c）。
+1. **到 `/admin` 開任何一筆按一次「儲存」**（不用改內容）—— CLI 沒有 request context，
+   無法讓快取失效（`revalidateContent.ts` 按設計吞掉），所以列表／`/embed`／`sitemap.xml`
+   要靠這一下才更新。**這一步沒做的症狀＝「後台有、前台沒有」**，2026-10-14 實際發生過。
+2. 清前置 nginx 快取（§2.0c，**在 `13.251.150.207` 那台**，不是跑程式的那台）。
+
+驗證（三個都該等於資料庫的實際筆數）：
+
+```bash
+for l in zh-Hant zh-Hans en; do printf "%s " $l; \
+  curl -s "https://www.hatcmarket.com/$l/announcements?cb=$RANDOM" \
+  | grep -oE "announcements/20[0-9]{2}-[0-9]{3}" | sort -u | wc -l; done
+```
+
+> 🚩 **「後台看得到」不代表那個語系真的有內容。** Payload 的 admin 列表查詢吃
+> `localization.fallback: true`，繁中標題為空時它會顯示**簡體的**標題。要看真實覆蓋率：
+>
+> ```bash
+> curl -s 'https://www.hatcmarket.com/api/announcements?limit=20&depth=0&locale=zh-Hant&fallback-locale=null'
+> ```
+>
+> 前台 reader 刻意**不**跨語系回退（缺翻譯要看得見），所以後台正常、前台少筆數是正常現象。
+
+> 🚩 **「是 nginx 還是 Next」的判別口訣**：網址加隨機 query（`?cb=12345`）後**看到新內容
+> ⇒ 是前置 nginx 的舊副本**（照 §2.0c 清）；**加了還是舊的 ⇒ 是 Next 自己的頁面快取**，
+> 清 nginx 完全沒用，要靠 `/admin` 存一次（讓 tag／path 失效）或冷建。
 
 > 🚩 **機器翻譯的結果是校對草稿，不是定稿。** 請業主逐筆看過（尤其公告＝公司對外聲明）。
 > 內容仍受事實紅線管轄：不得與 `HATC_FACTS.md`／`tradingConditions.ts` 的已核可交易條件衝突。

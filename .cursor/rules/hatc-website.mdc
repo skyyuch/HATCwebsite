@@ -1298,7 +1298,19 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
     `lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`tsc`／`i18n:check` **675 鍵不變**
     （後台提示是 Payload admin 文案，照 `DashboardHub` 慣例寫在元件內的三語常數，**不開 i18n 鍵**）
     ／冷建綠且全頁維持 ● SSG。未動 schema，`generate:types` 無變更。
-  - **待業主**：那 7 則的機翻草稿需逐筆校對（公告＝對外聲明）；學院另有 22 篇缺簡中／英文標題
+  - **✅ 正式站當晚結案（2026-10-14）**：程式已部署、補譯已跑完，三語列表／`/embed`／
+    `sitemap.xml` **全部 10 則**（sitemap 23→30 條），英文站顯示英文、繁中顯示繁體。
+    業主回報「後台有、前端沒有」時卡的是 **Next 自己的頁面快取**（CLI 寫入不會 revalidate），
+    `/admin` 存一次任一公告即全部更新。兩個新的判別慣例：
+    ① **🚩 「後台看得到」不代表那個語系有內容** —— Payload 的 **admin 列表查詢吃
+    `localization.fallback: true`**，繁中為空時顯示**簡體的**標題，所以後台看起來很正常。
+    要看真實覆蓋率用 `?locale=…&fallback-locale=null` 打 REST API（本輪實測三語各 10/10 標題、
+    9/10 內文，缺的那則是內容本身沒寫）。`LocaleCoverageNotice` 用 `fallbackLocale: false` 查，
+    就是為了取代這種誤導。
+    ② **🚩 「是 nginx 還是 Next」**：加 `?cb=` 後**看到新內容＝前置 nginx 舊副本**（§2.0c 清，
+    **在 `13.251.150.207`，不是跑程式的 `172-31-27-163`**）；**加了還是舊的＝Next 頁面快取**，
+    清 nginx 沒用，要 `/admin` 存一次或冷建。
+  - **待業主**：那 10 則的機翻草稿需逐筆校對（公告＝對外聲明）；學院另有 22 篇缺簡中／英文標題
     （非關鍵，前台顯示繁中），要補就跑 `--only academy-articles`。
 
 - **2026-10-14 (第六十九輪): `/funding` 的「示意數據」退役 —— 出入金渠道改為對外正式資訊，
