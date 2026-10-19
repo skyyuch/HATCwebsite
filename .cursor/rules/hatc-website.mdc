@@ -1368,6 +1368,41 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  程式種子**；(c) `platforms.faq.items[3]`（MT5 支援 EA）仍是 FACTS 的**【待業主確認】**，
  本輪未動，它現在會同時出現在 `/platforms` 與 `/faq`。
 
+- **2026-10-19 (第七十三輪): 隱私權政策擴充到涵蓋 HATC 交易 App —— iOS 送審的前置條件。**
+ 業主要求（2026-10-19）。起因在**另一個倉**（`~/Desktop/mt5-web` 的 `mt5-uniappx`）：
+ HATC 的 iOS App 已上傳 build 106 並發佈隱私營養標籤（5 類 11 個資料型別），但 App 內
+ 《隱私政策》連到的就是本站 `/<locale>/embed/privacy`，而那份政策寫的是
+ 「本政策**僅適用於本網站**」「本網站為資訊型網站……**不會**主動向您收集姓名、聯絡方式或身分資料」。
+ 一支做完整實名 KYC 的 App 配一份自稱不收集個資的政策＝**Apple Guideline 5.1.1(i) 的正面矛盾**，
+ 且 Apple 會交叉比對標籤與政策。**這是目前唯一卡住送審的事。**
+ - **`legal.privacy` 三語全部改寫：8 節 → 12 節。** 適用範圍從「僅本網站」改為
+ 「本網站 ＋ 交易服務」；**交易服務＝App（iOS/Android）與網頁版交易系統合稱**，因為兩者是
+ 同一套 uni-app x 原始碼、同一組後端，資料處理完全相同（原本政策把交易系統排除在外，
+ 卻從來沒有另一份「交易系統的條款」存在 ⇒ 那是一塊真空，一併補掉）。
+ 新增第 3 節（交易服務收集什麼，逐項對應已申報的 11 個型別）、第 4 節（**不收集什麼**）、
+ 第 10 節（未成年人）；原本的網站條文**一字未改**，只是搬進第 2 節。
+ - **🚩 第 4 節的每一句都有程式碼實查支撐**（`mt5-uniappx` 全倉 grep，證據表在
+ `~/Desktop/mt5-web/docs/h5-ui/IOS-RELEASE.md` 第九節）：`getLocation`／`chooseLocation`／
+ `chooseContact`／`getRecorder`／`IDFA` 各 **0 處**；無 Firebase／GA／Sentry／AppsFlyer／
+ Facebook SDK；請求標頭只帶 `platform`，註冊 API 的 `deviceId`／`deviceFingerprint` 送的是
+ **空字串**。**這些句子日後若 App 改了行為就會變成不實陳述 —— 改 App 要回頭改這裡。**
+ - **本輪實查到、標籤文件原本沒記的一項**：註冊頁會收 UTM 行銷歸因參數
+ （`utm_source`／`medium`／`campaign`／`content`／`term`）隨開戶申請送出。來源只有頁面 query
+ 與 `#ifdef WEB` 的 `location.href` ⇒ **原生 App 拿不到、恆為空**，所以已發佈的 iOS 標籤
+ 仍然正確；但網頁版確實會收，故寫進第 3 節最後一段並註明「僅適用於網頁版」。
+ - **`legal.updatedAt` 拆成 `legal.{privacy,disclaimer}.updatedAt`**（`LegalPage.tsx` 改讀
+ `t(\`${doc}.updatedAt\`)`）。原本兩頁共用一個日期字串，改隱私政策會讓**沒動過的免責聲明**
+ 也跳日期。現為 privacy `2026-10-19`／disclaimer `2026-10-11`。i18n 淨 +1 鍵。
+ - **維持第五十六輪的紅線沒有破**：仍然**不寫**具體保存年限、**不寫**具名的資料處理者或主機商
+ （只寫類別：主機與雲端儲存／簡訊與電郵發送／支付與資金結算／交易系統技術）、不寫管轄法律、
+ 不寫任何「符合法規」保證。**這是草稿，法遵逐條審核後才定稿。**
+ - **驗收**：`tsc` 0 error；`/zh-Hant/privacy`、`/zh-Hans/embed/privacy`、`/en/privacy`
+ 三頁 200、各 12 節、零 `IntlError`；`/zh-Hant/disclaimer` 仍 10 節且日期**沒有**被連動。
+ - **待法遵／業主**：(a) **資料保存年限**（香港 AMLO 有最低年限，但要法遵給數字，我們不填）；
+ (b) **未成年人那節的年齡門檻 18 歲**需確認；(c) 是否補管轄法律／爭議解決；(d) 是否具名列出
+ 第三方處理者；(e)《用戶協議》目前指向**免責聲明**，免責聲明 ≠ 使用條款／EULA，建議一併補。
+ - ⚠️ **定稿後不用重打包 App** —— App 只是連過來，本頁內容改了 App 內顯示就跟著改。
+
 - **2026-10-14 (第六十九輪): `/funding` 的「示意數據」退役 —— 出入金渠道改為對外正式資訊，
   並刪掉虛構後備。SUPERSEDES 第三十六／三十七輪把 `funding-methods` 當示意表的設計。**
   業主：「/funding 頁的示意數據拿掉，你順便檢查一下全站還有沒有此字，因為要準備上線了。」

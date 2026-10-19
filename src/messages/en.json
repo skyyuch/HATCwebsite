@@ -1096,7 +1096,6 @@
   },
   "legal": {
     "updatedLabel": "Last updated",
-    "updatedAt": "2026-10-11",
     "contactHeading": "Contact us",
     "contactBody": "If you have any question about this page, or wish to exercise a right relating to your personal data, please contact us using the details below.",
     "contactCompany": "Company:",
@@ -1104,10 +1103,18 @@
     "contactEmail": "Email:",
     "contactPhone": "Telephone:",
     "privacy": {
-      "intro": "This privacy policy explains how HATC Group Limited (the Company) handles data when you browse this website. It applies to this website only. If you follow a link from here to an online account-opening or trading system, or to any third-party website, please read that platform's own terms for how it handles data.",
+      "intro": "This privacy policy explains how HATC Group Limited (the Company) handles data when you browse this website, or use our trading service — the HATC mobile app and the web trading platform. The website and the trading service handle different sets of data; they are covered in sections 2 and 3 respectively.",
       "sections": [
         {
-          "heading": "What we collect",
+          "heading": "What this policy covers",
+          "body": [
+            "The website: our informational site, which presents company, product and market content. It has no online application or contact form.",
+            "The trading service: the HATC mobile app (iOS and Android) and the web trading platform, which let you open an account, complete identity verification, view quotes, trade, move funds and contact customer service. Both run on the same system and handle data the same way; together they are referred to below as the trading service.",
+            "This policy does not cover third-party websites and services, including the checkout pages of third-party payment providers and the official MetaTrader 5 app. Please read their own policies before using them."
+          ]
+        },
+        {
+          "heading": "What we collect when you browse this website",
           "body": [
             "This is an informational website with no online application or contact form, so we do not actively collect your name, contact details or identity documents here.",
             "As with any website, our servers may generate technical records while serving pages — for example IP address, browser and device information, access time and the pages viewed. These records are used to keep the site running and to protect its security.",
@@ -1115,18 +1122,47 @@
           ]
         },
         {
-          "heading": "Cookies",
+          "heading": "What we collect when you use the trading service",
+          "body": [
+            "Opening and maintaining a trading account is a regulated activity, so the trading service collects more than the website does. We collect only what is necessary to provide the service and to meet our regulatory obligations.",
+            "Account and contact details: name, mobile number (including country code), email address, and country or region, province, city, district and street address. Used for registration, sign-in, verification codes, your account application and account correspondence.",
+            "Identity details: identity-document type and number, nationality, date of birth and country of birth. Used for the identity verification required by regulation.",
+            "Images and documents: photographs of the front and back of your identity document, bank-card or proof-of-deposit images, your account avatar, and any images you attach when sending feedback. These are obtained only when you choose to take or upload them; the trading service requests camera and photo permissions on your device for that purpose and does not access your camera or photos otherwise.",
+            "Financial details: bank account number, bank name, SWIFT code and cardholder name; and your trading account balance, equity, open positions, trade history and deposit and withdrawal records.",
+            "Risk-assessment data: your answers to the account-opening questionnaire and the risk-tolerance level we derive from them.",
+            "Customer-service records: the content of your conversations with our customer service and anything you provide during them.",
+            "Account identifier: your trading account number, used to identify your sign-in state and to link the records above to you.",
+            "Technical data: when the trading service communicates with our servers it sends only the platform type (iOS, Android or web). Our servers may generate technical records while serving requests — for example IP address and access time — to keep the service running and to protect its security.",
+            "Referral parameters: if you reach the web registration page through a link carrying campaign parameters, those parameters (such as source, medium and campaign name) are recorded with your account application so we can identify how you reached us. This applies to the web version only; the mobile app does not receive these parameters."
+          ]
+        },
+        {
+          "heading": "What the trading service does not collect",
+          "body": [
+            "For the avoidance of doubt, we set out here what the trading service does not do.",
+            "It does not collect your location. It uses no location feature and never asks for location permission.",
+            "It does not read your contacts, and it does not collect health or fitness data.",
+            "It does not collect a device identifier or an advertising identifier such as the IDFA.",
+            "It contains no third-party analytics, usage-statistics, crash-reporting or advertising SDK.",
+            "It does not track you for targeted advertising, and we do not share your personal data with data brokers.",
+            "There are no in-app purchases in the trading service."
+          ]
+        },
+        {
+          "heading": "Cookies and on-device storage",
           "body": [
             "This website uses one necessary cookie to remember the language version you selected (cookie name: NEXT_LOCALE). You can delete or block cookies in your browser at any time; if you block this one the site still works, but it may not remember your language preference.",
             "The content-management back office additionally uses cookies for its interface language and login session. Those apply only to authorised Company administrators, not to ordinary visitors.",
-            "No advertising or web-analytics tracking tool is currently enabled on this website. If one is introduced, we will update this policy on this page first."
+            "No advertising or web-analytics tracking tool is currently enabled on this website. If one is introduced, we will update this policy on this page first.",
+            "The trading service uses no cookies for tracking. To keep you signed in and to remember your preferences, some data is stored locally on your device — your sign-in credentials, your watchlist, and interface settings such as rise/fall colours and chart indicators. You can clear it by signing out or removing the app."
           ]
         },
         {
           "heading": "How the data is used",
           "body": [
-            "The data above is used only to provide, maintain and improve the content and functionality of this website; to remember your language preference; to protect the security of the site and its systems; and to answer enquiries you send us.",
-            "We do not use it for direct marketing without your consent."
+            "Data arising from this website is used only to provide, maintain and improve the content and functionality of the site; to remember your language preference; to protect the security of the site and its systems; and to answer enquiries you send us.",
+            "Data collected through the trading service is used to open and maintain your trading account; to carry out identity verification, customer due diligence and anti-money-laundering and anti-fraud checks as required by law; to assess your risk tolerance and offer a suitable account type; to provide quotes, trading, deposit, withdrawal and transfer services; to answer your customer-service enquiries; to protect the security of the system and of your trading; and to meet applicable legal, regulatory and supervisory requirements.",
+            "We do not use any of it for direct marketing without your consent, and we do not use it for targeted advertising."
           ]
         },
         {
@@ -1134,35 +1170,49 @@
           "body": [
             "We do not sell your personal data.",
             "To the extent necessary to operate this website, data may be processed by service providers that supply hosting, networking or technical maintenance. Those providers may process it only on our instructions and only to deliver their service.",
+            "To the extent necessary to provide the trading service, your data may be processed by the following categories of service provider: hosting and cloud-storage providers, SMS and email delivery providers, payment and settlement channel providers, and trading-system technology providers. The same restriction applies — they may process it only on our instructions and only to deliver their service.",
             "We may have to disclose data where required by law, regulation or a competent authority."
           ]
         },
         {
           "heading": "Retention",
           "body": [
-            "We keep data only for as long as needed for the purposes above. Cookie lifetimes depend on the cookie, and you can delete them yourself at any time."
+            "We keep data only for as long as needed for the purposes above. Cookie lifetimes depend on the cookie, and you can delete them yourself at any time.",
+            "Records relating to account opening, identity verification, trading and the movement of funds are additionally kept for the period required by applicable financial and anti-money-laundering regulation. Within that period those records must be retained even after an account is closed."
           ]
         },
         {
           "heading": "Your rights",
           "body": [
             "Under the Hong Kong Personal Data (Privacy) Ordinance (Cap. 486) you have the right to request access to, and correction of, the personal data we hold about you. To exercise those rights, please contact us using the details at the bottom of this page.",
-            "To protect your data, we may need to verify your identity before acting on a request."
+            "To protect your data, we may need to verify your identity before acting on a request.",
+            "If you want to stop using the trading service and close your account, please ask us using the contact details at the bottom of this page or through customer service inside the trading service. Where the account still holds open positions or uncleared funds, those must be closed and settled first.",
+            "Once the account is closed we delete or anonymise the personal data we no longer need, apart from the records we are required to retain as described in the previous section."
+          ]
+        },
+        {
+          "heading": "Minors",
+          "body": [
+            "Neither this website nor the trading service is offered to anyone under 18. We do not knowingly collect personal data from minors, and we will delete it if we find that we have."
           ]
         },
         {
           "heading": "Third-party links and external systems",
           "body": [
-            "This website may link to an online account-opening or trading system, or to other third-party websites. We are not responsible for the content or privacy practices of those sites — please read their own policies before using them."
+            "This website may link to an online account-opening or trading system, or to other third-party websites.",
+            "The trading service may also take you to a third-party payment provider's page to complete a deposit, or open the official MetaTrader 5 app if it is installed on your device.",
+            "We are not responsible for the content or privacy practices of those sites and apps — please read their own policies before using them."
           ]
         },
         {
           "heading": "Changes to this policy",
           "body": [
-            "We may revise this policy from time to time. The revised version will be published on this page, and the Last updated date shown here applies."
+            "We may revise this policy from time to time. The revised version will be published on this page, and the Last updated date shown here applies.",
+            "This policy also applies to the mobile app: the Privacy Policy link inside the app points to this page, so what the app shows updates whenever this page does."
           ]
         }
-      ]
+      ],
+      "updatedAt": "2026-10-19"
     },
     "disclaimer": {
       "intro": "This disclaimer applies to all content on the website of HATC Group Limited (the Company). Please read it before using this website.",
@@ -1226,7 +1276,8 @@
             "The content of this website is not directed at any person or place where local law or regulation prohibits receiving it. You are responsible for ensuring that your use of this website complies with the laws that apply to you."
           ]
         }
-      ]
+      ],
+      "updatedAt": "2026-10-11"
     }
   },
   "footer": {
