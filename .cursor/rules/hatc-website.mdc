@@ -1402,6 +1402,20 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  (b) **未成年人那節的年齡門檻 18 歲**需確認；(c) 是否補管轄法律／爭議解決；(d) 是否具名列出
  第三方處理者；(e)《用戶協議》目前指向**免責聲明**，免責聲明 ≠ 使用條款／EULA，建議一併補。
  - ⚠️ **定稿後不用重打包 App** —— App 只是連過來，本頁內容改了 App 內顯示就跟著改。
+ - **✅ 已上線（2026-10-19 17:47）**：業主拍板**不等法遵先上**（留白五項都不是退件點，線上舊版
+ 「不收集個資」才是）。審稿只動兩處：英文 §3 首句 "is a regulated activity" → "in accordance
+ with the law"（中文原本就沒有那層斷言，而英文版正是審核員讀的；站上對暗示 HATC 自身受監管
+ 一向保守），以及把第 4 節的長期失效風險寫進 `LegalPage.tsx` 檔頭＋本檔 **Content governance
+ 常駐章節**。PR #1 以 **rebase** 合併（本倉歷史全線性），`main` = `b55777a`。線上實測：
+ privacy 三語 × 公開／embed 六個網址全部 200／12 節／零 IntlError／2026-10-19；disclaimer
+ 四個網址仍 9 節且日期**沒有**被連動；`/zh-Hans/embed/privacy` 無 `X-Frame-Options`／CSP
+ （App 的 iframe 不會白屏）、`noindex, nofollow` 在、無 canonical、無頭尾。
+ - **🚩 部署新陷阱（已寫進 `DEPLOYMENT.md` §6 末尾與 §2.0b）：建置正確但線上「部分網址新、
+ 部分網址舊」＝沒按面板重啟。** 舊 Node 程序把**已服務過**的預產生頁面留在記憶體，`next build`
+ 換掉磁碟上的 HTML 也叫不回來 → 冷門網址立刻變新、先前被瀏覽過的網址還是舊的，而兩邊引用的
+ chunk 檔名**相同**（＝同一個 build，不是建置漏了誰）。判別順序：① 主機上
+ `grep -l '<新字串>' .next/server/app/*/…html` 確認產物 → ② 產物對就是沒重啟 → ③ 重啟後仍舊
+ 才去清前置 nginx 的 `proxy_cache`。
 
 - **2026-10-14 (第六十九輪): `/funding` 的「示意數據」退役 —— 出入金渠道改為對外正式資訊，
   並刪掉虛構後備。SUPERSEDES 第三十六／三十七輪把 `funding-methods` 當示意表的設計。**

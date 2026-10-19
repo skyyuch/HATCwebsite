@@ -171,6 +171,57 @@ disclaimer `2026-10-11`。i18n 淨 +1 鍵。
 🟢 **定稿後不用重打包 App**：App 只是連過來，本頁內容改了 App 內顯示就跟著改；
 商店的 `privacyPolicyUrl` 也已經填的是這個網址，連換都不用換。
 
+### ✅ 已合併並上線（2026-10-19 17:47）
+
+業主拍板**不等法遵就先上**：留白那五項都不是 Apple 的退件點，而線上舊版「不收集個資」
+才是，所以先上草稿是淨改善；那五項之後補成第二個 PR 再 build 一次即可。
+
+合併前審稿只動兩處，**沒有新增或刪減任何一項已向 Apple 申報的「不收集」宣稱**：
+
+1. **英文 §3 首句**原為 "Opening and maintaining a trading account **is a regulated
+   activity**"，比中文多一層意思（中文只寫「為依法開立及維護交易帳戶」）。站上對
+   「暗示 HATC 自身受監管」一向保守（第五十七輪 footer「安全與監管」就是為此擱置），
+   而英文版正是 Apple 審核員讀的那一版 → 改為 "To open and maintain a trading account
+   in accordance with the law"。後句 "regulatory obligations" 保留（香港海關貴金屬及
+   寶石交易商 A 類註冊人在 AMLO 下的客戶盡職審查義務＝FACTS 已核可事實）。
+2. **長期風險註記**寫進 `LegalPage.tsx` 檔頭與 `.cursor/rules/hatc-website.mdc` 的
+   **Content governance 常駐章節**（不放輪記錄，否則會被後續輪次埋掉）。
+
+紅線複查：全文三語掃過，**零**具體保存年限、零具名處理者／主機商、零管轄法律或仲裁、
+零「符合法規」保證。PR #1 以 **rebase** 合併（本倉歷史全線性，零 merge commit），
+`main` = `b55777a`。
+
+**線上驗收（`www.hatcmarket.com`，不帶 cache-bust）**：`privacy` 六個網址
+（三語 × 公開／embed）全部 **200、12 節、零 `IntlError`、日期 2026-10-19**；
+`disclaimer` 四個網址仍 **9 節 ＋ 聯絡卡**、日期**停在 2026-10-11 沒有被連動**
+（`legal.updatedAt` 拆開就是為了這個）。App 實際載入的 `/zh-Hans/embed/privacy`
+另外抽驗：第 4 節六項「不收集」逐句都在、UTM 段的「仅适用于网页版」在、未成年人段在、
+`noindex, nofollow` 在、無 canonical、無頭尾；**回應沒有 `X-Frame-Options` 也沒有
+`Content-Security-Policy`** ⇒ 寶塔／nginx 沒有自動加，App 的 iframe 不會白屏。
+
+### 🚩 部署時踩到的新陷阱：建置對了、但一半網址還是舊的
+
+`git pull` ＋ `rm -rf .next/cache` ＋ `build:prd` 跑完後，六個隱私頁竟然**三新三舊**
+（`/zh-Hant/privacy`、`/zh-Hans/privacy`、`/zh-Hans/embed/privacy` 還是 8 節）。
+新舊兩邊引用的 `/_next/static/chunks/*` 檔名**完全相同** ⇒ 同一個 build，不是建置漏了誰。
+
+根因＝**沒有按面板的「重啟」**。舊的 Node 程序把**已經服務過**的預產生頁面留在記憶體裡，
+`next build` 換掉磁碟上的 HTML 也叫不回來 → **冷門網址立刻變新、先前被瀏覽過的網址還是舊的**
+（`/zh-Hans/embed/privacy` 之所以在舊的那一組，正是因為我部署前用它測過 `X-Frame-Options`）。
+按下重啟後六個網址一次全新，連 nginx 那層都不用特別繞。
+
+**判別順序已寫進 `DEPLOYMENT.md` §6 末尾與 §2.0b**：① 先在主機上
+`grep -l '<新字串>' .next/server/app/*/privacy.html` 確認建置產物 → 全中就不是建置問題；
+② 產物對但線上部分新部分舊 ⇒ **沒重啟**；③ 重啟後還舊，才去清前置 nginx 的 `proxy_cache`。
+
+### 🟡 順帶發現、本輪刻意沒動
+
+`/zh-Hans/embed/privacy` 的回應帶著 `Link: …; rel="alternate"; hreflang=…` 標頭（而且是
+`http://` 不是 `https://`）。embed 頁照 `hatc-seo.mdc` 是**刻意不給 canonical 與 hreflang**
+的，但這批是 next-intl middleware 自動補的 **HTTP 標頭**（不是頁面 metadata，頁面本身確實
+沒有 canonical）。`noindex, nofollow` 仍然正確，不影響送審，故不在這次上線的範圍內處理 ——
+留給下一棒評估是否關掉 middleware 的 `alternateLinks`。
+
 ## ✅ 第七十一輪已完成（原本的「下一輪任務」描述留在下面備查）
 
 > ## 🚨 2026-10-14 18:00 正式站目前有兩個實際問題（接手第一件事就是看這段）

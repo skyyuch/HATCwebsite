@@ -166,11 +166,15 @@ curl -s https://<預覽網域>/zh-Hant | grep -o 'name="robots"[^>]*'     # 應�
 ```bash
 cd /project/hatc-web
 sudo git pull
-sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH npm ci
+sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH npm ci   # 只在 package-lock 有變時需要
+sudo rm -rf .next/cache                                       # 見 §6：改 src/messages/* 必做
 sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH npm run build:prd
-# 面板按 hatc_web → 重啟
+# 面板按 hatc_web → 重啟（🚩 不可省，見 §6：不重啟會「部分網址新、部分網址舊」）
 # 最後到前置 nginx（13.251.150.207）清快取，否則使用者仍看到舊版 —— 見 §2.0c
 ```
+
+⚠ 順序是**建置 → 重啟 → 清 nginx 快取**。中間任何一步漏掉，症狀都是「伺服器上一切正常，
+使用者看到的卻是舊版」，而且三層的症狀長得很像 —— §6 末尾有逐層的判別法。
 
 ⚠ `media/`（後台上傳的檔案）與 `config/env/*.secrets.env` 都被 git 忽略，**換目錄或
 重建時必須手動搬過去**，否則媒體庫整片破圖、行情與資料庫連不上。
@@ -808,6 +812,16 @@ curl -s -m 10 -X POST "$QUOTE_GATEWAY_URL/v1/context/resolve" \
   「…為示意數據」。判別法＝**比對 `/admin` 與該頁引用的 `/_next/static/chunks/*.js` 檔名**，
   相同就是同一個 build，那麼畫面新舊不一致只可能是重用了舊的預產生頁面（不是 nginx 快取，
   也不是 CMS 覆寫 —— 後者可用 `/api/globals/<slug>?locale=…` 確認文字欄是否真的留空）。
+- 🚩 **建置完要重啟，否則「同一個 build 下，部分網址新、部分網址舊」（2026-10-19 第七十三輪
+  正式站實地踩到）。** 跑在舊程序裡的 Next 會把**已經服務過**的預產生頁面留在記憶體，`next build`
+  雖然換掉了磁碟上的 `.next/server/app/**/*.html`，熱過的路由不會重讀 → 症狀是**冷門網址立刻變新、
+  先前被瀏覽過的網址還是舊的**。本輪六個隱私頁一次呈現三新三舊，而三者引用的 chunk 檔名相同。
+  **三層的判別順序（照這個做，不要瞎猜）**：
+  1. **建置對不對** —— 在主機上直接看產物，例如
+     `grep -l '<新字串>' .next/server/app/*/privacy.html`。全部列出＝建置正確，問題在下游。
+  2. **是不是舊程序** —— 產物正確但線上部分網址舊 ⇒ 沒重啟。**重啟 Node 項目**即解。
+  3. **是不是前置 nginx** —— 重啟後仍舊，才去清 §2.0c 的 `proxy_cache`（在 `13.251.150.207`，
+     不是跑程式的那台）。加 `?cb=` 看到新內容＝nginx 舊副本；加了還是舊的＝上面兩層。
 
 ---
 
