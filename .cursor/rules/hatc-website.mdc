@@ -1797,6 +1797,22 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
   demo-account, customer-service, header mega banner, platform CTAs and external news
   cards were all converted. The owner asked for the open-account jump specifically and
   then chose to apply it site-wide, so new CTAs must follow suit.
+- 🚩 **The privacy policy describes the trading app, and it can go stale without
+  anyone touching this repo (第七十三輪).** `legal.privacy` section 4 lists six things
+  the HATC trading app does **not** collect — location, contacts, device/advertising
+  identifiers, third-party analytics/crash/advertising SDKs, tracking for targeted ads,
+  and in-app purchases. Every one of them was verified by grepping the trading client
+  (`~/Desktop/mt5-web/mt5-uniappx`; evidence table in that repo's
+  `docs/h5-ui/IOS-RELEASE.md` §9), and the identical claims are **already filed with
+  Apple** as the published App Store privacy label. So the moment the app adds an
+  analytics, crash-reporting, attribution (AppsFlyer-type), advertising or location SDK,
+  or starts sending a real `deviceId`, **two things become false at once** — this page
+  and the store label — and both must be revised. Anyone changing the app's SDKs or
+  permissions owes a change request against `src/messages/*.legal.privacy`; anyone
+  editing section 4 must re-verify against the app code, never reword it from intuition.
+  The same applies to section 3's last paragraph: the UTM referral parameters are
+  web-only because the native app cannot read URL query parameters, so that
+  「僅適用於網頁版」/ "web version only" qualifier must survive any rewrite.
 
 ### CMS-first content architecture (owner decision 2026-08-10)
 
