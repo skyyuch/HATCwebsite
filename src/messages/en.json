@@ -1108,7 +1108,7 @@
         {
           "heading": "What this policy covers",
           "body": [
-            "The website: our informational site, which presents company, product and market content. It has no online application or contact form.",
+            "The website: our informational site, which presents company, product and market content. It carries no registration, account-opening or contact form of its own.",
             "The trading service: the HATC mobile app (iOS and Android) and the web trading platform, which let you open an account, complete identity verification, view quotes, trade, move funds and contact customer service. Both run on the same system and handle data the same way; together they are referred to below as the trading service.",
             "This policy does not cover third-party websites and services, including the checkout pages of third-party payment providers and the official MetaTrader 5 app. Please read their own policies before using them."
           ]
@@ -1116,9 +1116,11 @@
         {
           "heading": "What we collect when you browse this website",
           "body": [
-            "This is an informational website with no online application or contact form, so we do not actively collect your name, contact details or identity documents here.",
+            "This is an informational website and carries no registration, account-opening or contact form of its own, so we do not actively collect your name, contact details or identity documents here.",
+            "The \"Open an account\" buttons on this website take you to the registration page of the trading service. That page belongs to the trading service (the web trading platform) and uses the same registration flow and back end as the mobile app; anything you enter there is handled under section 3 and is not collected through this website.",
             "As with any website, our servers may generate technical records while serving pages — for example IP address, browser and device information, access time and the pages viewed. These records are used to keep the site running and to protect its security.",
-            "If you choose to contact us by email, telephone or a customer-service channel, the information you provide in that exchange is used only to answer and handle your enquiry."
+            "If you choose to contact us by email, telephone or a customer-service channel, the information you provide in that exchange is used only to answer and handle your enquiry.",
+            "The newsletter field in the Gold Academy is a placeholder for a feature we have not switched on: submitting it only shows a notice in your browser and does not send or store the email address you typed. We do not receive it until the feature goes live, and we will update this policy before that happens."
           ]
         },
         {
