@@ -11,18 +11,27 @@ type Section = {heading: string; body: string[]};
 /**
  * Shared layout for the two legal pages (`/privacy`, `/disclaimer`).
  *
- * ⚠️ GOVERNANCE — read before editing the copy (docs/HANDOFF.md 第五十六輪).
+ * ⚠️ GOVERNANCE — read before editing the copy (docs/HANDOFF.md 第五十六輪、第七十二輪).
  *    The body text is a deliberately CONSERVATIVE draft derived from two things
- *    only: (a) what this site actually does — no analytics script is wired
- *    (components/Analytics is a null placeholder), no front-end form submits
- *    anything (the academy newsletter is an honest placeholder), and the only
- *    cookies are `NEXT_LOCALE` plus the admin-only `payload-lng` / login
- *    cookie; and (b) the approved facts in docs/HATC_FACTS.md.
+ *    only: (a) what this site and the HATC trading service actually do, verified
+ *    in code — no analytics script is wired (components/Analytics is a null
+ *    placeholder), no front-end form submits anything (the academy newsletter is
+ *    an honest placeholder), the only cookies are `NEXT_LOCALE` plus the
+ *    admin-only `payload-lng` / login cookie, and the trading service ships no
+ *    analytics/advertising SDK and no location, contacts or device-identifier
+ *    collection; and (b) the approved facts in docs/HATC_FACTS.md.
  *
- *    It therefore states NO retention periods, NO named processors or hosting
- *    providers, NO governing-law / arbitration clause and NO compliance
- *    guarantee — none of those are owner-confirmed. Do NOT pad these pages with
- *    legal boilerplate; the owner and their legal adviser sign off first.
+ *    It therefore states NO specific retention periods, NO named processors or
+ *    hosting providers (categories only), NO governing-law / arbitration clause
+ *    and NO compliance guarantee — none of those are owner-confirmed. Do NOT pad
+ *    these pages with legal boilerplate; the owner and their legal adviser sign
+ *    off first.
+ *
+ *    `privacy` covers the mobile app as well, because the app's in-app Privacy
+ *    Policy link points at `/<locale>/embed/privacy` and Apple cross-checks the
+ *    policy against the App Store privacy label. Any change to what the app
+ *    collects has to land here too — see the sibling repo's
+ *    docs/h5-ui/IOS-RELEASE.md §9 for the per-field evidence.
  *
  * Contact details are operational, so they come from CMS `SiteSettings` (never
  * hard-coded); the registered office is an approved fact and always shows.
@@ -53,7 +62,7 @@ export default async function LegalPage({
   // appended only where it differs from the localised one.
   const legalName = common('brandFull');
   const address = footerFacts('address');
-  const updated = `${t('updatedLabel')}：${t('updatedAt')}`;
+  const updated = `${t('updatedLabel')}：${t(`${doc}.updatedAt`)}`;
   const siblingHref = `${embed ? '/embed' : ''}/${doc === 'privacy' ? 'disclaimer' : 'privacy'}`;
 
   return (
