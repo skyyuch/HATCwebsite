@@ -33,6 +33,16 @@ type Section = {heading: string; body: string[]};
  *    collects has to land here too — see the sibling repo's
  *    docs/h5-ui/IOS-RELEASE.md §9 for the per-field evidence.
  *
+ * 🚩 STANDING RISK — `legal.privacy` section 4 ("what the trading service does
+ *    NOT collect") is a dated statement of fact, not copy. It lists six things
+ *    the app does not do, and each one was verified by grepping mt5-uniappx.
+ *    The day the trading app gains an analytics, crash-reporting, attribution
+ *    (AppsFlyer and friends), advertising or location SDK, or starts sending a
+ *    device identifier, this section becomes a false statement — and the same
+ *    claims are already filed with Apple as the published privacy label, so
+ *    BOTH have to be revised together. Treat any SDK or permission added to
+ *    the app as a change request against this page.
+ *
  * Contact details are operational, so they come from CMS `SiteSettings` (never
  * hard-coded); the registered office is an approved fact and always shows.
  *
