@@ -31,9 +31,21 @@ if ! git remote get-url "$REMOTE" >/dev/null 2>&1; then
   exit 1
 fi
 
-if [ -n "$(git status --porcelain)" ]; then
-  echo "[sync-gitee] Working tree is dirty — commit or stash first." >&2
+# Only *tracked* changes matter: the mirror commit is built from `$SOURCE`'s
+# tree (see below), so uncommitted edits to tracked files would be silently left
+# behind — that is what this guard is for. Untracked files cannot end up in the
+# tree at all, so they only warrant a warning; blocking on them meant any
+# unrelated scratch folder in the repo root made the mirror un-syncable.
+if ! git diff --quiet HEAD -- 2>/dev/null; then
+  echo "[sync-gitee] Tracked files have uncommitted changes — commit or stash first." >&2
+  echo "             (They would NOT be published: the mirror commit uses $SOURCE's tree.)" >&2
   exit 1
+fi
+
+UNTRACKED="$(git ls-files --others --exclude-standard)"
+if [ -n "$UNTRACKED" ]; then
+  echo "[sync-gitee] Note: untracked files present, they are not part of the mirror:"
+  echo "$UNTRACKED" | sed 's/^/               /'
 fi
 
 echo "[sync-gitee] Fetching $REMOTE (can take a few minutes on a slow link)…"
