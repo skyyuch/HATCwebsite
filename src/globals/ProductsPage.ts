@@ -25,8 +25,8 @@ export const ProductsPage: GlobalConfig = {
     group: ADMIN_GROUPS.pages,
     description: adminLabel(
       'Products-page marketing overrides. Approved spreads/leverage live in tradingConditions.ts — do not change numbers here. Empty = i18n default.',
-      '產品頁行銷文案覆寫。核可點差／槓桿（金27／銀30／1:100）在程式碼 tradingConditions.ts，此處不得改數字。留空＝i18n 預設。',
-      '产品页营销文案覆盖。核可点差／杠杆（金27／银30／1:100）在程序 tradingConditions.ts，此处不得改数字。留空＝i18n 默认。'
+      '產品頁行銷文案覆寫。核可點差／槓桿由程式碼 tradingConditions.ts 提供，此處不得改數字。留空＝i18n 預設。',
+      '产品页营销文案覆盖。核可点差／杠杆由程序 tradingConditions.ts 提供，此处不得改数字。留空＝i18n 默认。'
     )
   },
   hooks: {

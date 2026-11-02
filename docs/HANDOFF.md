@@ -1,6 +1,14 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-10-19（第七十三輪：**隱私權政策擴充到涵蓋 HATC 交易 App**。
+> 最後更新：2026-11-02（第七十四輪：**槓桿 1:100 → 1:200**。業主指示「產品槓桿需要改為
+> 200 倍」，確認適用**四種帳戶類型 × 三個品種一律 1:200**、**舊值 1:100 即刻停用**。
+> 事實改一個常數 `MAX_LEVERAGE`，四個表格頁自動跟上；文案三語各 6 處。
+> **🚩 這輪唯一的坑：CMS 裡有 3 筆存著 1:100**（`account-benefits` 1 筆＋`faqs(accounts)`
+> 2 筆），集合級 fallback 會讓改 i18n 完全不生效 → 本機已重跑 `seed-accounts.ts`，
+> **正式站必須做同一件事**，否則表格顯示 1:200、賣點卡與 FAQ 顯示 1:100。
+> 另：`lp/gold-cfd/index.html`（獨立靜態 LP，不被 Next 服務）仍寫著退役的 27／30 點差與
+> 1:100，**待業主決定更新或下架**。詳見下方第七十四輪。
+> 第七十三輪：**隱私權政策擴充到涵蓋 HATC 交易 App**。
 > iOS App 的 build 106 已上傳、隱私標籤已發佈，但 App 內《隱私政策》連的就是本站
 > `/<locale>/embed/privacy`，而那份寫著「僅適用於本網站」「不會主動收集姓名、聯絡方式或
 > 身分資料」—— 配一支做完整實名 KYC 的 App 是 **Apple 5.1.1(i) 的正面矛盾**，
@@ -81,6 +89,65 @@
 > 7. **`web.hatcmarket.com` 的 TLS 憑證只簽了 `www`** → 待業主決定補 SAN 或 301 到 www。
 > 8. **About 頁沒有區段 id** → footer「關於我們」欄三個連結都只能指 `/about`（第五十七輪
 >    業主決定暫不處理）。
+
+## 🟢 第七十四輪（2026-11-02）槓桿 1:100 → **1:200**（已核可事實更新）
+
+業主原話：「產品槓桿需要改為200倍，現時是100倍」。槓桿是**已核可事實**，所以動手前先問齊
+方向級問題，業主拍板：① 適用範圍＝**四種帳戶類型 × 三個品種一律 1:200**（維持原本的一致性，
+不分檔）；② **舊值 1:100 即刻停用、全站不得再出現**（與 27/30 點差、1:500／1:1000 同列退役值）。
+
+### 改了什麼
+
+| 層 | 檔案 | 內容 |
+|---|---|---|
+| 事實（程式端唯一來源） | `src/components/products/tradingConditions.ts` | `MAX_LEVERAGE` `'1:100'`→`'1:200'`；檔頭退役值清單新增 1:100 |
+| 事實（文件） | `docs/HATC_FACTS.md` | 四帳戶表的最高槓桿欄、槓桿條目改寫（記錄調整日與適用範圍） |
+| 文案 | `src/messages/{zh-Hant,zh-Hans,en}.json` | 各 6 處（`metadata.accounts.description`／`accounts.hero.subtitle`／`accounts.benefits.items[0].{title,desc}`／`accounts.faq.items[1].a`／`accounts.faq.items[2].a`） |
+| CMS 資料 | `account-benefits` × 1、`faqs(accounts)` × 2 | 重跑 `scripts/seed-accounts.ts`（replace-mode）從更新後的 i18n 重灌 |
+
+因為 `MAX_LEVERAGE` 是單一常數，`/products`、`/accounts`、`/trading`、`/products/all` 四個
+表格頁**不需逐頁改**，自動跟上。
+
+### 🚩 這輪唯一會踩到的坑：改 i18n 不等於前台會變
+
+`accounts.benefits` 走 CMS 集合 `account-benefits`、`/accounts` 與 `/faq` 的 FAQ 走
+`faqs` 集合，兩者都是**集合級** DB→i18n fallback —— 只要該分類在 DB 有任何一列，reader
+**完全不讀 i18n**。本機 DB 實測有 **3 筆**存著 `1:100`（1 張賣點卡＋2 題 FAQ），光改
+`src/messages/*` 它們會原封不動留著舊槓桿。處置＝重跑既有的 `scripts/seed-accounts.ts`
+（它是 replace-mode，從 messages 重建 benefits＋faqs(accounts)）：
+
+```bash
+npm run payload:local -- run scripts/seed-accounts.ts
+```
+
+**⚠ 正式站必須做同一件事**，否則官網會同時出現 1:200（表格，來自程式）與 1:100
+（賣點卡＋FAQ，來自 CMS）＝自相矛盾。兩條路任選：主機上跑
+`npm run payload:prd -- run scripts/seed-accounts.ts`（會**覆蓋**業主在後台對這 4 張賣點卡與
+5 題帳戶 FAQ 的任何手改），或由業主在 `/admin` 手動把那 3 筆的三語文字改成 1:200。
+CLI 寫入**不會 revalidate**，跑完要到 `/admin` 存一次任一文件（第七十一輪慣例）。
+
+### 順手修掉的漂移根源
+
+`src/globals/ProductsPage.ts` 的後台欄位說明寫著「核可點差／槓桿（金27／銀30／1:100）」——
+**三個數字全是退役值**（27/30 在第四十四輪就停用了，沒人回頭改這句）。它本來就不該複述數字，
+已改成只指向 `tradingConditions.ts`。**慣例：說明文字不要複製事實數字，只指向唯一來源。**
+
+### 驗收
+
+`tsc --noEmit` 乾淨／`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／
+`i18n:check` 三語 **727 鍵不變**（只改值沒增減鍵）／冷建綠且全頁維持 ● SSG。
+`npm start` 實測七個網址 200；**建置產物掃描確認 `1:100` 已不存在於任何 HTML**
+（僅剩兩個 `.js.map` 命中＝我們自己寫的退役值警告註解）；三語 × 桌機 1440／手機 390
+（CDP 裝置模擬）截圖看過 `/accounts` 四張帳戶卡、賣點卡、點差表與 `/products` 三張產品卡
+＋交易條件表，數字皆 1:200、版面無位移（1:100 與 1:200 字寬相同）。未動 schema。
+
+### ⚠ 站外殘留（本輪刻意沒改，待業主決定）
+
+`lp/gold-cfd/index.html` 是 initial commit 就在的**獨立靜態 LP**（有進版控，但**不在
+`public/` 也沒被 Next 服務**，應是另行交付的活動頁）。它仍寫著**退役的平均點差 27／30 點**
+與**槓桿 1:100**，還附註「為業主提供之確認值」—— 自第四十四輪退役 27/30 起就沒更新過。
+**若該 LP 還在對外使用，需一併更新或下架**；本輪未動是因為它是獨立交付物、不屬官網建置範圍。
+（`Back Office/` 同樣含 1:100，但**未進版控**、是別的系統的原型，不在範圍內。）
 
 ## 🟡 第七十三輪（2026-10-19）隱私權政策擴充到涵蓋 HATC 交易 App —— **草稿，等法遵定稿**
 

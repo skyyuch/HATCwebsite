@@ -349,7 +349,8 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  加為第三個 CFD 產品**；⑤ **公司不提供 MT4**（TradingView 亦未確認，不得列出）；⑥ 模擬帳戶按鈕改
  **CMS 可設定，未填則隱藏**。
  - **已核可事實（見 `HATC_FACTS.md`「Account types & trading conditions」／「Trading platforms」）**：
- Mini／Standard／Pro／VIP ＝入金 100／300／1,000／5,000 USD，**槓桿全檔全品種 1:100**，點差（點）
+ Mini／Standard／Pro／VIP ＝入金 100／300／1,000／5,000 USD，**槓桿全檔全品種 1:100**
+ （⚠ **槓桿已於 2026-11-02 第七十四輪改為 1:200，1:100 已停用**——見文末該輪），點差（點）
  金 33/30/28/20、銀 44/40/38/30、公斤條 42/40/40/35；**無佣金欄位**（不得寫佣金或「零佣金」）。
  「點」＝最小跳動（金 0.01／銀 0.001／公斤條 0.01，digits 經閘道實測 2/3/2）。不分帳戶的頁面顯示
  **最低值＋「起」**（金 20／銀 30／公斤條 35 點起）。
@@ -1416,6 +1417,38 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  chunk 檔名**相同**（＝同一個 build，不是建置漏了誰）。判別順序：① 主機上
  `grep -l '<新字串>' .next/server/app/*/…html` 確認產物 → ② 產物對就是沒重啟 → ③ 重啟後仍舊
  才去清前置 nginx 的 `proxy_cache`。
+
+- **2026-11-02 (第七十四輪): 槓桿 1:100 → **1:200**。SUPERSEDES 第四十四輪的「槓桿全檔全品種
+ 1:100」。** 業主原話「產品槓桿需要改為200倍，現時是100倍」。槓桿是已核可事實，故先問方向級
+ 問題，業主拍板：① 適用範圍＝**四種帳戶類型 × 三個品種一律 1:200**（不分檔）；② **1:100 即刻
+ 停用、全站不得再出現**（與 27／30 點差、1:500／1:1000 同列退役值，已寫進
+ `tradingConditions.ts` 檔頭的 ⚠ 退役清單與 `HATC_FACTS.md`）。
+ - **只改一個常數**：`src/components/products/tradingConditions.ts` 的 `MAX_LEVERAGE`
+ ⇒ `/products`、`/accounts`、`/trading`、`/products/all` 四個表格頁自動跟上，無需逐頁改。
+ 文案另有三語各 6 處（`metadata.accounts.description`／`accounts.hero.subtitle`／
+ `accounts.benefits.items[0].{title,desc}`／`accounts.faq.items[1].a`／`items[2].a`），
+ 句型不動、只換數字（字寬相同，版面零位移）。i18n **727 鍵不變**。
+ - **🚩 改交易條件文案時，CMS 的集合級 fallback 會吃掉你的修正（本輪唯一的坑）**：
+ `accounts.benefits` 走集合 `account-benefits`、`/accounts` 與 `/faq` 的 FAQ 走 `faqs`，
+ 兩者都是**集合級** DB→i18n fallback —— 該分類只要 DB 有任何一列，reader **完全不讀 i18n**。
+ 本機實測有 **3 筆**存著 `1:100`（1 張賣點卡＋2 題 FAQ），光改 messages 前台仍是舊槓桿。
+ 處置＝重跑 replace-mode 種子 `npm run payload:local -- run scripts/seed-accounts.ts`。
+ **⚠ 正式站必須做同一件事**（`payload:prd`，會覆蓋後台對那 4 張賣點卡與 5 題帳戶 FAQ 的手改；
+ 或請業主在 `/admin` 手改那 3 筆三語），否則官網會同時出現 1:200（表格）與 1:100（賣點卡／FAQ）。
+ CLI 寫入不會 revalidate → 跑完要到 `/admin` 存一次任一文件。
+ **慣例：改任何交易條件數字前，先 `grep` 一次 CMS 集合有沒有存著舊值**（marketing global 的
+ 影子副本是第五十七輪的同類教訓，但那是欄位級、可清空；集合級不能靠清空解決）。
+ - **順手修掉漂移根源**：`src/globals/ProductsPage.ts` 的後台說明寫著「核可點差／槓桿
+ （金27／銀30／1:100）」＝**三個數字全是退役值**（27/30 第四十四輪就停用，沒人回頭改）。
+ 已改成只指向 `tradingConditions.ts`。**慣例：說明文字不要複製事實數字，只指向唯一來源。**
+ - **⚠ 站外殘留（刻意沒改，待業主決定）**：`lp/gold-cfd/index.html` 是 initial commit 就在的
+ 獨立靜態 LP（有進版控，但**不在 `public/`、不被 Next 服務**，應為另行交付的活動頁），仍寫著
+ **退役的平均點差 27／30 點**與**槓桿 1:100**，還附註「為業主提供之確認值」。若仍對外使用需
+ 一併更新或下架。（`Back Office/` 同樣含 1:100，但**未進版控**、是別系統的原型，不在範圍內。）
+ - **驗收**：`tsc`／`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`i18n:check` 727 鍵／
+ 冷建綠 ● SSG；**建置產物掃描確認 `1:100` 不存在於任何 HTML**（僅兩個 `.js.map` 命中＝我們自己
+ 的退役值警告註解）；三語七個網址 200；桌機 1440／手機 390（CDP 裝置模擬）截圖看過 `/accounts`
+ 與 `/products` 的卡片與表格。未動 schema。
 
 - **2026-10-14 (第六十九輪): `/funding` 的「示意數據」退役 —— 出入金渠道改為對外正式資訊，
   並刪掉虛構後備。SUPERSEDES 第三十六／三十七輪把 `funding-methods` 當示意表的設計。**

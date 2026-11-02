@@ -12,6 +12,10 @@
  *    average spreads (gold 27 / silver 30), leverage 1:500 and 1:1000, and all
  *    per-lot commission figures (the trading commission is now confirmed to be
  *    nil, so any non-zero figure is fabricated).
+ * ⚠️ RETIRED 2026-11-02 (owner): leverage **1:100**. The owner raised the
+ *    maximum leverage to 1:200 for every account tier and every product, so
+ *    1:100 is now a stale figure and must not reappear in copy, metadata, FAQ
+ *    answers or CMS rows.
  * ⚠️ NO TRADING COMMISSION — SCOPE IS DELIBERATELY NARROW (owner 2026-10-11,
  *    第五十六輪). The owner confirmed the *trading* fee only; overnight
  *    financing (swap) and deposit/withdrawal charges are NOT covered. Copy
@@ -32,8 +36,11 @@
 /** The three tradeable CFD products (owner 2026-10-11). Platinum is NOT offered. */
 export type ProductKey = 'gold' | 'silver' | 'kilobar';
 
-/** Leverage is the same for every tier and every product. */
-export const MAX_LEVERAGE = '1:100';
+/**
+ * Leverage is the same for every tier and every product (owner 2026-11-02:
+ * raised from 1:100 to 1:200 across all four tiers and all three products).
+ */
+export const MAX_LEVERAGE = '1:200';
 
 /**
  * Minimum order size, identical for all three products and all four account

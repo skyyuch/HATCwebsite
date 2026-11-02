@@ -18,7 +18,7 @@
     },
     "accounts": {
       "title": "Trading accounts",
-      "description": "HATC trading account types, conditions and how to open an account: four account types, minimum deposit from USD 100 and leverage up to 1:100 on every type."
+      "description": "HATC trading account types, conditions and how to open an account: four account types, minimum deposit from USD 100 and leverage up to 1:200 on every type."
     },
     "funding": {
       "title": "Deposits & withdrawals",
@@ -557,7 +557,7 @@
       "titleLead": "Choose the ",
       "titleAccent": "precious-metals CFD",
       "titleTail": " account that suits you",
-      "subtitle": "Four account types with a minimum deposit from USD 100. Leverage is up to 1:100 on every type, and spreads on gold, silver and the RMB kilobar step down as you move up the tiers.",
+      "subtitle": "Four account types with a minimum deposit from USD 100. Leverage is up to 1:200 on every type, and spreads on gold, silver and the RMB kilobar step down as you move up the tiers.",
       "ctaOpen": "Open an account",
       "ctaDemo": "Apply for a demo account"
     },
@@ -601,8 +601,8 @@
       "heading": "Trading advantages built for you",
       "items": [
         {
-          "title": "Up to 1:100 leverage on every account",
-          "desc": "Gold, silver and the RMB kilobar all trade at up to 1:100 leverage across all four account types, so your margin works the same way everywhere."
+          "title": "Up to 1:200 leverage on every account",
+          "desc": "Gold, silver and the RMB kilobar all trade at up to 1:200 leverage across all four account types, so your margin works the same way everywhere."
         },
         {
           "title": "Spreads step down with the tier",
@@ -658,11 +658,11 @@
         },
         {
           "q": "How do the four account types differ?",
-          "a": "All four trade the same products at the same maximum leverage (1:100); they differ only in minimum deposit and spread. The gold spread runs from 33 points on Mini to 20 points on VIP, silver from 44 to 30 points, and the RMB kilobar from 42 to 35 points."
+          "a": "All four trade the same products at the same maximum leverage (1:200); they differ only in minimum deposit and spread. The gold spread runs from 33 points on Mini to 20 points on VIP, silver from 44 to 30 points, and the RMB kilobar from 42 to 35 points."
         },
         {
           "q": "What is the maximum leverage?",
-          "a": "Up to 1:100 on all four account types and all three products. Leverage amplifies both gains and losses, so assess it carefully."
+          "a": "Up to 1:200 on all four account types and all three products. Leverage amplifies both gains and losses, so assess it carefully."
         },
         {
           "q": "Do you support MetaTrader 4?",

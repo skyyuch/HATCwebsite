@@ -17,7 +17,8 @@ import {
  *    2026-10-11), so this section carries NO「示意數據」label and the numbers are
  *    deliberately NOT CMS-editable. Only the surrounding copy is translatable.
  * ⚠️ The retired sample tiers (Standard STP / RAW ECN / cent account, 1:500,
- *    1:1000, per-lot commissions) must never come back.
+ *    1:1000, per-lot commissions) must never come back. Leverage 1:100 is also
+ *    retired as of 2026-11-02 — the owner raised it to 1:200 on every tier.
  */
 export default async function AccountTiers() {
   const t = await getTranslations('accounts.tiers');
