@@ -573,7 +573,7 @@ $N ADMIN_PASSWORD='…' npm run payload:prd -- run scripts/admin-recover.ts -- -
 | 欄位 | 現況 | 備註 |
 | --- | --- | --- |
 | 客戶服務電話 | `(852) 2322 2888` | 已核可事實（`HATC_FACTS.md`） |
-| 電郵 | `info@hatchk.com` | 同上。**法律頁的資料查閱窗口讀這兩欄** |
+| 電郵 | `info@hatcmarket.com` | 同上。**法律頁的資料查閱窗口讀這兩欄** |
 | 線上客服連結 | 業主未提供 | 留空＝回退用電郵／電話 |
 | 開戶（註冊）連結 | `https://h5.hatcmarket.com/#/pages/auth/register/index` | 業主已提供 |
 | 模擬帳戶連結 | **業主未提供** | 留空＝全站隱藏模擬按鈕（**這是設計行為，不是 bug**） |
@@ -673,6 +673,33 @@ for l in zh-Hant zh-Hans en; do printf "%s " $l; \
 
 > 🚩 **機器翻譯的結果是校對草稿，不是定稿。** 請業主逐筆看過（尤其公告＝公司對外聲明）。
 > 內容仍受事實紅線管轄：不得與 `HATC_FACTS.md`／`tradingConditions.ts` 的已核可交易條件衝突。
+
+### 4.3 一次性維運腳本（第七十五輪新增）
+
+這兩支**必須在正式站各跑一次**，否則線上會看到舊資料。都是冪等的，可安全重跑。
+
+```bash
+# 主機上記得帶 node 路徑（§2.0b）：sudo env PATH=/www/server/nodejs/v22.22.3/bin:$PATH …
+
+# ① 客服電郵改為 info@hatcmarket.com（業主 2026-11-04）
+#    先看會動到什麼：
+npm run payload:prd -- run scripts/update-contact-email.ts -- --dry-run
+npm run payload:prd -- run scripts/update-contact-email.ts
+
+# ② 新增「如何關閉（註銷）我的交易帳戶？」FAQ（Google Play 送審需要）
+npm run payload:prd -- run scripts/seed-account-deletion-faq.ts
+```
+
+- ① 會換掉 **`site-settings.email`** 與**業主 GitBook 匯入的 6 篇學院文章**內文裡的舊地址。
+  舊電郵 `info@hatchk.com` 已停用；**舊網站網址 `www.hatchk.com` 刻意不動**（仍是
+  `HATC_FACTS.md` 的已核可事實）。`config/env/prd.env` 的 `CONTACT_EMAIL` 只是後備，
+  **CMS 的值永遠優先**，所以不跑這支的話官網還是舊電郵。
+- ② 為什麼不是重跑 `seed-accounts.ts`：那支是 **replace 模式**，會把 `accounts` 分類的
+  FAQ 與 4 張賣點卡整組刪掉重建，業主在後台改過的字會一併消失。這支只動那一列。
+  （FAQ reader 是**集合級** fallback —— `accounts` 分類只要有任何一列，整份 i18n 種子就
+  不會被讀，所以光改 `src/messages/*` 在正式站是看不到的。）
+- 🚩 **CLI 腳本不會 revalidate**（沒有 Next request context）。兩支跑完後到 `/admin`
+  隨便存一次任一文件，再依 §2.0c 清前置 nginx 的 `proxy_cache`。
 
 ---
 
@@ -916,6 +943,7 @@ commit 的圖片素材）。業主端上行只有 3–13 KiB/s，整包塞不進
 | 免責聲明 | `https://www.hatcmarket.com/<locale>/embed/disclaimer` |
 | 隱私權政策 | `https://www.hatcmarket.com/<locale>/embed/privacy` |
 | 常見問題 | `https://www.hatcmarket.com/<locale>/embed/faq` |
+| 註銷帳戶 | `https://www.hatcmarket.com/<locale>/embed/account-deletion` |
 
 - **`<locale>` 必須帶**：`zh-Hant`（繁中）／`zh-Hans`（簡中）／`en`。不帶會被轉到預設語系。
   請用 App 當前語言對應，不要固定寫死一個。
@@ -956,6 +984,28 @@ layout**，所以 `revalidatePath('/<locale>/announcements', 'layout')` **到不
 （它是預產生路由、沒有自己的 cache tag），所以新內容要等下一次完整 build 才進 sitemap。
 現在 `revalidateAnnouncements()` 與 `revalidateAcademyArticles()` 都會一併
 `revalidatePath('/sitemap.xml')`。
+
+### 10.4 🚩 註銷帳戶頁＝Google Play 送審的硬性要求（第七十五輪，2026-11-04）
+
+Google Play 的 User data policy「Account Deletion Requirement」對有註冊功能的 App
+要求**兩個入口同時存在**（[政策說明](https://support.google.com/googleplay/android-developer/answer/13327111)）：
+
+1. **App 內**要有可發起註銷的入口 —— **目前 HATC App 沒有**（`mt5-uniappx` 的
+   `pages/account/settings` 只有改密碼／關於我們／清除快取）。**這是開發端要補的**，
+   最低限度可以是一個開啟下面那個網址的連結，政策明文允許。
+   ⚠ Apple 的 Guideline 5.1.1(v) 同樣要求 App 內可刪除帳戶。
+2. **App 外的網址**，填進 Play Console → App content → Data safety：
+
+   | 填進 Play Console 的網址 | `https://www.hatcmarket.com/zh-Hant/account-deletion` |
+   | --- | --- |
+   | App 內連結用（無頭尾） | `https://www.hatcmarket.com/<locale>/embed/account-deletion` |
+
+   公開頁必須**不需登入**就能開（現況如此），這點 Play 會實際點進去看。
+
+頁面內容是照政策規格寫的，改文案前請先看
+`src/components/legal/LegalPage.tsx` 檔頭的紅線：要指名商店上的 App 名稱（HATC）、
+申請路徑要顯眼、前置步驟（平倉與結清出金）要寫清楚並提供協助渠道、依法保留的紀錄要
+揭露，而且**不得把「停用／凍結」寫成等同註銷**。
 
 **排查口訣：先用隨機 query 分辨是程式還是 nginx。**
 

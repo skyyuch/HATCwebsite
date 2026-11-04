@@ -4,7 +4,14 @@ import EmbedPageTitle from '@/components/common/EmbedPageTitle';
 import {company} from '@/content/company';
 import {getSiteSettings} from '@/lib/siteSettings';
 
-type LegalDoc = 'privacy' | 'disclaimer';
+const LEGAL_DOCS = ['privacy', 'disclaimer', 'accountDeletion'] as const;
+type LegalDoc = (typeof LEGAL_DOCS)[number];
+
+const DOC_PATHS: Record<LegalDoc, string> = {
+  privacy: '/privacy',
+  disclaimer: '/disclaimer',
+  accountDeletion: '/account-deletion'
+};
 
 type Section = {heading: string; body: string[]};
 
@@ -46,11 +53,25 @@ type Section = {heading: string; body: string[]};
  * Contact details are operational, so they come from CMS `SiteSettings` (never
  * hard-coded); the registered office is an approved fact and always shows.
  *
+ * 🚩 `accountDeletion` is the URL filed in the Google Play Console Data safety
+ *    form, and Play audits it (support.google.com/googleplay/android-developer/
+ *    answer/13327111). Four things on that page exist because the policy
+ *    demands them, not for style: the request pathway must be **prominent**
+ *    (hence the gold card above the sections rather than only the contact card
+ *    at the foot), the page must **name the app as listed on the store** ("HATC",
+ *    in the intro), any **prerequisite steps** must be spelled out with a
+ *    support route available (section 1), and because we do retain records for
+ *    AML reasons, that retention has to be disclosed (section 4, mirroring
+ *    `legal.privacy` section 7). Deactivating or freezing an account does not
+ *    count as deletion — do not soften that wording. The page must also keep
+ *    working without a login.
+ *
  * `embed` renders the app-webview variant (`/<locale>/embed/{privacy,
- * disclaimer}`): the breadcrumb is dropped because it links back out to the
- * full site, the navy hero collapses to a slim title row (the app has its own
- * title bar), and the link to the sibling document stays under `/embed`. Same
- * copy, same CMS contact details — see src/app/(embed)/[locale]/embed/layout.tsx.
+ * disclaimer,account-deletion}`): the breadcrumb is dropped because it links
+ * back out to the full site, the navy hero collapses to a slim title row (the
+ * app has its own title bar), and links to the sibling documents stay under
+ * `/embed`. Same copy, same CMS contact details — see
+ * src/app/(embed)/[locale]/embed/layout.tsx.
  */
 export default async function LegalPage({
   doc,
@@ -73,7 +94,17 @@ export default async function LegalPage({
   const legalName = common('brandFull');
   const address = footerFacts('address');
   const updated = `${t('updatedLabel')}：${t(`${doc}.updatedAt`)}`;
-  const siblingHref = `${embed ? '/embed' : ''}/${doc === 'privacy' ? 'disclaimer' : 'privacy'}`;
+  const siblings = LEGAL_DOCS.filter((other) => other !== doc);
+  // The deletion request pathway has to sit above the sections, not only in the
+  // contact card at the foot — see the Play note in the header comment.
+  const request =
+    doc === 'accountDeletion'
+      ? {
+          heading: t('accountDeletion.request.heading'),
+          body: t('accountDeletion.request.body'),
+          required: t.raw('accountDeletion.request.required') as string[]
+        }
+      : null;
 
   return (
     <>
@@ -125,6 +156,54 @@ export default async function LegalPage({
             <p className="text-[17px] leading-[1.75] text-[var(--fig-text-muted)]">
               {t(`${doc}.intro`)}
             </p>
+
+            {request ? (
+              <div className="flex flex-col gap-4 rounded-[12px] border border-gold/40 bg-[#fffbf2] p-6 sm:p-8">
+                <h2 className="font-sans text-[20px] font-extrabold text-[var(--fig-heading-dark)]">
+                  {request.heading}
+                </h2>
+                <p className="text-[15px] leading-[1.8] text-[var(--fig-text-muted)]">
+                  {request.body}
+                </p>
+                <ul className="flex list-disc flex-col gap-1.5 pl-5 text-[15px] leading-[1.8] text-[var(--fig-text-muted)]">
+                  {request.required.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+                <dl className="flex flex-col gap-2 text-[15px]">
+                  {settings.email ? (
+                    <div className="flex flex-wrap items-baseline gap-x-2">
+                      <dt className="text-[var(--fig-text-muted)]">
+                        {t('contactEmail')}
+                      </dt>
+                      <dd>
+                        <a
+                          href={`mailto:${settings.email}`}
+                          className="font-sans text-[18px] font-extrabold text-[#09395f] underline underline-offset-4"
+                        >
+                          {settings.email}
+                        </a>
+                      </dd>
+                    </div>
+                  ) : null}
+                  {settings.phone ? (
+                    <div className="flex flex-wrap items-baseline gap-x-2">
+                      <dt className="text-[var(--fig-text-muted)]">
+                        {t('contactPhone')}
+                      </dt>
+                      <dd className="font-semibold text-[var(--fig-heading-dark)]">
+                        <a
+                          href={`tel:${settings.phone}`}
+                          className="underline-offset-4 hover:underline"
+                        >
+                          {settings.phone}
+                        </a>
+                      </dd>
+                    </div>
+                  ) : null}
+                </dl>
+              </div>
+            ) : null}
 
             <ol className="flex flex-col gap-10">
               {sections.map((section, i) => (
@@ -204,13 +283,16 @@ export default async function LegalPage({
               </dl>
             </div>
 
-            <p className="text-[13px] leading-[1.7] text-[var(--fig-text-muted)]">
-              <Link
-                href={siblingHref}
-                className="font-semibold text-gold underline-offset-4 hover:underline"
-              >
-                {footer(doc === 'privacy' ? 'disclaimer' : 'privacy')}
-              </Link>
+            <p className="flex flex-wrap gap-x-5 gap-y-2 text-[13px] leading-[1.7] text-[var(--fig-text-muted)]">
+              {siblings.map((sibling) => (
+                <Link
+                  key={sibling}
+                  href={`${embed ? '/embed' : ''}${DOC_PATHS[sibling]}`}
+                  className="font-semibold text-gold underline-offset-4 hover:underline"
+                >
+                  {footer(sibling)}
+                </Link>
+              ))}
             </p>
           </div>
         </div>

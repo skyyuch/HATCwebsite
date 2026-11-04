@@ -24,7 +24,8 @@ const staticPaths = [
   '/academy',
   '/faq',
   '/privacy',
-  '/disclaimer'
+  '/disclaimer',
+  '/account-deletion'
 ];
 
 /**

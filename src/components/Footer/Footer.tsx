@@ -85,7 +85,15 @@ const FOOTER_LINKS: Record<
 // of the six categories are represented; the rest are reachable on `/academy`.
 const FOOTER_ACADEMY_CATEGORIES = [0, 1, 2] as const;
 
-const LEGAL_LINKS = {privacy: '/privacy', disclaimer: '/disclaimer'} as const;
+// Labels come from `home.footerV2.<key>`, which is also each page's <h1>.
+// 🚩 `account-deletion` is here because Google Play requires the deletion
+// pathway to be readily discoverable outside the app; do not drop it from the
+// footer when reshuffling these links.
+const LEGAL_LINKS = {
+  privacy: '/privacy',
+  disclaimer: '/disclaimer',
+  accountDeletion: '/account-deletion'
+} as const;
 
 export default async function Footer() {
   const t = await getTranslations();
@@ -165,19 +173,18 @@ export default async function Footer() {
               © {year} {company.legalNameEn} {t('common.brandFull')}.{' '}
               {t('footer.rights')}.
             </p>
-            <div className="flex gap-4">
-              <Link
-                href={LEGAL_LINKS.privacy}
-                className="transition-colors hover:text-white"
-              >
-                {f('privacy')}
-              </Link>
-              <Link
-                href={LEGAL_LINKS.disclaimer}
-                className="transition-colors hover:text-white"
-              >
-                {f('disclaimer')}
-              </Link>
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              {(
+                Object.keys(LEGAL_LINKS) as (keyof typeof LEGAL_LINKS)[]
+              ).map((key) => (
+                <Link
+                  key={key}
+                  href={LEGAL_LINKS[key]}
+                  className="transition-colors hover:text-white"
+                >
+                  {f(key)}
+                </Link>
+              ))}
             </div>
           </div>
         </div>

@@ -1450,6 +1450,62 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  的退役值警告註解）；三語七個網址 200；桌機 1440／手機 390（CDP 裝置模擬）截圖看過 `/accounts`
  與 `/products` 的卡片與表格。未動 schema。
 
+- **2026-11-04 (第七十五輪): 註銷帳戶頁 `/account-deletion`（＋ `/embed` 版）上線 ＝ Google Play
+ 送審前置條件；客服電郵改 `info@hatcmarket.com`。** 業主原話：「為了上架 google play，需要在常見
+ 問題加一個如何關閉帳戶。但內容是要發電郵給客服，要求關閉。或者你有更好的建議」。
+ - **🚩 只加 FAQ 一題不足以過審（查過政策條文才回答，不要憑印象）**：Play 的 User data policy
+ 「Account Deletion Requirement」要求有註冊功能的 App **App 內與 App 外各一個入口**，App 外那個
+ 網址要填進 Play Console → App content → Data safety，而且會被**實際點開稽核**。規格明列：網址要
+ 能正常開啟、**刪除路徑必須顯眼**、頁面要**寫出商店 listing 上的 App／開發者名稱**、**前置步驟
+ 必須寫清楚並提供協助渠道**、依法保留的資料要在隱私政策揭露。政策還明文說**「停用／凍結」不算
+ 刪除**；金融業被列為高度監管行業，**可以**要求額外的身分核實流程才完成刪除（我們的 KYC 核實
+ 因此是安全的）。業主拍板＝**專頁 ＋ FAQ 一題指向它**。
+ - **🚩 App 內的註銷入口目前不存在**（`mt5-uniappx` 的 `pages/account/settings` 只有改密碼／
+ 關於我們／清除快取，全專案 grep 不到註銷功能）＝**開發端要補**，最低限度放一個開啟
+ `/embed/account-deletion` 的連結即可（政策允許）。Apple Guideline 5.1.1(v) 同樣要求。
+ 業主表示自己跟開發說，本輪未寫規格文件。
+ - **實作＝第三份 legal doc，沿用 `LegalPage`**：`LEGAL_DOCS` 由兩份擴為
+ `privacy|disclaimer|accountDeletion`＋`DOC_PATHS`，底部互連改成「其餘所有文件」而非二選一；
+ `doc==='accountDeletion'` 時在 intro 之後多渲染一張**金色申請卡片**（標題／說明／需附資料清單／
+ CMS 電郵 mailto ＋電話）——Play 要求路徑顯眼，只靠頁尾聯絡卡不夠。路由
+ `(frontend)/[locale]/account-deletion` ＋ `(embed)/[locale]/embed/account-deletion`，兩條三語
+ 皆 ● SSG。i18n `legal.accountDeletion`（intro／updatedAt／request／5 個 sections）＋
+ `metadata.accountDeletion` ＋ `home.footerV2.accountDeletion`（**同一個鍵既是 footer 標籤也是
+ 頁面 h1**，比照 privacy／disclaimer）。三語 **727 → 758 鍵**。
+ - **沒有破第五十六輪的法律頁紅線**：仍**不寫**具體保存年限（只寫「依適用的金融及反洗錢法規所
+ 要求的期間」）、不具名資料處理者、不寫管轄法律、**不承諾處理時限**（業主本輪選「不寫具體時限」）。
+ 頁面只重述已核可事實與網站／App 的實際行為。
+ - **接線四處**：footer 底列改成由 `LEGAL_LINKS` 生成（三連結，`flex-wrap`）、`sitemap.ts` 加
+ `/account-deletion`（**`/embed` 版不加**，紅線不變）、`legal.privacy` §8 末尾加一句指向新頁
+ 並把 `legal.privacy.updatedAt` 改 **2026-11-04**（`disclaimer` 的日期**沒有**被連動，兩者早在
+ 第七十三輪就拆成各自的鍵）、FAQ 一題進 `accounts` 分類（同時出現在 `/accounts` 與 `/faq`）。
+ - **🚩 FAQ 要進 CMS 才看得到（集合級 fallback 的老帳）**：`lib/faqs.ts` 只要該分類有任何一列
+ 就完全不讀 i18n → 光改 `src/messages/*` 在有 DB 的站上是看不到的。**刻意不重跑
+ `seed-accounts.ts`**（replace 模式，會把 5 題 FAQ ＋ 4 張賣點卡刪掉重建，吃掉業主後台改過的字），
+ 改寫**只動那一列**的 `scripts/seed-account-deletion-faq.ts`（冪等，以 seed 問句或「註銷」字樣
+ 比對既有列；先 create 再逐語系 update）。
+ - **客服電郵 `info@hatchk.com` → `info@hatcmarket.com`（業主同輪指示「官網其他位置都要改」）**：
+ 已改 `HATC_FACTS.md`（舊值標記停用）／`config/env/{prd,stg}.env` 的 `CONTACT_EMAIL`／
+ `DEPLOYMENT.md`／`WEBSITE_STRUCTURE.md`。**舊網站網址 `www.hatchk.com` 刻意不動**（仍是已核可
+ 事實，與電郵無關）。⚠ 電郵還存在 **CMS 的 `site-settings.email`（UI 實際讀的值，會贏過環境變數）**
+ 與**業主 GitBook 匯入的 6 篇學院文章內文**（含 `mailto:` 連結）→ `scripts/update-contact-email.ts`
+ （冪等，`--dry-run`；本機 14 處已換完）。**正式站必須跑一次**，見 `DEPLOYMENT.md` §4.3。
+ - **🚩 維運腳本改 Mongo 的坑（新教訓）**：`payload.db.globals` 的基底 schema 幾乎只宣告
+ `globalType`，**用 Mongoose model 做 `$set` 會被 strict 模式整個剝光**（腳本回報成功、
+ `site-settings.email` 原封不動）→ 要走 `model.collection.updateOne`。但**換成原生 driver 之後
+ `_id` 不再自動轉型**：若 filter 用的是 `JSON.parse(JSON.stringify(doc))` 出來的字串 `_id`，
+ 比對不到任何文件、一樣「成功」。正解＝**值用 JSON 複本、filter 用原始文件的 ObjectId**。
+ （collection 那條之所以第一版就成功，正是因為 Mongoose 幫忙把字串 `_id` 轉了型。）
+ - **驗收**：`tsc`／`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`i18n:check` 758 鍵／
+ 冷建綠且兩條新路由三語 ● SSG；六個新網址 200、sitemap 含 `/account-deletion` × 3 語且
+ **不含任何 `/embed`**、embed 頁 `noindex, nofollow` ＋無 canonical ＋無頭尾、公開頁 canonical 正確；
+ `/faq` 與 `/accounts` 三語都出現新 FAQ；privacy 日期 2026-11-04 而 disclaimer 仍 2026-10-11。
+ 桌機 1440／手機 390（CDP）× 繁中／英文／embed 截圖看過。未動 schema。
+ - **待業主／待開發**：(a) **App 內註銷入口**（Play＋Apple 都要求）；(b) 正式站跑
+ `update-contact-email.ts` ＋ `seed-account-deletion-faq.ts` 並在 `/admin` 存一次；
+ (c) Play Console 填入 `https://www.hatcmarket.com/zh-Hant/account-deletion`；
+ (d) 若法遵日後給出資料保存年限與處理時限，兩頁要一起補。
+
 - **2026-10-14 (第六十九輪): `/funding` 的「示意數據」退役 —— 出入金渠道改為對外正式資訊，
   並刪掉虛構後備。SUPERSEDES 第三十六／三十七輪把 `funding-methods` 當示意表的設計。**
   業主：「/funding 頁的示意數據拿掉，你順便檢查一下全站還有沒有此字，因為要準備上線了。」
@@ -1561,7 +1617,9 @@ Before planning, designing or changing code, read `docs/HATC_PROJECT_BRIEF.md`,
  「Official contact & website」新增一條已核可事實**。⚠ **`www.hatchk.com` 與
  `www.hatcmarket.com` 的關係（主站／301／canonical 互指）業主尚未說明** → 不得自行推定，
  不得在頁面上並列兩個網域。`CONTACT_EMAIL=info@hatchk.com` **不跟著改**（FACTS 核可的電郵，
- 與站台網域無關）。
+ 與站台網域無關）。⚠ **這條電郵已於 2026-11-04 第七十五輪由業主改為
+ `info@hatcmarket.com`**（當時「不跟著改」的判斷仍然成立——它不是因為網域而改，是業主換了
+ 客服信箱）；**舊網址 `www.hatchk.com` 至今仍不動**。
  - **CMS 導出（`~/Desktop/hatc-cms-export-20261013/`，倉外）**：`hatc-cms.archive.gz`
  （`mongodump --archive --gzip`，18 collection／**144 筆**／含索引）＋**`media.tar.gz`
  （106 個實體檔案）**＋`README-匯入說明.md`＋`給開發端-環境變數與憑證處理.md`。

@@ -1,6 +1,15 @@
 # HATC 交棒摘要 (Handoff)
 
-> 最後更新：2026-11-02（第七十四輪：**槓桿 1:100 → 1:200**。業主指示「產品槓桿需要改為
+> 最後更新：2026-11-04（第七十五輪：**註銷帳戶頁 `/account-deletion` ＋ `/embed` 版上線**。
+> 業主要為 Google Play 送審「在常見問題加一個如何關閉帳戶」—— 查過政策條文後確認
+> **只加 FAQ 不足以過審**：Play 要求 App 內與 App 外各一個入口，App 外那個網址會被實際點開
+> 稽核（刪除路徑要顯眼、要指名商店 App 名稱、前置步驟要寫清楚）。業主拍板專頁＋FAQ 一題指向它。
+> **🚩 App 內的註銷入口目前不存在，開發端必須補**（Apple 5.1.1(v) 同樣要求）。
+> 同輪業主指示客服電郵改 **`info@hatcmarket.com`**（舊 `info@hatchk.com` 停用）——
+> 舊值還藏在 **CMS `site-settings.email`** 與**6 篇 GitBook 學院文章內文**裡，
+> **正式站要跑 `scripts/update-contact-email.ts` ＋ `scripts/seed-account-deletion-faq.ts`**。
+> 詳見下方第七十五輪。
+> 第七十四輪：**槓桿 1:100 → 1:200**。業主指示「產品槓桿需要改為
 > 200 倍」，確認適用**四種帳戶類型 × 三個品種一律 1:200**、**舊值 1:100 即刻停用**。
 > 事實改一個常數 `MAX_LEVERAGE`，四個表格頁自動跟上；文案三語各 6 處。
 > **🚩 這輪唯一的坑：CMS 裡有 3 筆存著 1:100**（`account-benefits` 1 筆＋`faqs(accounts)`
@@ -70,10 +79,17 @@
 > 新對話請先閱讀 `AGENTS.md` 與 `docs/`（BRIEF / FACTS / STRUCTURE / DESIGN_DIRECTION），
 > `.cursor/rules/*` 會自動載入。本檔記錄「目前進度與下一步」，決策細節以各文件為準。
 
-## ▶ 下一輪任務（第七十二輪：待業主選題）
+## ▶ 下一輪任務（待業主選題）
 
-> **本倉程式面沒有已知的待修項。** 第七十一輪結束時仍待處理的，全部需要業主的素材或決定：
+> **本倉程式面沒有已知的待修項。** 以下全部需要業主的素材、決定，或在正式主機上執行：
 >
+> 0. **🚩 第七十五輪留下的三件事（Google Play 送審相關，有時效）**：
+>    (a) **App 內的註銷帳戶入口目前不存在** → 開發端必須補，否則 Play／Apple 都會退件
+>        （最低限度放一個開啟 `/<locale>/embed/account-deletion` 的連結）；
+>    (b) 正式站要跑 `scripts/update-contact-email.ts`（客服電郵換成 `info@hatcmarket.com`，
+>        舊值還留在 CMS 與 6 篇學院文章內文裡）＋ `scripts/seed-account-deletion-faq.ts`，
+>        跑完到 `/admin` 存一次再清 nginx 快取（`DEPLOYMENT.md` §4.3）；
+>    (c) Play Console 填 `https://www.hatcmarket.com/zh-Hant/account-deletion`。
 > 1. **那 10 則公告的繁中／英文是機器翻譯草稿，需要業主逐筆校對**（公告＝公司對外聲明）。
 >    內容本身已經補齊並上線（2026-10-14 晚實測三語各 10 則），**不是待修項**，只是待校對。
 >    其中一則三個語系都沒有內文（只有標題）＝內容本身沒寫，不是翻譯漏掉，業主可自行決定補不補。
@@ -84,11 +100,116 @@
 >    真實交易端截圖，只剩首頁這一張 ＋ `/trading` 的 hero 平板圖。**需業主決定／提供素材。**
 > 4. **FACTS 仍待業主提供：執行方式**（唯一剩下的交易條件；頁面上已不標「將另行公佈」）。
 > 5. **模擬帳戶連結**未提供 → 全站模擬按鈕隱藏（設計行為）。
-> 6. **兩個法律頁（`/privacy`、`/disclaimer`）需業主／法務逐條審核** —— 2026-10-19 起
->    **`/privacy` 變成擋住 iOS 送審的關鍵路徑**，優先度已不同於其他項，見第七十三輪。
+> 6. **三個法律頁（`/privacy`、`/disclaimer`、`/account-deletion`）需業主／法務逐條審核** ——
+>    2026-10-19 起 **`/privacy` 變成擋住 iOS 送審的關鍵路徑**，優先度已不同於其他項，
+>    見第七十三輪；`/account-deletion`（第七十五輪）同理擋住 Google Play。兩頁都刻意
+>    留白**資料保存年限**與**註銷處理時限**，法遵給了數字就要一起補。
 > 7. **`web.hatcmarket.com` 的 TLS 憑證只簽了 `www`** → 待業主決定補 SAN 或 301 到 www。
 > 8. **About 頁沒有區段 id** → footer「關於我們」欄三個連結都只能指 `/about`（第五十七輪
 >    業主決定暫不處理）。
+
+## 🟢 第七十五輪（2026-11-04）註銷帳戶頁 `/account-deletion` ＝ Google Play 送審前置條件；客服電郵更換
+
+業主原話：「為了上架 google play，需要在常見問題加一個如何關閉帳戶。但內容是要發電郵給客服，
+要求關閉。或者你有更好的建議，可以提供」。
+
+### 1. 為什麼不只加一題 FAQ（先查政策條文，不要憑印象回答）
+
+Google Play 的 User data policy「Account Deletion Requirement」
+（<https://support.google.com/googleplay/android-developer/answer/13327111>）對**有註冊功能**
+的 App 要求**兩個入口同時存在**：
+
+1. **App 內**可發起註銷；
+2. **App 外一個網址**，填進 Play Console → App content → Data safety。
+
+而且那個網址有明文規格，Play 會**實際點開稽核**：要能正常開啟、**刪除路徑必須顯眼**
+（原文還特別說，若沿用既有隱私／保留政策來滿足，該段必須「reasonably prominent，例如用
+anchor link」）、**頁面要寫出商店 listing 上的 App／開發者名稱**、受理方式可以是客服電郵
+（所以業主要的「發電郵給客服」本身合格）、**前置步驟必須寫清楚並提供協助渠道**。
+另外兩句很關鍵：**「停用／凍結」不算刪除**；但**金融業屬高度監管行業，可以要求額外流程**
+（＝我們的身分核實是安全的）。保留資料則必須在隱私政策揭露 —— 這點 `legal.privacy` §7／§8
+早就寫好了。
+
+結論：把它埋在 `/faq` 的第 N 題不符合「顯眼」。業主拍板＝**專頁 ＋ FAQ 一題指向它**。
+
+### 2. 🚩 App 內的註銷入口不存在（開發端要補）
+
+查過 `~/Desktop/mt5-web/mt5-uniappx`：`pages/account/settings` 只有系統時區／語言／螢幕常亮／
+漲跌顏色／改登入密碼／資金密碼／關於我們／清除快取／版本／MT5 帳號，全專案 grep 不到任何
+註銷或刪除帳戶的功能。**這是 Play（與 Apple Guideline 5.1.1(v)）的硬性要求**，最低限度放一個
+開啟 `/<locale>/embed/account-deletion` 的連結即可，政策明文允許。業主選擇自己跟開發端說，
+本輪沒有寫規格文件，但已記進 `DEPLOYMENT.md` §10.4。
+
+### 3. 實作＝第三份 legal doc，不是新元件
+
+`LEGAL_DOCS` 由兩份擴成 `privacy | disclaimer | accountDeletion`＋`DOC_PATHS`，底部互連從
+「二選一」改成「其餘所有文件」。`doc === 'accountDeletion'` 時在 intro 之後多渲染一張**金色
+申請卡片**（標題／說明／需附資料清單／CMS 電郵 mailto ＋電話）——這就是 Play 要的「顯眼路徑」，
+只靠頁尾那張聯絡卡不夠。
+
+- 路由：`(frontend)/[locale]/account-deletion` ＋ `(embed)/[locale]/embed/account-deletion`，
+  兩條三語皆 ● SSG。
+- i18n：`legal.accountDeletion`（intro／updatedAt／request{heading,body,required[4]}／
+  5 個 sections）＋ `metadata.accountDeletion` ＋ `home.footerV2.accountDeletion`
+  （**同一個鍵既是 footer 標籤也是頁面 h1**，比照 privacy／disclaimer）。三語 **727 → 758 鍵**。
+- 五個章節：提出申請前請先完成（平倉／結清＋協助渠道）→ 身分核實 → 註銷後會刪除的資料
+  （含「不會以停用或凍結代替註銷」）→ 依法須保留的紀錄（指向隱私政策）→ 其他注意事項。
+- **沒有破第五十六輪的法律頁紅線**：不寫保存年限、不具名資料處理者、不寫管轄法律、
+  **不承諾處理時限**（業主本輪明確選「不寫具體時限」）。
+
+接線四處：footer 底列改由 `LEGAL_LINKS` 生成（三連結、`flex-wrap`）；`sitemap.ts` 加
+`/account-deletion`（**`/embed` 版不加**）；`legal.privacy` §8 末尾加一句指向新頁並把
+`legal.privacy.updatedAt` 改 2026-11-04（`disclaimer` **沒有**被連動——第七十三輪已把兩者拆成
+各自的鍵）；FAQ 一題進 `accounts` 分類（同時出現在 `/accounts` 與 `/faq`）。
+
+### 4. 🚩 FAQ 必須進 CMS 才看得到，而且不能重跑 `seed-accounts.ts`
+
+`lib/faqs.ts` 是**集合級** fallback：`accounts` 分類只要有任何一列，整份 i18n 種子就完全不被
+讀取 → 光改 `src/messages/*` 在有資料庫的站上看不到。但也**不能**重跑 `seed-accounts.ts`
+（replace 模式，會把 5 題 FAQ ＋ 4 張賣點卡刪掉重建，吃掉業主在後台改過的字）。
+因此新寫 `scripts/seed-account-deletion-faq.ts`：**只動那一列**，冪等（以 seed 問句或「註銷」
+字樣比對既有列），先 `create` 再逐語系 `update`。
+
+### 5. 客服電郵 `info@hatchk.com` → `info@hatcmarket.com`
+
+業主同一輪補充：「客服電郵是這個，官網其他位置都要改」。已改 `HATC_FACTS.md`（舊值標記停用）／
+`config/env/{prd,stg}.env` 的 `CONTACT_EMAIL`／`DEPLOYMENT.md`／`WEBSITE_STRUCTURE.md`。
+**舊網站網址 `www.hatchk.com` 刻意不動**——它仍是已核可事實，與電郵是兩回事。
+
+⚠ 電郵還存在兩個 grep 不到的地方：**CMS `site-settings.email`**（UI 實際讀的值，**會贏過環境
+變數**）與**業主 GitBook 匯入的 6 篇學院文章內文**（`what-is-hatc`／`company-name-history`／
+`member-008-history`／`services-and-trading-platform`／`trading-fees-and-process`／
+`frequently-asked-questions`，含 `mailto:` 連結）。`scripts/update-contact-email.ts` 一次掃完
+所有 collection ＋ globals（冪等、有 `--dry-run`）；本機 14 處已換完。
+**正式站必須跑一次**，見 `DEPLOYMENT.md` §4.3。
+
+### 6. 🚩 新教訓：維運腳本改 Mongo 的兩個無聲失敗
+
+兩個都「回報成功但什麼都沒改」，踩完才看出來：
+
+1. **`payload.db.globals` 的基底 schema 幾乎只宣告 `globalType`** → 用 Mongoose model 做
+   `$set` 會被 strict 模式整個剝光。要走 `model.collection.updateOne`（原生 driver）。
+2. **換成原生 driver 之後 `_id` 不再自動轉型** → filter 若用
+   `JSON.parse(JSON.stringify(doc))` 出來的**字串** `_id`，比對不到任何文件，一樣「成功」。
+   正解＝**值用 JSON 複本、filter 用原始文件的 ObjectId**。
+   （collection 那條第一版就成功，正是因為 Mongoose 幫忙轉了型 —— 這掩蓋了問題。）
+
+### 7. 驗收
+
+`tsc`／`lint` 0 error（僅 `seed-academy.ts` 1 個既有 warning）／`i18n:check` 758 鍵／冷建綠且兩條
+新路由三語 ● SSG。六個新網址 200；sitemap 含 `/account-deletion` × 3 語且**不含任何 `/embed`**；
+embed 頁 `noindex, nofollow` ＋無 canonical ＋無頭尾；公開頁 canonical 正確；`/faq` 與 `/accounts`
+三語都出現新 FAQ；privacy 顯示 2026-11-04 而 disclaimer 仍 2026-10-11。桌機 1440／手機 390（CDP）
+× 繁中／英文／embed 截圖看過。未動 schema。
+
+### 8. 待業主／待開發
+
+1. **App 內註銷入口**（Play ＋ Apple 都要求）—— 開發端補。
+2. 正式站跑 `update-contact-email.ts` ＋ `seed-account-deletion-faq.ts`，再到 `/admin` 存一次
+   並依 §2.0c 清前置 nginx 快取。
+3. Play Console 填 `https://www.hatcmarket.com/zh-Hant/account-deletion`。
+4. 法遵若日後給出**資料保存年限**與**註銷處理時限**，`legal.privacy` 與 `legal.accountDeletion`
+   要一起補（兩頁仍是待審核的草稿）。
 
 ## 🟢 第七十四輪（2026-11-02）槓桿 1:100 → **1:200**（已核可事實更新）
 

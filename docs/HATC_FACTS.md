@@ -38,7 +38,15 @@
     301 導向或 canonical 互指）**業主尚未說明**，不得自行推定或在頁面上並列。
     （已知的事實只有：兩者目前服務同一個既有站。）
 - 客戶服務電話：`(852) 2322 2888`
-- 電郵：`info@hatchk.com`
+- 客戶服務電郵：**`info@hatcmarket.com`**（業主確認 2026-11-04 第七十五輪）
+  - ⚠ **`info@hatchk.com` 已停用**，全站不得再出現。業主原話：「客服電郵是這個，
+    官網其他位置都要改」。程式端預設值在 [`config/env/prd.env`](../config/env/prd.env)
+    與 `stg.env` 的 `CONTACT_EMAIL`；UI 一律讀 CMS `SiteSettings → 電郵`，
+    **正式站必須在 `/admin` 一併更新**，否則 CMS 的舊值會贏過環境變數。
+  - ⚠ 舊電郵另外殘留在 **6 篇由業主 GitBook 匯入的學院文章內文**（`what-is-hatc`、
+    `company-name-history`、`member-008-history`、`services-and-trading-platform`、
+    `trading-fees-and-process`、`frequently-asked-questions`）＝CMS 資料，
+    以 `scripts/update-contact-email.ts` 換掉（見 DEPLOYMENT §4.3）。
 - 香港地址：香港九龍觀塘偉業街 223 號宏利金融中心 B 座 8 樓 808A 室
 - 線上開戶（註冊）入口：`https://h5.hatcmarket.com/#/pages/auth/register/index`
   （來源：業主提供 2026-10-11 第五十二輪。官網所有「立即開戶」按鈕一律讀
