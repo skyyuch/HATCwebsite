@@ -987,8 +987,8 @@
           "a": "伦敦金是国际现货黄金交易的通称，以美元计价，具备近 24 小时双向交易与高流动性，是投资人常用的黄金配置工具。"
         },
         "q4": {
-          "q": "MT5 平台如何使用？",
-          "a": "HATC 采用国际通用的 MetaTrader 5 平台，支持电脑、网页及移动设备。我们提供平台使用教学与操作指引，协助您顺利完成安装、登录与下单。"
+          "q": "MT5 交易平台如何下载、登录与使用？",
+          "a": "HATC 支持国际通用的 MetaTrader 5（MT5）交易系统，支持 PC 电脑端、移动端及网页端。请按照以下步骤安装并登录：\n\nWindows PC 端（官方直装版）：\nhttps://download.metatrader.com/cdn/web/hua.an.tai/mt5/huaantaichang5setup.exe\n\n移动端：\niOS 用户：前往 App Store 搜索 MetaTrader 5 下载安装。\nAndroid 用户：通过 Google Play 商店下载安装，或联系客服索取 APK 安装包。\n\n安装并打开 MT5，填写／选择：\n经纪商／公司：HuaAnTaiChang Global Limited\n服务器：HuaAnTaiChang-Server\n账号：开户后取得的 HATC 交易账号（以 26 开头）\n密码：交易主密码\n\n即可成功登录。"
         },
         "q5": {
           "q": "如何入金和出金？",

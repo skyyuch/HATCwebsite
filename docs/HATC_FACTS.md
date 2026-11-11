@@ -231,6 +231,17 @@
 ### Trading platforms（來源：業主確認 2026-08-31，2026-10-11 補充）
 
 - **MetaTrader 5（MT5）**＝主要交易平台，全站一致使用。
+- **MT5 下載與登入資料（業主提供 2026-11-11）**，用於 `/trading`、`/faq` 的 FAQ
+  「MT5 交易平台如何下載、登入與使用？」（i18n `trading.faq.items.q4`）：
+  - Windows PC 官方直裝版：`https://download.metatrader.com/cdn/web/hua.an.tai/mt5/huaantaichang5setup.exe`
+    （MetaQuotes 官方 CDN，2026-11-11 實測 200、5.5 MB）
+  - 行動端：iOS＝App Store 搜尋 MetaTrader 5；Android＝Google Play，或**聯絡客服索取
+    APK**（官網**沒有** APK 下載點，不得寫成「官網提供」）
+  - MT5 經紀商名稱＝`HuaAnTaiChang Global Limited`；伺服器＝`HuaAnTaiChang-Server`
+  - 交易帳號以 **26** 開頭；密碼＝交易主密碼
+  - ⚠ `HuaAnTaiChang Global Limited` 是**MT5 伺服器上顯示的經紀商名稱**（業主確認須照字面
+    填寫才搜得到），**不是**本檔「Official company identity」的公司法定名稱，不得用來取代
+    `HATC Group Limited` 或在其他地方當公司名使用。
 - **HATC App**（行動端）與 **HATC 網頁交易端**：業主 2026-08-31 確認存在；**真實名稱與
   功能細節待業主提供**。開發註記（2026-10-11 第五十五輪更新）：官網現已改用**真實交易端
   截圖**（簡體介面，三語共用，印 `platforms.types.screenshotNote`），MT5 則用平台供應商的

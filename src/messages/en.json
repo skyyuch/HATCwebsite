@@ -987,8 +987,8 @@
           "a": "Loco London Gold is the common term for international spot gold trading. Priced in US dollars, it offers near-24-hour two-way trading and high liquidity, and is a widely used tool for gold allocation."
         },
         "q4": {
-          "q": "How do I use the MT5 platform?",
-          "a": "HATC uses the industry-standard MetaTrader 5 platform, available on desktop, web and mobile. We provide platform tutorials and operating guidance to help you install, log in and place orders smoothly."
+          "q": "How do I download, log in to and use the MT5 platform?",
+          "a": "HATC supports the industry-standard MetaTrader 5 (MT5) trading platform on Windows PC, mobile and web. Follow these steps to install and log in:\n\nWindows PC (official installer):\nhttps://download.metatrader.com/cdn/web/hua.an.tai/mt5/huaantaichang5setup.exe\n\nMobile:\niOS: search for MetaTrader 5 in the App Store and install it.\nAndroid: install it from Google Play, or contact customer service for the APK installer.\n\nOpen MT5 and enter or select:\nBroker / company: HuaAnTaiChang Global Limited\nServer: HuaAnTaiChang-Server\nLogin: the HATC trading account number you receive after opening an account (it starts with 26)\nPassword: your master trading password\n\nYou are now logged in."
         },
         "q5": {
           "q": "How do deposits and withdrawals work?",

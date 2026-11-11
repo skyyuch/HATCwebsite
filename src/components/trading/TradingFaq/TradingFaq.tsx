@@ -44,7 +44,7 @@ export default async function TradingFaq() {
                   aria-hidden
                 />
               </summary>
-              <p className="mt-3 text-sm leading-[1.5] text-[var(--trd-body)]">
+              <p className="mt-3 whitespace-pre-line [overflow-wrap:anywhere] text-sm leading-[1.5] text-[var(--trd-body)]">
                 {item.answer}
               </p>
             </details>

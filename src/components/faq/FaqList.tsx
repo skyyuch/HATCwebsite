@@ -106,7 +106,7 @@ export default async function FaqList({embed = false}: {embed?: boolean}) {
                         aria-hidden
                       />
                     </summary>
-                    <p className="mt-3 whitespace-pre-line text-sm leading-[1.6] text-[var(--fig-text-muted)]">
+                    <p className="mt-3 whitespace-pre-line [overflow-wrap:anywhere] text-sm leading-[1.6] text-[var(--fig-text-muted)]">
                       {item.answer}
                     </p>
                   </details>
